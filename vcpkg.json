@@ -1,0 +1,12 @@
+{
+  "name": "vengine",
+  "version": "0.1.0",
+  "dependencies": [
+    "gtest",
+    "fmt",
+    "glfw3",
+    "glew",
+    "glm",
+    "ms-gsl"
+  ]
+}
