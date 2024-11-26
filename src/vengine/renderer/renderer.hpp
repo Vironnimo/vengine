@@ -8,12 +8,8 @@
 // cpp core guidelines stuff
 #include <gsl/assert>
 
-#include "game/game_state.hpp"
-// #include "opengl/renderer/shaders/shader_manager.hpp"
 #include "./shader_manager.hpp"
 
-// temp
-#include "game/tetromino/tetromino.hpp"
 
 namespace Vengine {
 
@@ -24,13 +20,13 @@ class Renderer {
 
     void setWindow(GLFWwindow* window);
 
-    void render(const GameState& state);
+    void render();
 
     void drawGrid();
     void drawGameFieldBorder();
     void drawRectangle(const glm::vec3& position, const Color* color);
 
-    std::vector<Position> calculateGamefieldPositions(const GameState& state) const;    
+    // std::vector<Position> calculateGamefieldPositions(const GameState& state) const;
     glm::vec3 convertPosition(std::pair<int, int> position);
 
    private:

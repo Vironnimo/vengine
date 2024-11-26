@@ -11,7 +11,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "game/global.hpp"
+#include "vengine/global.hpp"
 
 namespace Vengine {
 

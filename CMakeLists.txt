@@ -6,9 +6,7 @@ project(vengine)
 
 set(SOURCES
         src/game/game.cpp
-        src/game/board/board.cpp
-        src/game/tetromino/tetromino.cpp
-        src/vengine/config/config.cpp
+        src/vengine/utils/utils.cpp
         src/vengine/core/uuid.cpp
         src/vengine/input/input.cpp
         src/vengine/timer/timer.cpp
@@ -25,6 +23,15 @@ set(TEST_SOURCES
 )
 
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/src/vengine/resources/shaders")
+
+# FetchContent setup
+include(FetchContent)
+FetchContent_Declare(
+        vconfig
+        GIT_REPOSITORY https://github.com/ViroJB/vconfig.git
+        GIT_TAG        main
+)
+FetchContent_MakeAvailable(vconfig)
 
 # copy resources to the build directory
 add_custom_target(copy_resources ALL
@@ -51,6 +58,7 @@ add_dependencies(vengine copy_resources)
 target_link_libraries(vengine PRIVATE fmt::fmt)
 target_link_libraries(vengine PRIVATE Microsoft.GSL::GSL)
 target_link_libraries(vengine PRIVATE OpenGL::GL GLEW::GLEW glfw glm::glm)
+target_link_libraries(vengine PRIVATE vconfig)
 
 # target_compile_options(vengine PRIVATE "/W4" "/wd4100" "/RTC1") # disable warning C4100 (unused parameter)
 target_compile_options(vengine PRIVATE "/W4")

@@ -152,38 +152,29 @@ glm::vec3 Renderer::convertPosition(std::pair<int, int> position) {
     return glm::vec3{x, y, 0.0f};
 }
 
-void Renderer::render(const GameState& state) {
+void Renderer::render() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     // draw blocks on the board
     // todo need an offset here to draw the blocks in the correct position
-    for (int i = 0; i < 20; i++) {
-        for (int j = 0; j < 10; j++) {
-            if (state.boardState->board[i][j]->isActive) {
-                std::pair<int, int> position = Position{j, i}.toPair();
-                position.first += m_offsetX;
-                position.second += m_offsetY;
-                drawRectangle(convertPosition(position), &state.boardState->board[i][j]->color);
-            }
-        }
-    }
-
-    // draw the active tetromino
-    // std::vector<Position> positions = calculateGamefieldPositions(state);
-    // for (const auto& position : positions) {
-    //     std::pair<int, int> tmpPosition = position.toPair();
+    // for (int i = 0; i < 20; i++) {
+    //     for (int j = 0; j < 10; j++) {
+    //         if (state.boardState->board[i][j]->isActive) {
+    //             std::pair<int, int> position = Position{j, i}.toPair();
+    //             position.first += m_offsetX;
+    //             position.second += m_offsetY;
+    //             drawRectangle(convertPosition(position), &state.boardState->board[i][j]->color);
+    //         }
+    //     }
+    // }
+    //
+    // for (const auto& block : state.tetrominoState->blocks) {
+    //     std::pair<int, int> tmpPosition = block.position.toPair();
     //     tmpPosition.first += m_offsetX;
     //     tmpPosition.second += m_offsetY;
-    //     drawRectangle(convertPosition(tmpPosition), &state.tetrominoState->blocks[0].color);
+    //     drawRectangle(convertPosition(tmpPosition), &block.color);
     // }
-
-    for (const auto& block : state.tetrominoState->blocks) {
-        std::pair<int, int> tmpPosition = block.position.toPair();
-        tmpPosition.first += m_offsetX;
-        tmpPosition.second += m_offsetY;
-        drawRectangle(convertPosition(tmpPosition), &block.color);
-    }
 
     drawGameFieldBorder();
     drawGrid();
@@ -193,17 +184,17 @@ void Renderer::render(const GameState& state) {
 }
 
 // convert the positions of the tetromino block (which are relative to the rotationpoint) to positions on the gamefield
-std::vector<Position> Renderer::calculateGamefieldPositions(const GameState& state) const {
-    std::vector<Position> boardPositions;
+// std::vector<Position> Renderer::calculateGamefieldPositions(const GameState& state) const {
+//     std::vector<Position> boardPositions;
 
-    for (const auto& block : state.tetrominoState->blocks) {
-        Position boardPosition =
-            state.tetrominoState->position + (block.position - state.tetrominoState->rotationPoint);
-        boardPositions.push_back(boardPosition);
-    }
+    // for (const auto& block : state.tetrominoState->blocks) {
+    //     Position boardPosition =
+    //         state.tetrominoState->position + (block.position - state.tetrominoState->rotationPoint);
+    //     boardPositions.push_back(boardPosition);
+    // }
 
-    return boardPositions;
-}
+//     return boardPositions;
+// }
 
 void Renderer::setWindow(GLFWwindow* window) {
     m_window = window;

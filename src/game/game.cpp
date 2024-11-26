@@ -1,9 +1,12 @@
 #include "game.hpp"
+#include <vconfig/vconfig.hpp>
+#include "vengine/utils/utils.hpp"
 
 namespace Vengine {
 
-Game::Game() : m_gameState(GameState::getInstance()) {
+Game::Game() {
     fmt::print("Game Constructor\n");
+
     init();
 }
 
@@ -13,41 +16,13 @@ void Game::init() {
     m_openGLManager = std::make_unique<OpenGLManager>();
     m_openGLManager->initialize();
     m_openGLManager->createWindow("Renderer", 800, 800);
-
     m_renderer = std::make_unique<Renderer>();
     m_renderer->setWindow(m_openGLManager->getWindow());
-
     m_input = std::make_unique<Input>(m_openGLManager->getWindow());
-
-    // init game state
-    m_board = std::make_unique<Board>();
-    m_gameState.boardState = m_board->getState();
-    createNewTetromino();
 }
 
 Game::~Game() {
     fmt::print("Game Destructor\n");
-}
-
-void Game::createNewTetromino() {
-    // get random tetromino type
-    int random = createRandomNumber(0, 6);
-    auto type = static_cast<TetrominoType>(random);
-
-    m_activeTetromino = std::make_unique<Tetromino>(type, Position{5, 16});
-    // set random color
-    Color rndColor = {createRandomFloat(1.0f), createRandomFloat(1.0f), createRandomFloat(1.0f), 1.0f};
-    m_activeTetromino->setColor(rndColor);
-    m_gameState.tetrominoState = m_activeTetromino->getState();
-}
-
-int Game::createRandomNumber(int min, int max) {
-    return min + (rand() % static_cast<int>(max - min + 1));
-}
-
-float Game::createRandomFloat(float max) {
-    // create random number between 0.0 and max
-    return static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / max));
 }
 
 void Game::mainLoop() {
@@ -76,8 +51,7 @@ void Game::mainLoop() {
         }
 
         // render
-        m_renderer->render(m_gameState);
-
+        m_renderer->render();
     }
 }
 

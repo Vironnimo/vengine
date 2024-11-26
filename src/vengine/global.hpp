@@ -1,9 +1,5 @@
 #pragma once
 
-#include <fmt/core.h>
-
-#include "../vengine/config/config.hpp"
-
 namespace Vengine {
 
 struct Position {
