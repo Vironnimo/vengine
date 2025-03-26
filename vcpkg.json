@@ -2,11 +2,10 @@
   "name": "vengine",
   "version": "0.1.0",
   "dependencies": [
-    "gtest",
-    "fmt",
+    "spdlog",
     "glfw3",
-    "glew",
+    "glad",
     "glm",
-    "ms-gsl"
+    "tl-expected"
   ]
 }

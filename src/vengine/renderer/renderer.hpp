@@ -1,43 +1,27 @@
 #pragma once
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <fmt/core.h>
-#include <vector>
+#include <memory>
+#include <tl/expected.hpp>
 
-// cpp core guidelines stuff
-#include <gsl/assert>
-
-#include "./shader_manager.hpp"
-
+#include "vengine/core/error.hpp"
+#include "vengine/renderer/mesh.hpp"
+#include "vengine/renderer/window.hpp"
+#include "vengine/renderer/shaders.hpp"
 
 namespace Vengine {
 
 class Renderer {
    public:
-    Renderer();
-    ~Renderer();
+    [[nodiscard]] auto init(std::shared_ptr<Window> window) -> tl::expected<void, Error>;
 
-    void setWindow(GLFWwindow* window);
-
-    void render();
-
-    void drawGrid();
-    void drawGameFieldBorder();
-    void drawRectangle(const glm::vec3& position, const Color* color);
-
-    // std::vector<Position> calculateGamefieldPositions(const GameState& state) const;
-    glm::vec3 convertPosition(std::pair<int, int> position);
+    auto render() -> void;
+    auto setVSync(bool enabled) -> void;
 
    private:
-    GLFWwindow* m_window;
-    int m_offsetX = 6; // todo calculate this. 
-    int m_offsetY = 1; // todo calculate this
-    unsigned int m_blockVAO, m_blockVBO, m_blockEBO;
-    unsigned int m_gridVAO, m_gridVBO;
-    std::unique_ptr<ShaderManager> m_shaderManager;
-
-    void initializeVertexData();
+    std::shared_ptr<Window> m_window;
+    std::unique_ptr<Shaders> m_shaders;
+    std::shared_ptr<Mesh> m_mesh_temp;
+    std::shared_ptr<Mesh> m_mesh_temp2;
 };
 
-}  // namespace Tetris
+}  // namespace Vengine

@@ -1,5 +1,7 @@
+.cache/
 .vscode/
 .idea/
 build/
 .clang-format
+.clangd
 TODO.md

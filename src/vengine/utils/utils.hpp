@@ -35,7 +35,7 @@ class Utils {
     static int getRandomInt(int min, int max);
 
    private:
-    static std::random_device rd;
+    static std::random_device randomDevice;
     static std::mt19937 gen;
 };
 
