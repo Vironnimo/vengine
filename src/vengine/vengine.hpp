@@ -5,22 +5,23 @@
 
 #include "vengine/core/error.hpp"
 #include "vengine/renderer/renderer.hpp"
-// #include "vengine/resource_manager/resource_manager.hpp"
+#include "vengine/core/resource_manager.hpp"
 
 namespace Vengine {
 
 class Vengine {
    public:
     bool isRunning = false;
+    std::unique_ptr<Renderer> renderer;
+    std::shared_ptr<Window> window;
+    std::unique_ptr<ResourceManager> resourceManager;
 
     Vengine();
     [[nodiscard]] auto init() -> tl::expected<void, Error>;
+
     auto run() -> void;
 
    private:
-    // std::unique_ptr<ResourceManager> m_ResourceManager;
-    std::unique_ptr<Renderer> m_Renderer;
-    std::shared_ptr<Window> m_window;
 };
 
 }  // namespace Vengine

@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include "vertex_array.hpp"
 #include "vertex_buffer.hpp"
+#include "vengine/core/resources.hpp"
 
 namespace Vengine {
 
@@ -21,6 +22,11 @@ class Mesh {
     // get combined transform matrix
     [[nodiscard]] auto getTransform() const -> glm::mat4;
 
+    // texture methods
+    auto setTexture(std::shared_ptr<Texture> texture) -> void;
+    [[nodiscard]] auto getTexture() const -> std::shared_ptr<Texture>;
+    [[nodiscard]] auto hasTexture() const -> bool;
+
     auto draw() const -> void;
 
    private:
@@ -36,6 +42,10 @@ class Mesh {
     glm::vec3 m_rotation = glm::vec3(0.0f);
     glm::vec3 m_scale = glm::vec3(1.0f);
     glm::mat4 m_transform = glm::mat4(1.0f);
+
+    // texture stuff
+    std::shared_ptr<Texture> m_texture;
+    bool m_hasTexCoords = false;
 
     // functions
     auto updateTransform() -> void;

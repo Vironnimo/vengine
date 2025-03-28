@@ -18,17 +18,17 @@ auto Renderer::render() -> void {
     }
     shader.value()->bind();
 
-    m_mesh_temp->setPosition(glm::vec3(-0.2f, -0.2f, 0.0f));
-    shader.value()->setUniformMat4("uTransform", m_mesh_temp->getTransform());
+    m_triangle->setPosition(glm::vec3(-0.2f, -0.2f, 0.0f));
+    shader.value()->setUniformMat4("uTransform", m_triangle->getTransform());
     shader.value()->setUniformVec4("uColor", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));  // red
-    m_mesh_temp->draw();
+    m_triangle->draw();
 
     // m_mesh_temp2->setRotation(glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    m_mesh_temp2->setScale(glm::vec3(0.5f, 0.5f, 0.5f));
-    m_mesh_temp2->setPosition(glm::vec3(0.2f, 0.2f, 0.0f));
-    shader.value()->setUniformMat4("uTransform", m_mesh_temp2->getTransform());
+    m_rectangle->setScale(glm::vec3(0.5f, 0.5f, 0.5f));
+    m_rectangle->setPosition(glm::vec3(0.2f, 0.2f, 0.0f));
+    shader.value()->setUniformMat4("uTransform", m_rectangle->getTransform());
     shader.value()->setUniformVec4("uColor", glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)); // blue
-    m_mesh_temp2->draw();
+    m_rectangle->draw();
 
     glfwSwapBuffers(m_window->get());
     glfwPollEvents();
@@ -70,8 +70,8 @@ auto Renderer::render() -> void {
         2, 3, 0   // second triangle
     };
 
-    m_mesh_temp = std::make_shared<Mesh>(triangleVertices);
-    m_mesh_temp2 = std::make_shared<Mesh>(quadVertices, quadIndices);
+    m_triangle = std::make_shared<Mesh>(triangleVertices);
+    m_rectangle = std::make_shared<Mesh>(quadVertices, quadIndices);
     m_shaders = std::make_unique<Shaders>();
     auto shaderInit = m_shaders->init();
     if (!shaderInit) {

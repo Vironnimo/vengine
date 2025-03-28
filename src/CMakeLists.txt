@@ -8,6 +8,8 @@ find_package(tl-expected CONFIG REQUIRED)
 set(SOURCES
         app/app.cpp
         vengine/vengine.cpp
+        vengine/core/resource_manager.cpp
+        vengine/core/resources.cpp
         vengine/renderer/renderer.cpp
         vengine/renderer/mesh.cpp
         vengine/renderer/index_buffer.cpp
