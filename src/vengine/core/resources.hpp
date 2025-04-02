@@ -53,14 +53,14 @@ class IResource {
 //     Mix_Chunk* m_chunk = nullptr;
 // };
 
-class Texture : IResource {
+class Texture : public IResource {
    public:
     auto load(const std::string& fileName) -> bool override {
         auto folder = std::filesystem::path("resources/textures");
         auto fullPath = folder / fileName;
 
         // stbi_set_flip_vertically_on_load(true);  // do we need this?
-        // glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // this helped for a jpg, that didnt work before
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // without this we have rainbowcolors i feel like
 
         unsigned char* textureData = stbi_load(fullPath.string().c_str(), &m_width, &m_height, &m_channels, 0);
         if (textureData == nullptr) {

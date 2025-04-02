@@ -15,7 +15,6 @@ class VertexArray {
     auto bind() const -> void;
     auto unbind() const -> void;
 
-    // Simple version - just sets up position attribute (index 0)
     auto addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) const -> void;
     auto addIndexBuffer(std::shared_ptr<IndexBuffer> indexBuffer) -> void;
 

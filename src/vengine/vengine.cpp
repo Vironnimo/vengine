@@ -11,14 +11,22 @@
 namespace Vengine {
 
 Vengine::Vengine() {
+    spdlog::debug("Constructor Vengine");
     auto result = init();
     if (!result) {
         spdlog::info("{}", result.error().message);
     }
 }
 
+Vengine::~Vengine() {
+    spdlog::debug("Destructor Vengine");
+}
+
 [[nodiscard]] auto Vengine::init() -> tl::expected<void, Error> {
-    // tl::expected<void, Error> Vengine::init() {
+    // spdlog stuff
+    spdlog::set_level(spdlog::level::debug);
+    spdlog::flush_on(spdlog::level::debug);
+
     window = std::make_shared<Window>();
     if (auto result = window->init(); !result) {
         return tl::unexpected(result.error());

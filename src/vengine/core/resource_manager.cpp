@@ -24,15 +24,7 @@ auto ResourceManager::init() -> tl::expected<void, Error> {
         spdlog::warn("Resource root does not exist: {}", m_resourceRoot.string());
         return tl::unexpected(Error{"Resource root does not exist"});
     }
-    // sdl init
-    // if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-    //     spdlog::warn("failed to init sdl: {}", SDL_GetError());
-    // }
-    // // sdl_mixer init
-    // if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-    //     spdlog::warn("failed to init sdl mixer: {}", Mix_GetError());
-    //     SDL_Quit();
-    // }
+
     return {};
 }
 
@@ -44,9 +36,6 @@ ResourceManager::~ResourceManager() {
             res->unload();
         }
     }
-
-    // Mix_CloseAudio();
-    // SDL_Quit();
 }
 
 }  // namespace Vengine

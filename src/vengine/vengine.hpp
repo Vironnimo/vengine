@@ -17,6 +17,7 @@ class Vengine {
     std::unique_ptr<ResourceManager> resourceManager;
 
     Vengine();
+    ~Vengine();
     [[nodiscard]] auto init() -> tl::expected<void, Error>;
 
     auto run() -> void;

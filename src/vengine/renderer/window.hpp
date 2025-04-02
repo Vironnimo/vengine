@@ -22,6 +22,8 @@ struct WindowParams {
 
 class Window {
    public:
+    Window();
+    ~Window();
     [[nodiscard]] auto init() -> tl::expected<void, Error>;
     [[nodiscard]] auto create(WindowParams& params) -> tl::expected<GLFWwindow*, Error>;
 

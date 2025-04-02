@@ -32,10 +32,11 @@ class ResourceManager {
     }
 
     template <typename T>
-    auto get(const std::string& name) -> T* {
+    auto get(const std::string& name) -> std::shared_ptr<T> {
         auto it = m_resources.find(name);
         if (it != m_resources.end()) {
-            return static_cast<T*>(it->second.get());
+            // return static_cast<T*>(it->second.get());
+            return std::static_pointer_cast<T>(it->second);
         }
 
         return nullptr;

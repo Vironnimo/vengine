@@ -14,6 +14,7 @@ class Mesh {
    public:
     Mesh(const std::vector<float>& vertices);
     Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices);
+    ~Mesh();
 
     // transform methods
     auto setPosition(const glm::vec3& position) -> void;

@@ -89,6 +89,8 @@ namespace Vengine {
 
 class Shaders {
    public:
+    Shaders();
+    ~Shaders();
     [[nodiscard]] auto init() -> tl::expected<void, Error>;
 
     auto add(std::shared_ptr<Shader> shader) -> void;

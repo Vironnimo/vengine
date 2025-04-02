@@ -1,12 +1,29 @@
 #include "window.hpp"
 
 #include <glad/glad.h>
+#include <spdlog/spdlog.h>
+
 
 #include "vengine/core/error.hpp"
 
 namespace Vengine {
 
-[[nodiscard]] auto Window::init() -> tl::expected<void, Error> {
+[[nodiscard]] Window::Window()
+{
+    spdlog::debug("Constructor Window");
+}
+
+Window::~Window()
+{
+    spdlog::debug("Destructor Window");
+    if (m_window != nullptr) {
+        glfwDestroyWindow(m_window);
+        m_window = nullptr;
+    }
+    glfwTerminate();
+}
+
+auto Window::init() -> tl::expected<void, Error> {
     if (glfwInit() == 0) {
         return tl::unexpected(Error{"Failed to initialize GLFW"});
     }

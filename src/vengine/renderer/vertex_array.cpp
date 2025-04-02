@@ -1,12 +1,16 @@
 #include "vertex_array.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace Vengine {
 
 VertexArray::VertexArray() {
+    spdlog::debug("Constructor VertexArray");
     glGenVertexArrays(1, &m_id);
 }
 
 VertexArray::~VertexArray() {
+    spdlog::debug("Destructor VertexArray");
     glDeleteVertexArrays(1, &m_id);
 }
 
@@ -22,8 +26,20 @@ auto VertexArray::addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuf
     bind();
     vertexBuffer->bind();
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
+    if (vertexBuffer->hasTexCoords()) {
+        const int stride = 5 * sizeof(float);
+        // position attribute (location 0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, nullptr);
+        glEnableVertexAttribArray(0);
+
+        // texture coordinate attribute (location 1)
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+    } else {
+        const int stride = 3 * sizeof(float);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, nullptr);
+        glEnableVertexAttribArray(0);
+    }
 }
 
 auto VertexArray::addIndexBuffer(std::shared_ptr<IndexBuffer> indexBuffer) -> void {

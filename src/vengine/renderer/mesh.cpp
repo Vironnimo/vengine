@@ -5,6 +5,7 @@
 namespace Vengine {
 
 Mesh::Mesh(const std::vector<float>& vertices) : m_vertices(vertices) {
+    spdlog::debug("Constructor Mesh without indices, count: {}", m_vertices.size());
     m_vertexArray = std::make_shared<VertexArray>();
     m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float));
 
@@ -13,13 +14,18 @@ Mesh::Mesh(const std::vector<float>& vertices) : m_vertices(vertices) {
 
 Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
     : m_vertices(vertices), m_indices(indices), m_useIndices(true) {
+    spdlog::debug("Constructor Mesh with indices, count: {}", m_indices.size());
     m_vertexArray = std::make_shared<VertexArray>();
-    m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float));
+    m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float), true);
 
     m_vertexArray->addVertexBuffer(m_vertexBuffer);
 
     m_indexBuffer = std::make_shared<IndexBuffer>(m_indices.data(), m_indices.size());
     m_vertexArray->addIndexBuffer(m_indexBuffer);
+}
+
+Mesh::~Mesh() {
+    spdlog::debug("Destructor Mesh with indices, count: {}", m_indices.size());
 }
 
 auto Mesh::draw() const -> void {
@@ -28,7 +34,10 @@ auto Mesh::draw() const -> void {
     if (m_useIndices) {
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indexBuffer->getCount()), GL_UNSIGNED_INT, nullptr);
     } else {
-        auto vertexCount = static_cast<GLsizei>(m_vertices.size() / 3);
+        // Calculate vertex count based on whether texture coordinates are present
+        auto floatsPerVertex = m_vertexBuffer->hasTexCoords() ? 5 : 3;
+        auto vertexCount = static_cast<GLsizei>(m_vertices.size() / floatsPerVertex);
+
         glDrawArrays(GL_TRIANGLES, 0, vertexCount);
     }
 }
@@ -69,6 +78,18 @@ auto Mesh::updateTransform() -> void {
 
 [[nodiscard]] auto Mesh::getTransform() const -> glm::mat4 {
     return m_transform;
+}
+
+auto Mesh::setTexture(std::shared_ptr<Texture> texture) -> void {
+    m_texture = std::move(texture);
+}
+
+[[nodiscard]] auto Mesh::getTexture() const -> std::shared_ptr<Texture> {
+    return m_texture;
+}
+
+[[nodiscard]] auto Mesh::hasTexture() const -> bool {
+    return m_texture != nullptr;
 }
 
 }  // namespace Vengine
