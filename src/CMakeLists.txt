@@ -12,6 +12,7 @@ set(SOURCES
         vengine/core/resources.cpp
         vengine/renderer/renderer.cpp
         vengine/renderer/material.cpp
+        vengine/renderer/materials.cpp
         vengine/renderer/mesh.cpp
         vengine/renderer/index_buffer.cpp
         vengine/renderer/vertex_array.cpp

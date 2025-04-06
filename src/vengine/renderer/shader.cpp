@@ -14,7 +14,7 @@ namespace Vengine {
 
 Shader::Shader(std::string name, const std::string& vertexFile, const std::string& fragmentFile)
     : m_name(std::move(name)) {
-        spdlog::debug("Constructor Shader: {}", m_name);
+    spdlog::debug("Constructor Shader: {}", m_name);
     // todo put this into a init() function so we can cut execution on error, right?
     assert(!m_name.empty() && "Shader name is empty");
     assert(!vertexFile.empty() && "Vertex shader file is empty");
@@ -58,8 +58,7 @@ Shader::Shader(std::string name, const std::string& vertexFile, const std::strin
     glDeleteShader(fragmentShader.value());
 }
 
-Shader::~Shader()
-{
+Shader::~Shader() {
     spdlog::debug("Destructor Shader: {}", m_name);
     glDeleteProgram(m_id);
     m_id = 0;
@@ -136,7 +135,7 @@ auto Shader::setUniformVec4(const std::string& name, const glm::vec4& value) con
 auto Shader::setUniformInt(const std::string& name, int value) const -> void {
     GLint location = glGetUniformLocation(m_id, name.c_str());
     glUniform1i(location, value);
-    
+
     if (location == -1) {
         spdlog::error("Uniform '{}' not found in shader program", name);
     }
@@ -145,7 +144,7 @@ auto Shader::setUniformInt(const std::string& name, int value) const -> void {
 auto Shader::setUniformBool(const std::string& name, bool value) const -> void {
     GLint location = glGetUniformLocation(m_id, name.c_str());
     glUniform1i(location, static_cast<int>(value));
-    
+
     if (location == -1) {
         spdlog::error("Uniform '{}' not found in shader program", name);
     }
@@ -154,7 +153,7 @@ auto Shader::setUniformBool(const std::string& name, bool value) const -> void {
 auto Shader::setUniformFloat(const std::string& name, float value) const -> void {
     GLint location = glGetUniformLocation(m_id, name.c_str());
     glUniform1f(location, value);
-    
+
     if (location == -1) {
         spdlog::error("Uniform '{}' not found in shader program", name);
     }
@@ -163,7 +162,7 @@ auto Shader::setUniformFloat(const std::string& name, float value) const -> void
 auto Shader::setUniformVec2(const std::string& name, const glm::vec2& value) const -> void {
     GLint location = glGetUniformLocation(m_id, name.c_str());
     glUniform2fv(location, 1, &value[0]);
-    
+
     if (location == -1) {
         spdlog::error("Uniform '{}' not found in shader program", name);
     }
@@ -172,7 +171,7 @@ auto Shader::setUniformVec2(const std::string& name, const glm::vec2& value) con
 auto Shader::setUniformVec3(const std::string& name, const glm::vec3& value) const -> void {
     GLint location = glGetUniformLocation(m_id, name.c_str());
     glUniform3fv(location, 1, &value[0]);
-    
+
     if (location == -1) {
         spdlog::error("Uniform '{}' not found in shader program", name);
     }

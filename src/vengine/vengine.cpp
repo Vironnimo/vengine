@@ -11,7 +11,6 @@
 namespace Vengine {
 
 Vengine::Vengine() {
-    spdlog::debug("Constructor Vengine");
     auto result = init();
     if (!result) {
         spdlog::info("{}", result.error().message);
@@ -26,6 +25,7 @@ Vengine::~Vengine() {
     // spdlog stuff
     spdlog::set_level(spdlog::level::debug);
     spdlog::flush_on(spdlog::level::debug);
+    spdlog::info("Vengine: starting...");
 
     window = std::make_shared<Window>();
     if (auto result = window->init(); !result) {
@@ -46,11 +46,12 @@ Vengine::~Vengine() {
         return tl::unexpected(result.error());
     }
 
+    spdlog::info("Vengine: successfully started.");
     return {};
 }
 
 auto Vengine::run() -> void {
-    spdlog::info("vengine: run");
+    spdlog::info("Vengine: run");
     isRunning = true;
     while (isRunning) {
         if (glfwWindowShouldClose(window->get()) == 1) {

@@ -1,6 +1,8 @@
 #include "mesh.hpp"
+
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <spdlog/spdlog.h>
 
 namespace Vengine {
 
@@ -36,7 +38,7 @@ auto Mesh::draw() const -> void {
     } else {
         // Calculate vertex count based on whether texture coordinates are present
         auto floatsPerVertex = m_vertexBuffer->hasTexCoords() ? 5 : 3;
-        auto vertexCount = static_cast<GLsizei>(m_vertices.size() / floatsPerVertex);
+        auto vertexCount = static_cast<GLsizei>(m_vertices.size() / static_cast<size_t>(floatsPerVertex));
 
         glDrawArrays(GL_TRIANGLES, 0, vertexCount);
     }
@@ -79,18 +81,6 @@ auto Mesh::updateTransform() -> void {
 
 [[nodiscard]] auto Mesh::getTransform() const -> glm::mat4 {
     return m_transform;
-}
-
-auto Mesh::setTexture(std::shared_ptr<Texture> texture) -> void {
-    m_texture = std::move(texture);
-}
-
-[[nodiscard]] auto Mesh::getTexture() const -> std::shared_ptr<Texture> {
-    return m_texture;
-}
-
-[[nodiscard]] auto Mesh::hasTexture() const -> bool {
-    return m_texture != nullptr;
 }
 
 }  // namespace Vengine

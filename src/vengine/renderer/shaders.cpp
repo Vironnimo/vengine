@@ -21,7 +21,7 @@ Shaders::~Shaders() {
 auto Shaders::init() -> tl::expected<void, Error> {
     // load some default shaders
     // Shader shader1{};
-    add(std::make_shared<Shader>("shader1", "resources/shaders/vertex.glsl", "resources/shaders/fragment.glsl"));
+    // add(std::make_shared<Shader>("shader1", "resources/shaders/vertex.glsl", "resources/shaders/fragment.glsl"));
     // return tl::unexpected(Error{"Error loading shaders"});
     return {};
 }

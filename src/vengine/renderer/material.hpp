@@ -14,11 +14,9 @@ public:
     Material(std::shared_ptr<Shader> shader);
     ~Material() = default;
 
-    // Shader management
     auto setShader(std::shared_ptr<Shader> shader) -> void;
     [[nodiscard]] auto getShader() const -> std::shared_ptr<Shader>;
 
-    // Parameter setters
     auto setTexture(const std::string& name, std::shared_ptr<Texture> texture) -> void;
     auto setFloat(const std::string& name, float value) -> void;
     auto setInt(const std::string& name, int value) -> void;
@@ -28,19 +26,13 @@ public:
     auto setMat4(const std::string& name, const glm::mat4& value) -> void;
     auto setBool(const std::string& name, bool value) -> void;
 
-    // Bind this material (applies all parameters to shader)
+    // bind and set all parameters
     auto bind() const -> void;
-
-    // Factory methods for common materials
-    static auto createDefault() -> std::shared_ptr<Material>;
-    static auto createColoredMaterial(const glm::vec4& color) -> std::shared_ptr<Material>;
-    static auto createTexturedMaterial(std::shared_ptr<Texture> texture) -> std::shared_ptr<Material>;
 
 private:
     std::shared_ptr<Shader> m_shader;
-    
-    // Uniform parameter storage
     std::unordered_map<std::string, std::shared_ptr<Texture>> m_textures;
+    // uniforms
     std::unordered_map<std::string, float> m_floats;
     std::unordered_map<std::string, int> m_ints;
     std::unordered_map<std::string, glm::vec2> m_vec2s;

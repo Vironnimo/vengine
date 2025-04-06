@@ -3,6 +3,8 @@
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
 
+#include <utility>
+
 namespace Vengine {
 
 Material::Material(std::shared_ptr<Shader> shader) : m_shader(std::move(shader)) {
@@ -57,7 +59,7 @@ auto Material::bind() const -> void {
 
     m_shader->bind();
 
-    // Apply textures
+    // texture
     int textureUnit = 0;
     for (const auto& [name, texture] : m_textures) {
         glActiveTexture(GL_TEXTURE0 + textureUnit);
@@ -66,7 +68,7 @@ auto Material::bind() const -> void {
         textureUnit++;
     }
 
-    // Apply all other uniforms
+    // apply uniforms
     for (const auto& [name, value] : m_floats) {
         m_shader->setUniformFloat(name, value);
     }
@@ -94,30 +96,6 @@ auto Material::bind() const -> void {
     for (const auto& [name, value] : m_bools) {
         m_shader->setUniformBool(name, value);
     }
-}
-
-auto Material::createDefault() -> std::shared_ptr<Material> {
-    auto shader = std::make_shared<Shader>("default", "vertex.glsl", "fragment.glsl"); // Adjust paths as needed
-    auto material = std::make_shared<Material>(shader);
-    material->setVec4("uColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)); // White
-    material->setBool("uUseTexture", false);
-    return material;
-}
-
-auto Material::createColoredMaterial(const glm::vec4& color) -> std::shared_ptr<Material> {
-    auto shader = std::make_shared<Shader>("colored", "resources/shaders/vertex.glsl", "resources/shaders/fragment.glsl");
-    auto material = std::make_shared<Material>(shader);
-    material->setVec4("uColor", color);
-    material->setBool("uUseTexture", false);
-    return material;
-}
-
-auto Material::createTexturedMaterial(std::shared_ptr<Texture> texture) -> std::shared_ptr<Material> {
-    auto shader = std::make_shared<Shader>("textured", "resources/shaders/vertex.glsl", "resources/shaders/fragment.glsl");
-    auto material = std::make_shared<Material>(shader);
-    material->setTexture("uTexture", texture);
-    material->setBool("uUseTexture", true);
-    return material;
 }
 
 } // namespace Vengine
