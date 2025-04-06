@@ -151,4 +151,31 @@ auto Shader::setUniformBool(const std::string& name, bool value) const -> void {
     }
 }
 
+auto Shader::setUniformFloat(const std::string& name, float value) const -> void {
+    GLint location = glGetUniformLocation(m_id, name.c_str());
+    glUniform1f(location, value);
+    
+    if (location == -1) {
+        spdlog::error("Uniform '{}' not found in shader program", name);
+    }
+}
+
+auto Shader::setUniformVec2(const std::string& name, const glm::vec2& value) const -> void {
+    GLint location = glGetUniformLocation(m_id, name.c_str());
+    glUniform2fv(location, 1, &value[0]);
+    
+    if (location == -1) {
+        spdlog::error("Uniform '{}' not found in shader program", name);
+    }
+}
+
+auto Shader::setUniformVec3(const std::string& name, const glm::vec3& value) const -> void {
+    GLint location = glGetUniformLocation(m_id, name.c_str());
+    glUniform3fv(location, 1, &value[0]);
+    
+    if (location == -1) {
+        spdlog::error("Uniform '{}' not found in shader program", name);
+    }
+}
+
 }  // namespace Vengine

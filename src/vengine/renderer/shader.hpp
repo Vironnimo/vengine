@@ -22,6 +22,9 @@ class Shader {
     auto setUniformVec4(const std::string& name, const glm::vec4& value) const -> void;
     auto setUniformInt(const std::string& name, int value) const -> void;
     auto setUniformBool(const std::string& name, bool value) const -> void;
+    auto setUniformFloat(const std::string& name, float value) const -> void;
+    auto setUniformVec2(const std::string& name, const glm::vec2& value) const -> void;
+    auto setUniformVec3(const std::string& name, const glm::vec3& value) const -> void;
 
     [[nodiscard]] auto getName() -> const std::string&;
 

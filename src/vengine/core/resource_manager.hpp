@@ -7,7 +7,7 @@
 #include "vengine/core/error.hpp"
 #include <unordered_map>
 
-#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 #include <stb_image.h>
 #include <spdlog/spdlog.h>
 

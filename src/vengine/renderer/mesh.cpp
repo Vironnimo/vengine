@@ -5,7 +5,7 @@
 namespace Vengine {
 
 Mesh::Mesh(const std::vector<float>& vertices) : m_vertices(vertices) {
-    spdlog::debug("Constructor Mesh without indices, count: {}", m_vertices.size());
+    spdlog::debug("Constructor Mesh without indices, vertices count: {}", m_vertices.size());
     m_vertexArray = std::make_shared<VertexArray>();
     m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float));
 
@@ -14,7 +14,7 @@ Mesh::Mesh(const std::vector<float>& vertices) : m_vertices(vertices) {
 
 Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
     : m_vertices(vertices), m_indices(indices), m_useIndices(true) {
-    spdlog::debug("Constructor Mesh with indices, count: {}", m_indices.size());
+    spdlog::debug("Constructor Mesh with indices, indices count: {}, vertices count: {}", m_indices.size(), m_vertices.size());
     m_vertexArray = std::make_shared<VertexArray>();
     m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float), true);
 
@@ -25,7 +25,7 @@ Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indi
 }
 
 Mesh::~Mesh() {
-    spdlog::debug("Destructor Mesh with indices, count: {}", m_indices.size());
+    spdlog::debug("Destructor Mesh, indices count: {}, vertices count: {}", m_indices.size(), m_vertices.size());
 }
 
 auto Mesh::draw() const -> void {
@@ -47,7 +47,8 @@ auto Mesh::setPosition(const glm::vec3& position) -> void {
     updateTransform();
 }
 
-auto Mesh::setRotation(float angleInRadians, const glm::vec3& axis) -> void {
+auto Mesh::setRotation(float angle, const glm::vec3& axis) -> void {
+    float angleInRadians = glm::radians(angle);
     m_rotation = axis * angleInRadians;
     updateTransform();
 }

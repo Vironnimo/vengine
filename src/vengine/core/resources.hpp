@@ -3,9 +3,8 @@
 #include <string>
 #include <filesystem>
 #include <spdlog/spdlog.h>
-#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 #include <stb_image.h>
-
 
 namespace Vengine {
 
@@ -18,40 +17,6 @@ class IResource {
    protected:
     bool m_isLoaded = false;
 };
-
-// class Sound : public IResource {
-//    public:
-//     bool loadFromFile(const std::string& fileName) override {
-//         auto folder = std::filesystem::path("resources/sounds");
-//         auto fullPath = folder / fileName;
-//         m_chunk = Mix_LoadWAV(fullPath.string().c_str());
-//         if (!m_chunk) {
-//             spdlog::info("failed to load sound: {}", Mix_GetError());
-//             return false;
-//         }
-
-//         m_isLoaded = true;
-//         return true;
-//     }
-
-//     bool unload() override {
-//         if (!m_isLoaded) {
-//             return false;
-//         }
-//         Mix_FreeChunk(m_chunk);
-//         m_chunk = nullptr;
-//         m_isLoaded = false;
-
-//         return true;
-//     }
-
-//     void play() {
-//         Mix_PlayChannel(-1, m_chunk, 0);
-//     }
-
-//    private:
-//     Mix_Chunk* m_chunk = nullptr;
-// };
 
 class Texture : public IResource {
    public:
