@@ -4,6 +4,7 @@
 #include <tl/expected.hpp>
 
 #include "vengine/core/error.hpp"
+#include "vengine/renderer/camera.hpp"
 #include "vengine/renderer/materials.hpp"
 #include "vengine/renderer/mesh.hpp"
 #include "vengine/renderer/window.hpp"
@@ -35,6 +36,7 @@ class Renderer {
 
    private:
     std::shared_ptr<Window> m_window;
+    std::unique_ptr<Camera> m_camera;
 
     std::vector<RenderObject> m_renderObjects;
 };

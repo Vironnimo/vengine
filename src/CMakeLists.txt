@@ -11,6 +11,7 @@ set(SOURCES
         vengine/core/resource_manager.cpp
         vengine/core/resources.cpp
         vengine/renderer/renderer.cpp
+        vengine/renderer/camera.cpp
         vengine/renderer/material.cpp
         vengine/renderer/materials.cpp
         vengine/renderer/mesh.cpp

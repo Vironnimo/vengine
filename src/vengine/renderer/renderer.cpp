@@ -6,6 +6,8 @@
 #include "vengine/core/error.hpp"
 #include <utility>
 #include "material.hpp"
+#include "vengine/renderer/camera.hpp"
+#include "vengine/vengine.hpp"
 
 namespace Vengine {
 
@@ -20,7 +22,8 @@ Renderer::~Renderer() {
 auto Renderer::render() -> void {
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);  // so closer objects obscure objects further away (i've experienced problems with just one object)
+    glEnable(GL_DEPTH_TEST);  // so closer objects obscure objects further away (i've experienced problems with just one
+                              // object)
 
     // blend is needed for transparency
     glEnable(GL_BLEND);
@@ -29,6 +32,10 @@ auto Renderer::render() -> void {
     // actual rendering
     for (const auto& object : m_renderObjects) {
         object.material->bind();
+
+        // NOTE setting all uniforms for each object is bad, lots of redundant calls.. but it works for now
+        object.material->getShader()->setUniformMat4("uView", m_camera->getViewMatrix());
+        object.material->getShader()->setUniformMat4("uProjection", m_camera->getProjectionMatrix());
         object.material->getShader()->setUniformMat4("uTransform", object.mesh->getTransform());
 
         object.mesh->draw();
@@ -52,11 +59,6 @@ auto Renderer::render() -> void {
         return tl::unexpected(Error{"Failed to initialize GLAD"});
     }
 
-    // glfw callbacks
-    glfwSetFramebufferSizeCallback(m_window->get(),
-                                   [](GLFWwindow*, int width, int height) { glViewport(0, 0, width, height); });
-
-    // temp stuff
     shaders = std::make_unique<Shaders>();
     auto shaderInit = shaders->init();
     if (!shaderInit) {
@@ -68,6 +70,18 @@ auto Renderer::render() -> void {
     if (!materialsInit) {
         return tl::unexpected(materialsInit.error());
     }
+
+    CameraSettings cameraSettings;
+    cameraSettings.aspectRatio = static_cast<float>(640.0f / 480.0f);
+    m_camera = std::make_unique<Camera>(cameraSettings);
+    m_camera->setPosition(glm::vec3(0.0f, 0.0f, 5.0f));  // Move the camera back
+
+    // glfw callbacks
+    glfwSetFramebufferSizeCallback(m_window->get(), [](GLFWwindow* wnd, int width, int height) {
+        glViewport(0, 0, width, height);
+        auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
+        vengine->renderer->m_camera->setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+    });
 
     setVSync(true);
 

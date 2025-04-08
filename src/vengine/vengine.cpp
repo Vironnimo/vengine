@@ -48,6 +48,9 @@ Vengine::~Vengine() {
 
     meshLoader = std::make_unique<MeshLoader>();
 
+    // this is weird here, needs to move
+    glfwSetWindowUserPointer(window->get(), this);
+
     spdlog::info("Vengine: successfully started.");
     return {};
 }
