@@ -13,7 +13,7 @@ namespace Vengine {
 Vengine::Vengine() {
     auto result = init();
     if (!result) {
-        spdlog::info("{}", result.error().message);
+        spdlog::error("{}", result.error().message);
     }
 }
 
@@ -45,6 +45,8 @@ Vengine::~Vengine() {
     if (auto result = resourceManager->init(); !result) {
         return tl::unexpected(result.error());
     }
+
+    meshLoader = std::make_unique<MeshLoader>();
 
     spdlog::info("Vengine: successfully started.");
     return {};

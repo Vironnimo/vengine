@@ -30,6 +30,11 @@ App::App() {
     auto quad = std::make_shared<Vengine::Mesh>(quadVertices, quadIndices);
     quad->setPosition(glm::vec3(0.0f, 0.4f, 0.0f));
 
+    // 3d cube
+    auto cube = m_vengine->meshLoader->loadFromObj("box.obj");
+    cube->setScale(glm::vec3(0.5f, 0.5f, 0.5f));
+    cube->setRotation(60.0f, glm::vec3(0.0f, 1.0f, 1.0f));
+
     // load textures
     m_vengine->resourceManager->load<Vengine::Texture>("test_texture", "test.jpg");
     auto texture = m_vengine->resourceManager->get<Vengine::Texture>("test_texture");
@@ -55,8 +60,9 @@ App::App() {
     textured->setTexture("uTexture", std::move(texture));
 
     // add mesh together with material to renderer
-    m_vengine->renderer->addRenderObject(triangle, defaultMaterial);
-    m_vengine->renderer->addRenderObject(quad, textured);
+    // m_vengine->renderer->addRenderObject(triangle, defaultMaterial);
+    // m_vengine->renderer->addRenderObject(quad, textured);
+    m_vengine->renderer->addRenderObject(cube, textured);
 }
 
 void App::run() {
