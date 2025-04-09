@@ -8,6 +8,11 @@
 App::App() {
     m_vengine = std::make_unique<Vengine::Vengine>();
 
+    m_vengine->actions->add("quit", "Quit", [this]() {
+        m_vengine->isRunning = false;
+    });
+    m_vengine->actions->addKeybinding("quit", {GLFW_KEY_ESCAPE, false, false, false});
+
     // create meshes
     std::vector<float> triangleVertices = {
         -0.5f, 0.5f,  0.0f,  // top

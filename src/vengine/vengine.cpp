@@ -46,6 +46,7 @@ Vengine::~Vengine() {
         return tl::unexpected(result.error());
     }
 
+    actions = std::make_unique<Actions>();
     meshLoader = std::make_unique<MeshLoader>();
 
     // this is weird here, needs to move
@@ -63,6 +64,7 @@ auto Vengine::run() -> void {
             isRunning = false;
             break;
         }
+        actions->handleInput(window->get());
         renderer->render();
     }
 }
