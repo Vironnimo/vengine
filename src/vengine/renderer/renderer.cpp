@@ -1,5 +1,6 @@
 #include "renderer.hpp"
 
+#include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
 #include <tl/expected.hpp>
@@ -34,8 +35,8 @@ auto Renderer::render() -> void {
         object.material->bind();
 
         // NOTE setting all uniforms for each object is bad, lots of redundant calls.. but it works for now
-        object.material->getShader()->setUniformMat4("uView", m_camera->getViewMatrix());
-        object.material->getShader()->setUniformMat4("uProjection", m_camera->getProjectionMatrix());
+        object.material->getShader()->setUniformMat4("uView", camera->getViewMatrix());
+        object.material->getShader()->setUniformMat4("uProjection", camera->getProjectionMatrix());
         object.material->getShader()->setUniformMat4("uTransform", object.mesh->getTransform());
 
         object.mesh->draw();
@@ -72,15 +73,31 @@ auto Renderer::render() -> void {
     }
 
     CameraSettings cameraSettings;
-    cameraSettings.aspectRatio = static_cast<float>(640.0f / 480.0f);
-    m_camera = std::make_unique<Camera>(cameraSettings);
-    m_camera->setPosition(glm::vec3(0.0f, 0.0f, 5.0f));  // Move the camera back
+    // todo should be somewhere else?
+    int w;
+    int h;
+    glfwGetWindowSize(m_window->get(), &w, &h);
+    cameraSettings.aspectRatio = static_cast<float>(w) / static_cast<float>(h);
+    camera = std::make_unique<Camera>(cameraSettings);
+    camera->setPosition(glm::vec3(0.0f, 0.0f, 5.0f));
 
     // glfw callbacks
     glfwSetFramebufferSizeCallback(m_window->get(), [](GLFWwindow* wnd, int width, int height) {
         glViewport(0, 0, width, height);
         auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
-        vengine->renderer->m_camera->setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+        vengine->renderer->camera->setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+    });
+    glfwSetScrollCallback(m_window->get(), [](GLFWwindow* wnd, double, double yoffset) {
+        yoffset *= 2.0;
+        auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
+        auto fov = vengine->renderer->camera->getFov();
+        fov -= static_cast<float>(yoffset);
+        if (fov < 1.0f) {
+            fov = 1.0f;
+        } else if (fov > 45.0f) {
+            fov = 45.0f;
+        }
+        vengine->renderer->camera->setFov(fov);
     });
 
     setVSync(true);

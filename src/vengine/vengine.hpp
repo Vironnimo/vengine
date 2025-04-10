@@ -8,6 +8,8 @@
 #include "vengine/renderer/renderer.hpp"
 #include "vengine/core/resource_manager.hpp"
 #include "vengine/core/actions.hpp"
+#include "vengine/core/event_system.hpp"
+#include "vengine/core/timer.hpp"
 
 namespace Vengine {
 
@@ -19,6 +21,8 @@ class Vengine {
     std::unique_ptr<ResourceManager> resourceManager;
     std::unique_ptr<MeshLoader> meshLoader;
     std::unique_ptr<Actions> actions;
+    std::unique_ptr<EventSystem> events;
+    std::unique_ptr<Timer> timer;
 
     Vengine();
     ~Vengine();

@@ -31,6 +31,15 @@ auto Camera::setAspectRatio(float aspectRatio) -> void {
     return m_projectionMatrix;
 }
 
+[[nodiscard]] auto Camera::getFov() const -> float {
+    return m_settings.fov;
+}
+
+auto Camera::setFov(float fov) -> void {
+    m_settings.fov = fov;
+    updateProjection();
+}
+
 auto Camera::updateView() -> void {
     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), m_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
                          glm::rotate(glm::mat4(1.0f), m_rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *

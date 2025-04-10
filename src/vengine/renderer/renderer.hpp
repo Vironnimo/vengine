@@ -24,6 +24,7 @@ class Renderer {
    public:
     std::unique_ptr<Materials> materials;
     std::unique_ptr<Shaders> shaders;
+    std::unique_ptr<Camera> camera;
 
     Renderer();
     ~Renderer();
@@ -36,7 +37,6 @@ class Renderer {
 
    private:
     std::shared_ptr<Window> m_window;
-    std::unique_ptr<Camera> m_camera;
 
     std::vector<RenderObject> m_renderObjects;
 };

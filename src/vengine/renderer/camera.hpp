@@ -19,10 +19,15 @@ class Camera {
     auto setPosition(const glm::vec3& position) -> void;
     auto setRotation(const glm::vec3& rotation) -> void;
     auto setAspectRatio(float aspectRatio) -> void;
+    auto setFov(float fov) -> void; 
 
     [[nodiscard]] auto getPosition() const -> glm::vec3 { return m_position; }
     [[nodiscard]] auto getRotation() const -> glm::vec3 { return m_rotation; }
     [[nodiscard]] auto getAspectRatio() const -> float { return m_settings.aspectRatio; }
+    [[nodiscard]] auto getFov() const -> float; 
+
+    [[nodiscard]] auto getViewProjectionMatrix() const -> glm::mat4;
+    [[nodiscard]] auto getViewProjectionMatrixInverse() const -> glm::mat4;
 
     [[nodiscard]] auto getViewMatrix() const -> glm::mat4;
     [[nodiscard]] auto getProjectionMatrix() const -> glm::mat4;

@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-
 namespace Vengine {
 Actions::Actions() {
     spdlog::debug("Constructor Actions");
@@ -40,6 +39,10 @@ auto Actions::addKeybinding(const std::string& actionId, KeyBinding keyBind) -> 
 }
 
 auto Actions::isKeyBindingPressed(GLFWwindow* window, const KeyBinding& keyBind) -> bool {
+    if (keyBind.key == GLFW_MOUSE_BUTTON_LEFT || keyBind.key == GLFW_MOUSE_BUTTON_RIGHT) {
+        return glfwGetMouseButton(window, keyBind.key) == GLFW_PRESS;
+    }
+
     const bool keyPressed = glfwGetKey(window, keyBind.key) == GLFW_PRESS;
     const bool ctrlHeld = keyBind.ctrl == (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
                                            glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS);

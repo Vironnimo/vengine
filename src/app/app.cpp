@@ -8,10 +8,61 @@
 App::App() {
     m_vengine = std::make_unique<Vengine::Vengine>();
 
-    m_vengine->actions->add("quit", "Quit", [this]() {
-        m_vengine->isRunning = false;
-    });
+    // actions
+    m_vengine->actions->add("quit", "Quit", [this]() { m_vengine->isRunning = false; });
     m_vengine->actions->addKeybinding("quit", {GLFW_KEY_ESCAPE, false, false, false});
+
+    // lets add actions to move the camera
+    m_vengine->actions->add("move_camera_right", "Move Camera", [this]() {
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(0.05f, 0.0f, 0.0f));
+    });
+    m_vengine->actions->addKeybinding("move_camera_right", {GLFW_KEY_F, false, false, false});
+    m_vengine->actions->add("move_camera_left", "Move Camera", [this]() {
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(-0.05f, 0.0f, 0.0f));
+    });
+    m_vengine->actions->addKeybinding("move_camera_left", {GLFW_KEY_S, false, false, false});
+    m_vengine->actions->add("move_camera_up", "Move Camera", [this]() {
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(0.0f, 0.05f, 0.0f));
+    });
+    m_vengine->actions->addKeybinding("move_camera_up", {GLFW_KEY_E, false, false, false});
+    m_vengine->actions->add("move_camera_down", "Move Camera", [this]() {
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(0.0f, -0.05f, 0.0f));
+    });
+    m_vengine->actions->addKeybinding("move_camera_down", {GLFW_KEY_D, false, false, false});
+
+    // zoom in and out with scrollwheel
+    m_vengine->actions->add("zoom_in", "Zoom In", [this]() {
+        m_vengine->renderer->camera->setFov(m_vengine->renderer->camera->getFov() - 1.0f);
+    });
+    m_vengine->actions->addKeybinding("zoom_in", {GLFW_KEY_UP, false, false, false});
+    m_vengine->actions->add("zoom_out", "Zoom Out", [this]() {
+        m_vengine->renderer->camera->setFov(m_vengine->renderer->camera->getFov() + 1.0f);
+    });
+    m_vengine->actions->addKeybinding("zoom_out", {GLFW_KEY_DOWN, false, false, false});
+
+    // this is some weird turning with the mouse..
+    // we might need/want a mouse class
+    m_vengine->actions->add("turn_camera", "Turn Camera", [this]() {
+        double xpos;
+        double ypos;
+        glfwGetCursorPos(m_vengine->window->get(), &xpos, &ypos);
+
+        static double lastX = xpos;
+        static double lastY = ypos;
+        float xoffset = static_cast<float>(xpos - lastX);
+        float yoffset = static_cast<float>(lastY - ypos);
+        yoffset = -yoffset;  
+        lastX = xpos;
+        lastY = ypos;
+
+        m_vengine->renderer->camera->setRotation(m_vengine->renderer->camera->getRotation() +
+                                                glm::vec3(yoffset * 0.01f, xoffset * 0.01f, 0.0f));
+    });
+    m_vengine->actions->addKeybinding("turn_camera", {GLFW_MOUSE_BUTTON_LEFT, false, false, false});
 
     // create meshes
     std::vector<float> triangleVertices = {
@@ -45,8 +96,10 @@ App::App() {
     auto texture = m_vengine->resourceManager->get<Vengine::Texture>("test_texture");
 
     // create shaders
-    m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("default", "resources/shaders/vertex.glsl", "resources/shaders/fragment.glsl"));
-    // m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("colored", "resources/shaders/vertex.glsl", "resources/shaders/fragment.glsl"));
+    m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("default", "resources/shaders/vertex.glsl",
+                                                                        "resources/shaders/fragment.glsl"));
+    // m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("colored", "resources/shaders/vertex.glsl",
+    // "resources/shaders/fragment.glsl"));
     auto defaultShader = m_vengine->renderer->shaders->get("default");
     if (!defaultShader) {
         spdlog::error(defaultShader.error().message);
@@ -57,7 +110,7 @@ App::App() {
     m_vengine->renderer->materials->add("default", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto defaultMaterial = m_vengine->renderer->materials->get("default");
     defaultMaterial->setBool("uUseTexture", false);
-    defaultMaterial->setVec4("uColor", glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)); 
+    defaultMaterial->setVec4("uColor", glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
 
     m_vengine->renderer->materials->add("default", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto textured = m_vengine->renderer->materials->get("default");
@@ -65,8 +118,8 @@ App::App() {
     textured->setTexture("uTexture", std::move(texture));
 
     // add mesh together with material to renderer
-    // m_vengine->renderer->addRenderObject(triangle, defaultMaterial);
-    // m_vengine->renderer->addRenderObject(quad, textured);
+    m_vengine->renderer->addRenderObject(triangle, defaultMaterial);
+    m_vengine->renderer->addRenderObject(quad, textured);
     m_vengine->renderer->addRenderObject(cube, textured);
 }
 
