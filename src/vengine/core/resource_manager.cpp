@@ -21,7 +21,7 @@ auto ResourceManager::init() -> tl::expected<void, Error> {
     m_resourceRoot = std::filesystem::path("resources");
 
     if (!std::filesystem::exists(m_resourceRoot)) {
-        spdlog::warn("Resource root does not exist: {}", m_resourceRoot.string());
+        // spdlog::warn("Resource root does not exist: {}", m_resourceRoot.string());
         return tl::unexpected(Error{"Resource root does not exist"});
     }
 

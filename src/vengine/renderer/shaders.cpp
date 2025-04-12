@@ -57,5 +57,4 @@ auto Shaders::clear() -> void {
     m_shaders.clear();
 }
 
-
 }  // namespace Vengine

@@ -96,8 +96,8 @@ App::App() {
     auto texture = m_vengine->resourceManager->get<Vengine::Texture>("test_texture");
 
     // create shaders
-    m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("default", "resources/shaders/vertex.glsl",
-                                                                        "resources/shaders/fragment.glsl"));
+    m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("default", "resources/shaders/default.vert",
+                                                                        "resources/shaders/default.frag"));
     // m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("colored", "resources/shaders/vertex.glsl",
     // "resources/shaders/fragment.glsl"));
     auto defaultShader = m_vengine->renderer->shaders->get("default");
@@ -121,6 +121,15 @@ App::App() {
     m_vengine->renderer->addRenderObject(triangle, defaultMaterial);
     m_vengine->renderer->addRenderObject(quad, textured);
     m_vengine->renderer->addRenderObject(cube, textured);
+
+    // load font
+    // m_vengine->resourceManager->load<Vengine::Font>("default", "inter_24_regular.ttf");
+
+    // m_vengine->resourceManager->get<Vengine::Font>("default")->setFontSize(24);
+    // m_vengine->resourceManager->get<Vengine::Font>("default")->use();
+    // m_vengine->resourceManager->get<Vengine::Font>("default")->renderText("Hello World", 0.5f, 0.5f, 1.0f,
+    //                                                                       glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
 }
 
 void App::run() {

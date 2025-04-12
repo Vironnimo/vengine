@@ -9,6 +9,9 @@
 #include "material.hpp"
 #include "vengine/renderer/camera.hpp"
 #include "vengine/vengine.hpp"
+// #include "vengine/core/resource_manager.hpp"
+// #include "vengine/core/resources.hpp"
+#include "vengine/renderer/font.hpp"
 
 namespace Vengine {
 
@@ -29,6 +32,29 @@ auto Renderer::render() -> void {
     // blend is needed for transparency
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+    // test font
+
+    auto font = std::make_unique<Font>();
+    font->setFontSize(95.0f);
+    font->load("inter_24_regular.ttf");
+    font->use();
+    static int i = 0;
+    auto text = std::to_string(i);
+    font->renderText("Hello Vengine!", 25.0f, 50.0f, 1.0f, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    font->renderText(text, 25.0f, 25.0f, 1.0f, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    i++;
+
+    // ResourceManager rm;
+    // rm.init();
+    // rm.load<Font>("default", "inter_24_regular.ttf");
+    // auto font = rm.get<Font>("default");
+    // font->setFontSize(24);
+    // font->use();
+    // rm.get<Font>("default")->renderText("Hello World", 0.5f, 0.5f, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    // font->renderText("Hello Vengine!", 25.0f, 25.0f, 1.0f, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
 
     // actual rendering
     for (const auto& object : m_renderObjects) {
@@ -100,7 +126,7 @@ auto Renderer::render() -> void {
         vengine->renderer->camera->setFov(fov);
     });
 
-    setVSync(true);
+    setVSync(false);
 
     return {};
 }

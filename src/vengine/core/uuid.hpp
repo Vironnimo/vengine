@@ -5,7 +5,7 @@ namespace Vengine {
 
 class UUID {
    public:
-    static uint64_t create() {
+    static auto create() -> uint64_t {
         return m_nextId++;
     }
 

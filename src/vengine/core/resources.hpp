@@ -4,7 +4,10 @@
 #include <filesystem>
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Vengine {
 
@@ -67,10 +70,6 @@ class Texture : public IResource {
 
         return true;
     }
-
-    // ImTextureID getTexture() const {
-    //     return (ImTextureID)(intptr_t)m_textureID;
-    // }
 
     [[nodiscard]] auto getTextureID() const -> GLuint {
         return m_textureID;
