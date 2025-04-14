@@ -6,27 +6,22 @@
 
 namespace Vengine {
 
-class Timer {
+class Timers {
    public:
-    Timer();
-    ~Timer();
+    Timers();
+    ~Timers();
 
-    // get current time in milliseconds
-    auto time() -> int64_t;
-    // start a new timer
+    // todo timer with end time and callback
+
     auto start(const std::string& timerId) -> void;
-    // get elapsed time since start of the timer in milliseconds, without ending it
-    auto get(const std::string& timerId) -> int64_t;
-    // end timer and get time in milliseconds
+    auto getElapsed(const std::string& timerId) -> int64_t;
     auto stop(const std::string& timerId) -> int64_t;
 
     auto update() -> void;
-    auto deltaTime() -> float;
+    [[nodiscard]] auto deltaTime() const -> float;
 
    private:
     float m_deltaTime = 0.0f;
-    float m_fps = 0.0f;
-    float m_fpsTimer = 0.0f;
 
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::map<std::string, std::chrono::high_resolution_clock::time_point> m_timers;

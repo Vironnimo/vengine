@@ -9,7 +9,8 @@
 #include "vengine/core/resource_manager.hpp"
 #include "vengine/core/actions.hpp"
 #include "vengine/core/event_system.hpp"
-#include "vengine/core/timer.hpp"
+#include "vengine/core/timers.hpp"
+#include "vengine/core/layer.hpp"
 
 namespace Vengine {
 
@@ -22,15 +23,19 @@ class Vengine {
     std::unique_ptr<MeshLoader> meshLoader;
     std::unique_ptr<Actions> actions;
     std::unique_ptr<EventSystem> events;
-    std::unique_ptr<Timer> timer;
+    std::unique_ptr<Timers> timers;
 
     Vengine();
     ~Vengine();
     [[nodiscard]] auto init() -> tl::expected<void, Error>;
 
+    void addLayer(std::shared_ptr<Layer> layer);
+    void removeLayer(std::shared_ptr<Layer> layer);
+
     auto run() -> void;
 
    private:
+    std::vector<std::shared_ptr<Layer>> m_layers;
 };
 
 }  // namespace Vengine

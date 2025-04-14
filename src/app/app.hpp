@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "app/test_layer.hpp"
 #include "vengine/vengine.hpp"
 
 class App {
@@ -10,5 +11,6 @@ class App {
     void run();
 
    private:
-    std::unique_ptr<Vengine::Vengine> m_vengine;
+    std::shared_ptr<Vengine::Vengine> m_vengine;
+    std::shared_ptr<TestLayer> m_testLayer;
 };

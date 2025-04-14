@@ -22,8 +22,8 @@ Vengine::~Vengine() {
 }
 
 [[nodiscard]] auto Vengine::init() -> tl::expected<void, Error> {
-    timer = std::make_unique<Timer>();
-    timer->start("Vengine.start");
+    timers = std::make_unique<Timers>();
+    timers->start("Vengine.start");
 
     // spdlog stuff
     spdlog::set_level(spdlog::level::debug);
@@ -32,7 +32,7 @@ Vengine::~Vengine() {
 
     events = std::make_unique<EventSystem>();
 
-    timer->start("Vengine.window_creation");
+    timers->start("Vengine.window_creation");
     window = std::make_shared<Window>();
     if (auto result = window->init(); !result) {
         return tl::unexpected(result.error());
@@ -41,7 +41,7 @@ Vengine::~Vengine() {
     if (auto result = window->create(params); !result) {
         return tl::unexpected(result.error());
     }
-    spdlog::info("Vengine: window creation time: {} ms", timer->stop("Vengine.window_creation"));
+    spdlog::info("Vengine: window creation time: {} ms", timers->stop("Vengine.window_creation"));
 
     renderer = std::make_unique<Renderer>();
     if (auto result = renderer->init(window); !result) {
@@ -60,7 +60,7 @@ Vengine::~Vengine() {
     glfwSetWindowUserPointer(window->get(), this);
 
     // end timer and print
-    auto elapsedTime = timer->stop("Vengine.start");
+    auto elapsedTime = timers->stop("Vengine.start");
     spdlog::info("Vengine: initialization took {} ms", elapsedTime);
 
     spdlog::info("Vengine: successfully started.");
@@ -77,8 +77,26 @@ auto Vengine::run() -> void {
             break;
         }
 
+        for (auto& layer : m_layers) {
+            layer->onUpdate(timers->deltaTime());
+        }
+
+        timers->update();
         actions->handleInput(window->get());
-        renderer->render();
+        renderer->render(timers->deltaTime());
+    }
+}
+
+void Vengine::addLayer(std::shared_ptr<Layer> layer) {
+    layer->onAttach();
+    m_layers.push_back(std::move(layer));
+}
+
+void Vengine::removeLayer(std::shared_ptr<Layer> layer) {
+    auto it = std::find(m_layers.begin(), m_layers.end(), layer);
+    if (it != m_layers.end()) {
+        (*it)->onDetach();
+        m_layers.erase(it);
     }
 }
 

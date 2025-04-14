@@ -3,10 +3,10 @@
 #include <memory>
 
 #include "vengine/vengine.hpp"
-#include "vengine/renderer/mesh.hpp"
+#include "vengine/renderer/renderer.hpp"
 
 App::App() {
-    m_vengine = std::make_unique<Vengine::Vengine>();
+    m_vengine = std::make_shared<Vengine::Vengine>();
 
     // actions
     m_vengine->actions->add("quit", "Quit", [this]() { m_vengine->isRunning = false; });
@@ -123,16 +123,17 @@ App::App() {
     m_vengine->renderer->addRenderObject(cube, textured);
 
     // load font
-    // m_vengine->resourceManager->load<Vengine::Font>("default", "inter_24_regular.ttf");
+    auto fonts = m_vengine->renderer->fonts->load("default", "inter_24_regular.ttf", 24);
+    if (!fonts) {
+        spdlog::error(fonts.error().message);
+    }
 
-    // m_vengine->resourceManager->get<Vengine::Font>("default")->setFontSize(24);
-    // m_vengine->resourceManager->get<Vengine::Font>("default")->use();
-    // m_vengine->resourceManager->get<Vengine::Font>("default")->renderText("Hello World", 0.5f, 0.5f, 1.0f,
-    //                                                                       glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
+    m_testLayer = std::make_shared<TestLayer>(m_vengine);
+    m_vengine->addLayer(m_testLayer);
 }
 
 void App::run() {
+    // has to be here, or atleast after the constructor
     m_vengine->run();
 }
 

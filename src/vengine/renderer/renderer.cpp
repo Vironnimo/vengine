@@ -9,8 +9,7 @@
 #include "material.hpp"
 #include "vengine/renderer/camera.hpp"
 #include "vengine/vengine.hpp"
-// #include "vengine/core/resource_manager.hpp"
-// #include "vengine/core/resources.hpp"
+#include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/font.hpp"
 
 namespace Vengine {
@@ -23,7 +22,7 @@ Renderer::~Renderer() {
     spdlog::debug("Destructor Renderer");
 }
 
-auto Renderer::render() -> void {
+auto Renderer::render(float deltaTime) -> void {
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);  // so closer objects obscure objects further away (i've experienced problems with just one
@@ -33,30 +32,7 @@ auto Renderer::render() -> void {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
-    // test font
-
-    auto font = std::make_unique<Font>();
-    font->setFontSize(95.0f);
-    font->load("inter_24_regular.ttf");
-    font->use();
-    static int i = 0;
-    auto text = std::to_string(i);
-    font->renderText("Hello Vengine!", 25.0f, 50.0f, 1.0f, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    font->renderText(text, 25.0f, 25.0f, 1.0f, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    i++;
-
-    // ResourceManager rm;
-    // rm.init();
-    // rm.load<Font>("default", "inter_24_regular.ttf");
-    // auto font = rm.get<Font>("default");
-    // font->setFontSize(24);
-    // font->use();
-    // rm.get<Font>("default")->renderText("Hello World", 0.5f, 0.5f, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    // font->renderText("Hello Vengine!", 25.0f, 25.0f, 1.0f, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-
-    // actual rendering
+    // render renderObjects
     for (const auto& object : m_renderObjects) {
         object.material->bind();
 
@@ -66,6 +42,11 @@ auto Renderer::render() -> void {
         object.material->getShader()->setUniformMat4("uTransform", object.mesh->getTransform());
 
         object.mesh->draw();
+    }
+
+    // render text objects
+    for (const auto& textObject : m_textObjects) {
+        textObject->font->draw(textObject->text, textObject->x, textObject->y, textObject->scale, textObject->color);
     }
 
     glfwSwapBuffers(m_window->get());
@@ -96,6 +77,11 @@ auto Renderer::render() -> void {
     auto materialsInit = materials->init();
     if (!materialsInit) {
         return tl::unexpected(materialsInit.error());
+    }
+
+    fonts = std::make_unique<Fonts>();
+    if (!fonts->init(shaders->get("default.text").value())) {
+        return tl::unexpected(Error{"Failed to initialize fonts"});
     }
 
     CameraSettings cameraSettings;
@@ -141,6 +127,10 @@ auto Renderer::setVSync(bool enabled) -> void {
 
 auto Renderer::addRenderObject(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material) -> void {
     m_renderObjects.push_back({std::move(mesh), std::move(material)});
+}
+
+auto Renderer::addTextObject(std::shared_ptr<TextObject> textObject) -> void {
+    m_textObjects.push_back(std::move(textObject));
 }
 
 }  // namespace Vengine

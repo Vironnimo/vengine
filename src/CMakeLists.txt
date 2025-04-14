@@ -8,12 +8,13 @@ find_package(Freetype REQUIRED)
 
 set(SOURCES
         app/app.cpp
+        app/test_layer.cpp
         vengine/vengine.cpp
         vengine/core/resource_manager.cpp
         vengine/core/resources.cpp
         vengine/core/action.cpp
         vengine/core/actions.cpp
-        vengine/core/timer.cpp
+        vengine/core/timers.cpp
         vengine/core/event_system.cpp
         vengine/renderer/renderer.cpp
         vengine/renderer/camera.cpp
@@ -27,6 +28,7 @@ set(SOURCES
         vengine/renderer/shader.cpp
         vengine/renderer/shaders.cpp
         vengine/renderer/font.cpp
+        vengine/renderer/fonts.cpp
         vengine/renderer/window.cpp
 )
 
