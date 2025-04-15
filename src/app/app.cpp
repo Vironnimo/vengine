@@ -55,12 +55,12 @@ App::App() {
         static double lastY = ypos;
         float xoffset = static_cast<float>(xpos - lastX);
         float yoffset = static_cast<float>(lastY - ypos);
-        yoffset = -yoffset;  
+        yoffset = -yoffset;
         lastX = xpos;
         lastY = ypos;
 
         m_vengine->renderer->camera->setRotation(m_vengine->renderer->camera->getRotation() +
-                                                glm::vec3(yoffset * 0.01f, xoffset * 0.01f, 0.0f));
+                                                 glm::vec3(yoffset * 0.01f, xoffset * 0.01f, 0.0f));
     });
     m_vengine->actions->addKeybinding("turn_camera", {GLFW_MOUSE_BUTTON_LEFT, false, false, false});
 
@@ -128,6 +128,17 @@ App::App() {
         spdlog::error(fonts.error().message);
     }
 
+    // skybox
+    std::vector<std::string> skyboxFaces = {
+        "resources/textures/skybox/stormydays_rt.tga", "resources/textures/skybox/stormydays_lf.tga",
+        "resources/textures/skybox/stormydays_up.tga", "resources/textures/skybox/stormydays_dn.tga",
+        "resources/textures/skybox/stormydays_ft.tga", "resources/textures/skybox/stormydays_bk.tga"};
+
+    if (!m_vengine->renderer->loadSkybox(skyboxFaces)) {
+        spdlog::error("Failed to load skybox textures");
+    }
+
+    // layers
     m_testLayer = std::make_shared<TestLayer>(m_vengine);
     m_vengine->addLayer(m_testLayer);
 }

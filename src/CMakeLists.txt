@@ -29,6 +29,7 @@ set(SOURCES
         vengine/renderer/shaders.cpp
         vengine/renderer/font.cpp
         vengine/renderer/fonts.cpp
+        vengine/renderer/skybox.cpp
         vengine/renderer/window.cpp
 )
 

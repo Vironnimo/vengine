@@ -32,6 +32,10 @@ auto Renderer::render(float deltaTime) -> void {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    if (m_skyboxEnabled) {
+        skybox->render(camera->getViewMatrix(), camera->getProjectionMatrix());
+    }
+
     // render renderObjects
     for (const auto& object : m_renderObjects) {
         object.material->bind();
@@ -114,7 +118,21 @@ auto Renderer::render(float deltaTime) -> void {
 
     setVSync(false);
 
+    // test skybox
+    shaders->add(std::make_shared<Shader>("skybox", "resources/shaders/skybox.vert", "resources/shaders/skybox.frag"));
+    skybox = std::make_unique<Skybox>();
+    skybox->setShader(shaders->get("skybox").value());
+
     return {};
+}
+
+[[nodiscard]] auto Renderer::loadSkybox(const std::vector<std::string>& faceFiles) -> bool {
+    if (skybox->load(faceFiles)) {
+        m_skyboxEnabled = true;
+        return true;
+    }
+    m_skyboxEnabled = false;
+    return false;
 }
 
 auto Renderer::setVSync(bool enabled) -> void {

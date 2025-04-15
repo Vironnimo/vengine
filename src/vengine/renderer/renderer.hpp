@@ -11,6 +11,7 @@
 #include "vengine/renderer/shaders.hpp"
 #include "vengine/renderer/material.hpp"
 #include "vengine/renderer/fonts.hpp"
+#include "vengine/renderer/skybox.hpp"
 
 namespace Vengine {
 
@@ -33,6 +34,7 @@ class Renderer {
     std::unique_ptr<Shaders> shaders;
     std::unique_ptr<Camera> camera;
     std::unique_ptr<Fonts> fonts;
+    std::unique_ptr<Skybox> skybox;
 
     Renderer();
     ~Renderer();
@@ -41,6 +43,7 @@ class Renderer {
     auto render(float deltaTime) -> void;
     auto setVSync(bool enabled) -> void;
 
+    auto loadSkybox(const std::vector<std::string>& faceFiles) -> bool;
     auto addRenderObject(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material) -> void;
     auto addTextObject(std::shared_ptr<TextObject> textObject) -> void;
 
@@ -48,6 +51,7 @@ class Renderer {
     std::shared_ptr<Window> m_window;
     std::vector<RenderObject> m_renderObjects;
     std::vector<std::shared_ptr<TextObject>> m_textObjects;
+    bool m_skyboxEnabled = false;
 };
 
 }  // namespace Vengine
