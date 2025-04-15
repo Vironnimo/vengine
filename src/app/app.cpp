@@ -7,6 +7,7 @@
 
 App::App() {
     m_vengine = std::make_shared<Vengine::Vengine>();
+    m_vengine->timers->start("app_constructor");
 
     // actions
     m_vengine->actions->add("quit", "Quit", [this]() { m_vengine->isRunning = false; });
@@ -129,22 +130,31 @@ App::App() {
     }
 
     // skybox
+    // order matters here! right, left, top, bottom, back, front
+    m_vengine->timers->start("skybox");
     std::vector<std::string> skyboxFaces = {
-        "resources/textures/skybox/stormydays_rt.tga", "resources/textures/skybox/stormydays_lf.tga",
-        "resources/textures/skybox/stormydays_up.tga", "resources/textures/skybox/stormydays_dn.tga",
-        "resources/textures/skybox/stormydays_ft.tga", "resources/textures/skybox/stormydays_bk.tga"};
+        "resources/textures/skybox/cube_right.png", "resources/textures/skybox/cube_left.png",
+        "resources/textures/skybox/cube_up.png",    "resources/textures/skybox/cube_down.png",
+        "resources/textures/skybox/cube_back.png",  "resources/textures/skybox/cube_front.png"
+    };
 
     if (!m_vengine->renderer->loadSkybox(skyboxFaces)) {
         spdlog::error("Failed to load skybox textures");
     }
+    auto time = m_vengine->timers->stop("skybox");
+    spdlog::info("Skybox loaded in {} ms", time);
 
     // layers
     m_testLayer = std::make_shared<TestLayer>(m_vengine);
     m_vengine->addLayer(m_testLayer);
+
+    auto end = m_vengine->timers->stop("app_constructor");
+    spdlog::info("App constructor took {} ms", end);
 }
 
 void App::run() {
-    // has to be here, or atleast after the constructor
+    auto end = m_vengine->timers->stop("Vengine.start");
+    spdlog::info("Full App initialization took {} ms", end);
     m_vengine->run();
 }
 

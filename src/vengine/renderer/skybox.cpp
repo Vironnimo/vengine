@@ -6,16 +6,24 @@
 namespace Vengine {
 
 Skybox::Skybox() {
-    float skyboxVertices[] = {
-        -1.0f,  1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        // More vertices for all 6 faces...
-        // (36 vertices total - 6 faces, 2 triangles per face, 3 vertices per triangle)
-    };
+    // (36 vertices total - 6 faces, 2 triangles per face, 3 vertices per triangle)
+    float skyboxVertices[] = {-1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+                              1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
+
+                              -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+                              -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
+
+                              1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
+                              1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
+
+                              -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+                              1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+
+                              -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
+                              1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
+
+                              -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
+                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
 
     m_vao = std::make_shared<VertexArray>();
     m_vbo = std::make_shared<VertexBuffer>(skyboxVertices, sizeof(skyboxVertices), false);
@@ -51,11 +59,11 @@ auto Skybox::load(const std::vector<std::string>& faceFiles) -> bool {
     int height;
     int nrChannels;
     for (unsigned int i = 0; i < faceFiles.size(); i++) {
-        unsigned char *data = stbi_load(faceFiles[i].c_str(), &width, &height, &nrChannels, 0);
+        unsigned char* data = stbi_load(faceFiles[i].c_str(), &width, &height, &nrChannels, 0);
         if (data != nullptr) {
             GLenum format = nrChannels == 4 ? GL_RGBA : GL_RGB;
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format, 
-                         GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE,
+                         data);
             stbi_image_free(data);
         } else {
             spdlog::error("Failed to load cubemap texture: {}", faceFiles[i]);
@@ -80,21 +88,21 @@ auto Skybox::render(const glm::mat4& view, const glm::mat4& projection) -> void 
     glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
     GLint depthFunc;
     glGetIntegerv(GL_DEPTH_FUNC, &depthFunc);
-    
+
     // change depth so skybox passes depth test at maximum depth
     glDepthFunc(GL_LEQUAL);
 
     m_shader->bind();
-    
+
     // remove translation from view matrix (only keep rotation)
     glm::mat4 skyboxView = glm::mat4(glm::mat3(view));
-    
+
     m_shader->setUniformMat4("projection", projection);
     m_shader->setUniformMat4("view", skyboxView);
-    
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureID);
-    
+
     m_vao->bind();
     glDrawArrays(GL_TRIANGLES, 0, 36);
     m_vao->unbind();
@@ -109,4 +117,4 @@ auto Skybox::setShader(std::shared_ptr<Shader> shader) -> void {
     m_shader = std::move(shader);
 }
 
-} // namespace Vengine
+}  // namespace Vengine

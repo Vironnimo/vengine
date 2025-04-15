@@ -60,7 +60,7 @@ Vengine::~Vengine() {
     glfwSetWindowUserPointer(window->get(), this);
 
     // end timer and print
-    auto elapsedTime = timers->stop("Vengine.start");
+    auto elapsedTime = timers->getElapsed("Vengine.start");
     spdlog::info("Vengine: initialization took {} ms", elapsedTime);
 
     spdlog::info("Vengine: successfully started.");
