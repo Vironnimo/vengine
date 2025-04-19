@@ -1,20 +1,18 @@
 #pragma once
 
-#include <fmt/core.h>
+#include <spdlog/spdlog.h>
 
 #include <bitset>
-#include <functional>
 #include <memory>
 #include <unordered_map>
 
-#include "vengine/core/uuid.hpp"
-// #include "systems.hpp"
 #include "components.hpp"
 #include "base_system.hpp"
+#include "vengine/ecs/entities.hpp"
 
 namespace Vengine {
 
-using Entity = size_t;
+using EntityId = uint64_t;
 using ComponentBitset = std::bitset<32>;
 // adding component to bitmask:
 // entityComponentMask[entityID] |= RenderComponent;
@@ -25,47 +23,45 @@ using ComponentBitset = std::bitset<32>;
 
 class ECS {
    public:
-    ECS();
-    void init();
-
-    Entity createEntity();
-    void destroyEntity(Entity entity);
-
-    template <typename T>
-    void registerComponentType(ComponentType componentType) {
-        m_typeFactories[componentType] = [] { return std::make_shared<T>(); };
+    ECS() {
+        m_entities = std::make_shared<Entities>();
     }
 
-    // template <typename T>
-    void addComponent(Entity entity, ComponentType componentType) {
-        m_entityComponents[entity] |= componentType;
-        // create component
-        // m_components[componentType][entity] = std::make_shared<T>();
-        m_components[componentType][entity] = m_typeFactories.find(componentType)->second();
+    auto createEntity() -> EntityId {
+        return m_entities->createEntity();
+    }
+
+    auto destroyEntity(EntityId entity) -> void {
+        m_entities->destroyEntity(entity);
     }
 
     template <typename T>
-    std::shared_ptr<T> getEntityComponent(Entity entity, ComponentType componentType) {
-        return std::dynamic_pointer_cast<T>(m_components[componentType][entity]);
+    auto registerComponentType(ComponentType componentType) -> void {
+        m_entities->registerComponentType<T>(componentType);
     }
 
-    void registerSystem(std::shared_ptr<BaseSystem> system) {
-        m_systems.push_back(std::move(system));
+    auto addComponent(EntityId entity, ComponentType componentType) -> void {
+        m_entities->addComponent(entity, componentType);
     }
 
-    void runSystems(float deltaTime) {
-        for (const auto& system : m_systems) {
-            system->update(this, deltaTime);
+    template <typename T>
+    auto getEntityComponent(EntityId entity, ComponentType componentType) -> std::shared_ptr<T> {
+        return m_entities->getEntityComponent<T>(entity, componentType);
+    }
+
+    auto registerSystem(std::string id, std::shared_ptr<BaseSystem> system) -> void {
+        m_systems.emplace(id, std::move(system));
+    }
+
+    auto runSystems(float deltaTime) -> void {
+        for (const auto& [id, system] : m_systems) {
+            system->update(m_entities, deltaTime);
         }
     }
 
    private:
-    std::unordered_map<Entity, ComponentBitset> m_entityComponents;
-    std::unordered_map<ComponentType, std::function<std::shared_ptr<BaseComponent>()>> m_typeFactories;
-    std::unordered_map<ComponentType, std::unordered_map<Entity, std::shared_ptr<BaseComponent>>> m_components;
-
-    std::vector<std::shared_ptr<BaseSystem>> m_systems;
-
+    std::unordered_map<std::string, std::shared_ptr<BaseSystem>> m_systems;
+    std::shared_ptr<Entities> m_entities;
 };
 
 }  // namespace Vengine

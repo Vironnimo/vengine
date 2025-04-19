@@ -9,7 +9,7 @@ class Utils {
    public:
     // get classname as string
     template <typename T>
-    static std::string getNameOfType(const T& type) {
+    static auto getNameOfType(const T& type) -> std::string {
         std::string typeName = typeid(type).name();
 
         // remove prefixes
@@ -31,8 +31,8 @@ class Utils {
         return typeName;
     }
 
-    static float getRandomFloat(float min, float max);
-    static int getRandomInt(int min, int max);
+    static auto getRandomFloat(float min, float max) -> float;
+    static auto getRandomInt(int min, int max) -> int;
 
    private:
     static std::random_device randomDevice;

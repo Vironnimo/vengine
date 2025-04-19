@@ -62,7 +62,8 @@ auto Skybox::load(const std::vector<std::string>& faceFiles) -> bool {
         unsigned char* data = stbi_load(faceFiles[i].c_str(), &width, &height, &nrChannels, 0);
         if (data != nullptr) {
             GLenum format = nrChannels == 4 ? GL_RGBA : GL_RGB;
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE,
+            GLint internalFormat = nrChannels == 4 ? GL_RGBA8 : GL_RGB8;
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE,
                          data);
             stbi_image_free(data);
         } else {
@@ -108,7 +109,7 @@ auto Skybox::render(const glm::mat4& view, const glm::mat4& projection) -> void 
     m_vao->unbind();
 
     // restore state
-    if (depthTestEnabled) {
+    if (static_cast<bool>(depthTestEnabled)) {
         glDepthFunc(depthFunc);
     }
 }
