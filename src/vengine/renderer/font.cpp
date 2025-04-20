@@ -37,7 +37,8 @@ auto Font::draw(std::string text, float x, float y, float scale, const glm::vec4
 
     // create a 2d space for text with the size of the window (rotating the camera doesn't change the text position)
     GLFWwindow* window = glfwGetCurrentContext();
-    int width, height;
+    int width;
+    int height;
     glfwGetWindowSize(window, &width, &height);
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
     m_shader->setUniformMat4("projection", projection);

@@ -9,7 +9,7 @@ App::App() {
     m_vengine = std::make_shared<Vengine::Vengine>();
     m_vengine->timers->start("app_constructor");
 
-    // actions
+    // -------------------- ACTIONS ---------------------   
     m_vengine->actions->add("quit", "Quit", [this]() { m_vengine->isRunning = false; });
     m_vengine->actions->addKeybinding("quit", {GLFW_KEY_ESCAPE, false, false, false});
 
@@ -64,6 +64,13 @@ App::App() {
                                                  glm::vec3(yoffset * 0.01f, xoffset * 0.01f, 0.0f));
     });
     m_vengine->actions->addKeybinding("turn_camera", {GLFW_MOUSE_BUTTON_LEFT, false, false, false});
+
+    // on pressing x set velocity to 1.0f, 1.0f for entity 1
+    m_vengine->actions->add("set_velocity", "Set Velocity", [this]() {
+        m_vengine->ecs->getEntityComponent<Vengine::VelocityComponent>(1, Vengine::ComponentType::Velocity)->dx = 1.0f;
+        m_vengine->ecs->getEntityComponent<Vengine::VelocityComponent>(1, Vengine::ComponentType::Velocity)->dy = 1.0f;
+    });
+    m_vengine->actions->addKeybinding("set_velocity", {GLFW_KEY_X, false, false, false});
 
     // create meshes
     std::vector<float> triangleVertices = {
@@ -150,6 +157,13 @@ App::App() {
 
     auto end = m_vengine->timers->stop("app_constructor");
     spdlog::info("App constructor took {} ms", end);
+
+    // ecs stuff
+    auto entity = m_vengine->ecs->createEntity();
+    m_vengine->ecs->addComponent(entity, Vengine::ComponentType::Position);
+    m_vengine->ecs->addComponent(entity, Vengine::ComponentType::Velocity);
+    
+    m_vengine->ecs->registerSystem("MovementSystem", std::make_shared<Vengine::MovementSystem>());
 }
 
 void App::run() {

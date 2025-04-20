@@ -56,6 +56,12 @@ Vengine::~Vengine() {
     actions = std::make_unique<Actions>();
     meshLoader = std::make_unique<MeshLoader>();
 
+    // ecs
+    ecs = std::make_unique<ECS>();
+    ecs->registerComponentType<PositionComponent>(ComponentType::Position);
+    ecs->registerComponentType<VelocityComponent>(ComponentType::Velocity);
+    ecs->registerSystem("MovementSystem", std::make_shared<MovementSystem>());
+
     // this is weird here, needs to move
     glfwSetWindowUserPointer(window->get(), this);
 
@@ -83,6 +89,7 @@ auto Vengine::run() -> void {
 
         timers->update();
         actions->handleInput(window->get());
+        ecs->runSystems(timers->deltaTime());
         renderer->render(timers->deltaTime());
     }
 }

@@ -8,6 +8,7 @@
 
 #include "components.hpp"
 #include "base_system.hpp"
+#include "systems.hpp"
 #include "vengine/ecs/entities.hpp"
 
 namespace Vengine {
@@ -25,6 +26,7 @@ class ECS {
    public:
     ECS() {
         m_entities = std::make_shared<Entities>();
+        spdlog::debug("Constructor ECS");
     }
 
     auto createEntity() -> EntityId {

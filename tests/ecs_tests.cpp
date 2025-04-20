@@ -5,6 +5,7 @@
 #include "vengine/ecs/ecs.hpp"
 #include "vengine/ecs/systems.hpp"
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST_CASE("ECS Entity Management") {
     Vengine::ECS ecs;
     
@@ -42,9 +43,14 @@ TEST_CASE("ECS Entity Management") {
         auto movementSystem = std::make_shared<Vengine::MovementSystem>();
         ecs.registerSystem("MovementSystem", movementSystem);
         
-        ecs.runSystems(1.0f);  // Simulate a frame update
+
+        auto velocity = ecs.getEntityComponent<Vengine::VelocityComponent>(entity, Vengine::ComponentType::Velocity);
+        velocity->dx = 1.0f;
+        velocity->dy = 1.0f;
+
+        ecs.runSystems(1.0f);  
         
         auto position = ecs.getEntityComponent<Vengine::PositionComponent>(entity, Vengine::ComponentType::Position);
-        CHECK(position->x == 1.0f);  // Assuming initial position was 0.0f and velocity is 1.0f
+        CHECK(position->x == 1.0f);  
     }
 }

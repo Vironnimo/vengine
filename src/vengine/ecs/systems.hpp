@@ -13,18 +13,27 @@ class MovementSystem : public BaseSystem {
     void update(std::shared_ptr<Entities> entities, float deltaTime) override {
         auto list = entities->getEntitiesWith(ComponentType::Position, ComponentType::Velocity);
         for (auto entity : list) {
+            // position before
+            // spdlog::debug("Entity ID: {}", entity);
+            // spdlog::debug("Position X: {}", entities->getEntityComponent<PositionComponent>(entity, ComponentType::Position)->x);
+            // spdlog::debug("Position Y: {}", entities->getEntityComponent<PositionComponent>(entity, ComponentType::Position)->y);
+            // spdlog::debug("Velocity X: {}", entities->getEntityComponent<VelocityComponent>(entity, ComponentType::Velocity)->dx);
+            // spdlog::debug("Velocity Y: {}", entities->getEntityComponent<VelocityComponent>(entity, ComponentType::Velocity)->dy);
+
             auto position = entities->getEntityComponent<PositionComponent>(entity, ComponentType::Position);
             auto velocity = entities->getEntityComponent<VelocityComponent>(entity, ComponentType::Velocity);
             position->x += velocity->dx * deltaTime;
             position->y += velocity->dy * deltaTime;
-    
-            spdlog::debug("Entity ID: {}\n", entity);
-            spdlog::debug("Position X: {}\n", position->x);
-            spdlog::debug("Velocity Y: {}\n", velocity->dy);
-        }
 
-        // auto position = entities->getEntityComponent<PositionComponent>(1, ComponentType::Position);
-        // auto velocity = entities->getEntityComponent<VelocityComponent>(1, ComponentType::Velocity);
+            velocity->dx = 0.0f;  // reset velocity after applying it to position
+            velocity->dy = 0.0f;  // reset velocity after applying it to position
+
+            // spdlog::debug("Entity ID: {}", entity);
+            // spdlog::debug("Position X: {}", entities->getEntityComponent<PositionComponent>(entity, ComponentType::Position)->x);
+            // spdlog::debug("Position Y: {}", entities->getEntityComponent<PositionComponent>(entity, ComponentType::Position)->y);
+            // spdlog::debug("Velocity X: {}", entities->getEntityComponent<VelocityComponent>(entity, ComponentType::Velocity)->dx);
+            // spdlog::debug("Velocity Y: {}", entities->getEntityComponent<VelocityComponent>(entity, ComponentType::Velocity)->dy);
+        }
     }
 };
 

@@ -116,7 +116,7 @@ auto Renderer::render(float deltaTime) -> void {
         vengine->renderer->camera->setFov(fov);
     });
 
-    setVSync(true);
+    setVSync(false);
 
     // test skybox
     shaders->add(std::make_shared<Shader>("skybox", "resources/shaders/skybox.vert", "resources/shaders/skybox.frag"));

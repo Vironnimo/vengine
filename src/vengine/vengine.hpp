@@ -11,6 +11,7 @@
 #include "vengine/core/event_system.hpp"
 #include "vengine/core/timers.hpp"
 #include "vengine/core/layer.hpp"
+#include "vengine/ecs/ecs.hpp"
 
 namespace Vengine {
 
@@ -24,6 +25,7 @@ class Vengine {
     std::unique_ptr<Actions> actions;
     std::unique_ptr<EventSystem> events;
     std::unique_ptr<Timers> timers;
+    std::unique_ptr<ECS> ecs;
 
     Vengine();
     ~Vengine();
