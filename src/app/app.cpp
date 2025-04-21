@@ -1,7 +1,9 @@
 #include "app.hpp"
+#include <GLFW/glfw3.h>
 
 #include <memory>
 
+#include "vengine/ecs/components.hpp"
 #include "vengine/vengine.hpp"
 #include "vengine/renderer/renderer.hpp"
 
@@ -9,7 +11,8 @@ App::App() {
     m_vengine = std::make_shared<Vengine::Vengine>();
     m_vengine->timers->start("app_constructor");
 
-    // -------------------- ACTIONS ---------------------   
+    m_vengine->renderer->camera->setPosition(glm::vec3(0.0f, 0.0f, 55.0f));
+    // -------------------- ACTIONS ---------------------
     m_vengine->actions->add("quit", "Quit", [this]() { m_vengine->isRunning = false; });
     m_vengine->actions->addKeybinding("quit", {GLFW_KEY_ESCAPE, false, false, false});
 
@@ -19,21 +22,36 @@ App::App() {
                                                  glm::vec3(0.05f, 0.0f, 0.0f));
     });
     m_vengine->actions->addKeybinding("move_camera_right", {GLFW_KEY_F, false, false, false});
+
     m_vengine->actions->add("move_camera_left", "Move Camera", [this]() {
         m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
                                                  glm::vec3(-0.05f, 0.0f, 0.0f));
     });
     m_vengine->actions->addKeybinding("move_camera_left", {GLFW_KEY_S, false, false, false});
+
     m_vengine->actions->add("move_camera_up", "Move Camera", [this]() {
         m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
                                                  glm::vec3(0.0f, 0.05f, 0.0f));
     });
-    m_vengine->actions->addKeybinding("move_camera_up", {GLFW_KEY_E, false, false, false});
+    m_vengine->actions->addKeybinding("move_camera_up", {GLFW_KEY_BACKSPACE, false, false, false});
+
     m_vengine->actions->add("move_camera_down", "Move Camera", [this]() {
         m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
                                                  glm::vec3(0.0f, -0.05f, 0.0f));
     });
-    m_vengine->actions->addKeybinding("move_camera_down", {GLFW_KEY_D, false, false, false});
+    m_vengine->actions->addKeybinding("move_camera_down", {GLFW_KEY_DELETE, false, false, false});
+
+    m_vengine->actions->add("move_camera_forward", "Move Camera", [this]() {
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(0.0f, 0.0f, -0.05f));
+    });
+    m_vengine->actions->addKeybinding("move_camera_forward", {GLFW_KEY_E, false, false, false});
+
+    m_vengine->actions->add("move_camera_backward", "Move Camera", [this]() {
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(0.0f, 0.0f, 0.05f));
+    });
+    m_vengine->actions->addKeybinding("move_camera_backward", {GLFW_KEY_D, false, false, false});
 
     // zoom in and out with scrollwheel
     m_vengine->actions->add("zoom_in", "Zoom In", [this]() {
@@ -67,41 +85,23 @@ App::App() {
 
     // on pressing x set velocity to 1.0f, 1.0f for entity 1
     m_vengine->actions->add("set_velocity", "Set Velocity", [this]() {
-        m_vengine->ecs->getEntityComponent<Vengine::VelocityComponent>(1, Vengine::ComponentType::Velocity)->dx = 1.0f;
-        m_vengine->ecs->getEntityComponent<Vengine::VelocityComponent>(1, Vengine::ComponentType::Velocity)->dy = 1.0f;
+        m_vengine->ecs->getEntityComponent<Vengine::VelocityComponent>(1, Vengine::ComponentType::VelocityBit)->dx =
+            1.0f;
+        m_vengine->ecs->getEntityComponent<Vengine::VelocityComponent>(1, Vengine::ComponentType::VelocityBit)->dy =
+            1.0f;
     });
     m_vengine->actions->addKeybinding("set_velocity", {GLFW_KEY_X, false, false, false});
 
-    // create meshes
-    std::vector<float> triangleVertices = {
-        -0.5f, 0.5f,  0.0f,  // top
-        -0.9f, -0.5f, 0.0f,  // bottom left
-        -0.1f, -0.5f, 0.0f   // bottom right
-    };
-    auto triangle = std::make_shared<Vengine::Mesh>(triangleVertices);
-
-    std::vector<float> quadVertices = {
-        // x    y     z     s     t
-        0.1f, 0.5f,  0.0f, 0.0f, 1.0f,  // top left
-        0.9f, 0.5f,  0.0f, 1.0f, 1.0f,  // top right
-        0.9f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
-        0.1f, -0.5f, 0.0f, 0.0f, 0.0f   // bottom left
-    };
-    std::vector<uint32_t> quadIndices = {
-        0, 1, 2,  // first triangle
-        2, 3, 0   // second triangle
-    };
-    auto quad = std::make_shared<Vengine::Mesh>(quadVertices, quadIndices);
-    quad->setPosition(glm::vec3(0.0f, 0.4f, 0.0f));
 
     // 3d cube
     auto cube = m_vengine->meshLoader->loadFromObj("box.obj");
-    cube->setScale(glm::vec3(0.5f, 0.5f, 0.5f));
-    cube->setRotation(60.0f, glm::vec3(0.0f, 1.0f, 1.0f));
+
 
     // load textures
     m_vengine->resourceManager->load<Vengine::Texture>("test_texture", "test.jpg");
     auto texture = m_vengine->resourceManager->get<Vengine::Texture>("test_texture");
+    m_vengine->resourceManager->load<Vengine::Texture>("test_texture2", "test2.jpg");
+    auto texture2 = m_vengine->resourceManager->get<Vengine::Texture>("test_texture2");
 
     // create shaders
     m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("default", "resources/shaders/default.vert",
@@ -120,15 +120,14 @@ App::App() {
     defaultMaterial->setBool("uUseTexture", false);
     defaultMaterial->setVec4("uColor", glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
 
-    m_vengine->renderer->materials->add("default", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto textured = m_vengine->renderer->materials->get("default");
     textured->setBool("uUseTexture", true);
     textured->setTexture("uTexture", std::move(texture));
 
-    // add mesh together with material to renderer
-    m_vengine->renderer->addRenderObject(triangle, defaultMaterial);
-    m_vengine->renderer->addRenderObject(quad, textured);
-    m_vengine->renderer->addRenderObject(cube, textured);
+    m_vengine->renderer->materials->add("default2", std::make_shared<Vengine::Material>(defaultShader.value()));
+    auto textured2 = m_vengine->renderer->materials->get("default2");
+    textured2->setBool("uUseTexture", true);
+    textured2->setTexture("uTexture", std::move(texture2));
 
     // load font
     auto fonts = m_vengine->renderer->fonts->load("default", "inter_24_regular.ttf", 24);
@@ -142,8 +141,7 @@ App::App() {
     std::vector<std::string> skyboxFaces = {
         "resources/textures/skybox/cube_right.png", "resources/textures/skybox/cube_left.png",
         "resources/textures/skybox/cube_up.png",    "resources/textures/skybox/cube_down.png",
-        "resources/textures/skybox/cube_back.png",  "resources/textures/skybox/cube_front.png"
-    };
+        "resources/textures/skybox/cube_back.png",  "resources/textures/skybox/cube_front.png"};
 
     if (!m_vengine->renderer->loadSkybox(skyboxFaces)) {
         spdlog::error("Failed to load skybox textures");
@@ -159,11 +157,63 @@ App::App() {
     spdlog::info("App constructor took {} ms", end);
 
     // ecs stuff
-    auto entity = m_vengine->ecs->createEntity();
-    m_vengine->ecs->addComponent(entity, Vengine::ComponentType::Position);
-    m_vengine->ecs->addComponent(entity, Vengine::ComponentType::Velocity);
-    
+    auto renderSystem = std::make_shared<Vengine::RenderSystem>(m_vengine->renderer->camera);
+    renderSystem->setEnabled(false);
     m_vengine->ecs->registerSystem("MovementSystem", std::make_shared<Vengine::MovementSystem>());
+    m_vengine->ecs->registerSystem("RenderSystem", renderSystem);
+
+    auto entity = m_vengine->ecs->createEntity();
+    m_vengine->ecs->addComponent<Vengine::MeshComponent>(entity, Vengine::ComponentType::MeshBit, cube);
+    m_vengine->ecs->addComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit);
+    m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured);
+    m_vengine->ecs->addComponent<Vengine::PositionComponent>(entity, Vengine::ComponentType::PositionBit);
+    m_vengine->ecs->addComponent<Vengine::VelocityComponent>(entity, Vengine::ComponentType::VelocityBit);
+    m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)
+        ->position = glm::vec3(1.2f, 2.3f, 0.0f);
+
+    // for (int i = 0; i < 1000; ++i) {
+    //     auto entity = m_vengine->ecs->createEntity();
+    //     m_vengine->ecs->addComponent<Vengine::MeshComponent>(entity, Vengine::ComponentType::MeshBit, cube);
+    //     m_vengine->ecs->addComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit);
+    //     if (i % 2 == 0) {
+    //         m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured);
+    //     } else {
+    //         m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit,
+    //                                                                  textured2);
+    //     }
+    //     auto posX = 2.4f;
+    //     m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)
+    //         ->position = glm::vec3(posX * i, 0.0f, 0.0f);
+    // }
+    // lets make a grid of 1000 entities (100 wide, 10 high)
+    int gridWidth = 30;
+    int gridHeight = 30; // 1000 / 100
+    float spacingX = 2.4f; // Horizontal spacing between cubes
+    float spacingY = 2.4f; // Vertical spacing between cubes
+    float startX = - (gridWidth / 2.0f) * spacingX; // Center the grid horizontally
+    float startY = (gridHeight / 2.0f) * spacingY;  // Start from top
+
+    for (int row = 0; row < gridHeight; ++row) {
+        for (int col = 0; col < gridWidth; ++col) {
+            auto entity = m_vengine->ecs->createEntity();
+            m_vengine->ecs->addComponent<Vengine::MeshComponent>(entity, Vengine::ComponentType::MeshBit, cube);
+            m_vengine->ecs->addComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit);
+
+            // Alternate material based on overall index
+            int overallIndex = row * gridWidth + col;
+            if (overallIndex % 2 == 0) {
+                m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured);
+            } else {
+                m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured2);
+            }
+
+            // Calculate position based on row and column
+            float currentX = startX + col * spacingX;
+            float currentY = startY - row * spacingY; // Subtract because Y typically goes down in screen coords
+            m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)
+                ->position = glm::vec3(currentX, currentY, 0.0f);
+        }
+    }
 }
 
 void App::run() {

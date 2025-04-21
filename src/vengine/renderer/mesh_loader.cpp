@@ -32,6 +32,7 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
     bool hasTexCoords = !attrib.texcoords.empty();
+    int floatsPerVertex = hasTexCoords ? 5 : 3;
 
     // helper thingy to make sure we don't have duplicate vertices
     struct VertexKey {
@@ -55,7 +56,7 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
                 VertexKey key{idx.vertex_index, idx.texcoord_index, idx.normal_index};
 
                 if (uniqueVertices.count(key) == 0) {
-                    uniqueVertices[key] = static_cast<uint32_t>(vertices.size() / (hasTexCoords ? 5 : 3));
+                    uniqueVertices[key] = static_cast<uint32_t>(vertices.size() / floatsPerVertex);
 
                     // position
                     vertices.push_back(attrib.vertices[3 * idx.vertex_index + 0]);
@@ -66,6 +67,10 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
                     if (hasTexCoords && idx.texcoord_index >= 0) {
                         vertices.push_back(attrib.texcoords[2 * idx.texcoord_index + 0]);
                         vertices.push_back(attrib.texcoords[2 * idx.texcoord_index + 1]);
+                    } else if (hasTexCoords) {
+                        // Add dummy tex coords if format expects them but model doesn't provide for this vertex
+                        vertices.push_back(0.0f);
+                        vertices.push_back(0.0f);
                     }
                 }
 

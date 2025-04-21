@@ -13,8 +13,11 @@ class VertexBuffer {
     auto unbind() const -> void;
 
     [[nodiscard]] auto hasTexCoords() const -> bool;
+    [[nodiscard]] auto getSize() const -> uint32_t;
+    [[nodiscard]] auto getId() const -> GLuint;
 
    private:
+    uint32_t m_size = 0;
     GLuint m_id = 0;
     bool m_hasTexCoords = false;  
 };

@@ -22,7 +22,7 @@ Renderer::~Renderer() {
     spdlog::debug("Destructor Renderer");
 }
 
-auto Renderer::render(float deltaTime) -> void {
+auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void {
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);  // so closer objects obscure objects further away (i've experienced problems with just one
@@ -36,17 +36,24 @@ auto Renderer::render(float deltaTime) -> void {
         skybox->render(camera->getViewMatrix(), camera->getProjectionMatrix());
     }
 
-    // render renderObjects
-    for (const auto& object : m_renderObjects) {
-        object.material->bind();
-
-        // NOTE setting all uniforms for each object is bad, lots of redundant calls.. but it works for now
-        object.material->getShader()->setUniformMat4("uView", camera->getViewMatrix());
-        object.material->getShader()->setUniformMat4("uProjection", camera->getProjectionMatrix());
-        object.material->getShader()->setUniformMat4("uTransform", object.mesh->getTransform());
-
-        object.mesh->draw();
+    // render all viable entities
+    auto renderSystem = ecs->getSystem<RenderSystem>("RenderSystem");  // Assuming getSystem exists
+    if (renderSystem) {
+        renderSystem->update(ecs->entities, deltaTime);  // Assuming getEntities exists
+    } else {
+        spdlog::warn("RenderSystem not found in ECS");
     }
+    // render renderObjects
+    // for (const auto& object : m_renderObjects) {
+    //     object.material->bind();
+
+    //     // NOTE setting all uniforms for each object is bad, lots of redundant calls.. but it works for now
+    //     object.material->getShader()->setUniformMat4("uView", camera->getViewMatrix());
+    //     object.material->getShader()->setUniformMat4("uProjection", camera->getProjectionMatrix());
+    //     object.material->getShader()->setUniformMat4("uTransform", object.mesh->getTransform());
+
+    //     object.mesh->draw();
+    // }
 
     // render text objects
     for (const auto& textObject : m_textObjects) {
@@ -94,7 +101,7 @@ auto Renderer::render(float deltaTime) -> void {
     int h;
     glfwGetWindowSize(m_window->get(), &w, &h);
     cameraSettings.aspectRatio = static_cast<float>(w) / static_cast<float>(h);
-    camera = std::make_unique<Camera>(cameraSettings);
+    camera = std::make_shared<Camera>(cameraSettings);
     camera->setPosition(glm::vec3(0.0f, 0.0f, 5.0f));
 
     // glfw callbacks
@@ -116,7 +123,7 @@ auto Renderer::render(float deltaTime) -> void {
         vengine->renderer->camera->setFov(fov);
     });
 
-    setVSync(false);
+    setVSync(true);
 
     // test skybox
     shaders->add(std::make_shared<Shader>("skybox", "resources/shaders/skybox.vert", "resources/shaders/skybox.frag"));

@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "vengine/ecs/components.hpp"
 #include "vengine/ecs/ecs.hpp"
 #include "vengine/ecs/systems.hpp"
 
@@ -22,35 +23,35 @@ TEST_CASE("ECS Entity Management") {
     }
 
     SUBCASE("Component Registration") {
-        ecs.registerComponentType<Vengine::PositionComponent>(Vengine::ComponentType::Position);
-        ecs.registerComponentType<Vengine::VelocityComponent>(Vengine::ComponentType::Velocity);
-        
         auto entity = ecs.createEntity();
-        ecs.addComponent(entity, Vengine::ComponentType::Position);
+        ecs.addComponent<Vengine::PositionComponent>(entity, Vengine::ComponentType::PositionBit);
         
-        auto position = ecs.getEntityComponent<Vengine::PositionComponent>(entity, Vengine::ComponentType::Position);
+        auto position = ecs.getEntityComponent<Vengine::PositionComponent>(entity, Vengine::ComponentType::PositionBit);
         CHECK(position != nullptr);
+        
+
+        ecs.addComponent<Vengine::VelocityComponent>(entity, Vengine::ComponentType::VelocityBit);
+        
+        auto velocity = ecs.getEntityComponent<Vengine::VelocityComponent>(entity, Vengine::ComponentType::VelocityBit);
+        CHECK(velocity != nullptr);
     }
 
     SUBCASE("System Registration and Execution") {
-        ecs.registerComponentType<Vengine::PositionComponent>(Vengine::ComponentType::Position);
-        ecs.registerComponentType<Vengine::VelocityComponent>(Vengine::ComponentType::Velocity);
-        
         auto entity = ecs.createEntity();
-        ecs.addComponent(entity, Vengine::ComponentType::Position);
-        ecs.addComponent(entity, Vengine::ComponentType::Velocity);
+        ecs.addComponent<Vengine::PositionComponent>(entity, Vengine::ComponentType::PositionBit);
+        ecs.addComponent<Vengine::VelocityComponent>(entity, Vengine::ComponentType::VelocityBit);
         
         auto movementSystem = std::make_shared<Vengine::MovementSystem>();
         ecs.registerSystem("MovementSystem", movementSystem);
         
 
-        auto velocity = ecs.getEntityComponent<Vengine::VelocityComponent>(entity, Vengine::ComponentType::Velocity);
+        auto velocity = ecs.getEntityComponent<Vengine::VelocityComponent>(entity, Vengine::ComponentType::VelocityBit);
         velocity->dx = 1.0f;
         velocity->dy = 1.0f;
 
         ecs.runSystems(1.0f);  
         
-        auto position = ecs.getEntityComponent<Vengine::PositionComponent>(entity, Vengine::ComponentType::Position);
+        auto position = ecs.getEntityComponent<Vengine::PositionComponent>(entity, Vengine::ComponentType::PositionBit);
         CHECK(position->x == 1.0f);  
     }
 }

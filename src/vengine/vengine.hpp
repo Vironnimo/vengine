@@ -25,7 +25,7 @@ class Vengine {
     std::unique_ptr<Actions> actions;
     std::unique_ptr<EventSystem> events;
     std::unique_ptr<Timers> timers;
-    std::unique_ptr<ECS> ecs;
+    std::shared_ptr<ECS> ecs;
 
     Vengine();
     ~Vengine();

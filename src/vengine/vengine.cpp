@@ -57,9 +57,9 @@ Vengine::~Vengine() {
     meshLoader = std::make_unique<MeshLoader>();
 
     // ecs
-    ecs = std::make_unique<ECS>();
-    ecs->registerComponentType<PositionComponent>(ComponentType::Position);
-    ecs->registerComponentType<VelocityComponent>(ComponentType::Velocity);
+    ecs = std::make_shared<ECS>();
+    // ecs->registerComponentType<PositionComponent>(ComponentType::Position);
+    // ecs->registerComponentType<VelocityComponent>(ComponentType::Velocity);
     ecs->registerSystem("MovementSystem", std::make_shared<MovementSystem>());
 
     // this is weird here, needs to move
@@ -90,7 +90,7 @@ auto Vengine::run() -> void {
         timers->update();
         actions->handleInput(window->get());
         ecs->runSystems(timers->deltaTime());
-        renderer->render(timers->deltaTime());
+        renderer->render(ecs, timers->deltaTime());
     }
 }
 

@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include "vengine/core/resources.hpp"
 #include "vengine/renderer/shader.hpp"
-
+    
 namespace Vengine {
 
 class Material {

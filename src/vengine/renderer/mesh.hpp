@@ -4,45 +4,39 @@
 #include <glm/glm.hpp>
 #include "vertex_array.hpp"
 #include "vertex_buffer.hpp"
+#include "index_buffer.hpp"  // Added missing include
 
 namespace Vengine {
 
-// todo should become a component for the ecs someday
-// todo all the transform should be it's own component/system
 class Mesh {
    public:
     Mesh(const std::vector<float>& vertices);
     Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices);
     ~Mesh();
 
-    // transform methods
-    auto setPosition(const glm::vec3& position) -> void;
-    auto setRotation(float angleInRadians, const glm::vec3& axis) -> void;
-    auto setScale(const glm::vec3& scale) -> void;
-    // get combined transform matrix
-    [[nodiscard]] auto getTransform() const -> glm::mat4;
+    // Removed transform methods: setPosition, setRotation, setScale, getTransform
 
     auto draw() const -> void;
 
+    // Added getter for vertex buffer info needed in draw calculation
+    [[nodiscard]] auto getVertexBuffer() const -> const std::shared_ptr<VertexBuffer>& {
+        return m_vertexBuffer;
+    }
+    [[nodiscard]] auto getIndexBuffer() const -> const std::shared_ptr<IndexBuffer>& {
+        return m_indexBuffer;
+    }
+    [[nodiscard]] auto useIndices() const -> bool {
+        return m_useIndices;
+    }
+    [[nodiscard]] auto getVertexCount() const -> size_t;  // Helper to get vertex count
+
    private:
-    std::vector<float> m_vertices;
-    std::vector<uint32_t> m_indices;
+    std::vector<float> m_vertices;    // Keep raw data for potential re-use? Optional.
+    std::vector<uint32_t> m_indices;  // Keep raw data for potential re-use? Optional.
     std::shared_ptr<VertexArray> m_vertexArray;
     std::shared_ptr<VertexBuffer> m_vertexBuffer;
     std::shared_ptr<IndexBuffer> m_indexBuffer;
     bool m_useIndices = false;
-
-    // transform stuff
-    glm::vec3 m_position = glm::vec3(0.0f);
-    glm::vec3 m_rotation = glm::vec3(0.0f);
-    glm::vec3 m_scale = glm::vec3(1.0f);
-    glm::mat4 m_transform = glm::mat4(1.0f);
-
-    // texture stuff
-    bool m_hasTexCoords = false; // do we still need this?
-
-    // functions
-    auto updateTransform() -> void;
 };
 
 }  // namespace Vengine

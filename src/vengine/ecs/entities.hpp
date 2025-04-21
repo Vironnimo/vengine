@@ -36,15 +36,22 @@ class Entities {
         }
     }
 
-    template <typename T>
-    auto registerComponentType(ComponentType componentType) -> void {
-        m_typeFactories[componentType] = [] { return std::make_shared<T>(); };
+    // template <typename T>
+    // auto registerComponentType(ComponentType componentType) -> void {
+    //     m_typeFactories[componentType] = [] { return std::make_shared<T>(); };
+    // }
+
+    template <typename T, typename... Args>
+    auto addComponent(EntityId entity, ComponentType componentType, Args&&... args) -> void {
+        if (m_entities.find(entity) == m_entities.end()) {
+            // error handling?
+            return;
+        }
+
+        m_entityComponents[entity] |= componentType;
+        m_components[componentType][entity] = std::make_shared<T>(std::forward<Args>(args)...);
     }
 
-    auto addComponent(EntityId entity, ComponentType componentType) -> void {
-        m_entityComponents[entity] |= componentType;
-        m_components[componentType][entity] = m_typeFactories.find(componentType)->second();
-    }
 
     template <typename T>
     auto getEntityComponent(EntityId entity, ComponentType componentType) -> std::shared_ptr<T> {
@@ -88,7 +95,7 @@ class Entities {
     std::unordered_set<EntityId> m_entities;
     std::unordered_map<ComponentType, std::unordered_map<EntityId, std::shared_ptr<BaseComponent>>> m_components;
     std::unordered_map<EntityId, ComponentBitset> m_entityComponents;
-    std::unordered_map<ComponentType, std::function<std::shared_ptr<BaseComponent>()>> m_typeFactories;
+    // std::unordered_map<ComponentType, std::function<std::shared_ptr<BaseComponent>()>> m_typeFactories;
 };
 
 }  // namespace Vengine

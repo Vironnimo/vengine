@@ -12,6 +12,7 @@
 #include "vengine/renderer/material.hpp"
 #include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/skybox.hpp"
+#include "vengine/ecs/ecs.hpp"
 
 namespace Vengine {
 
@@ -32,7 +33,7 @@ class Renderer {
    public:
     std::unique_ptr<Materials> materials;
     std::unique_ptr<Shaders> shaders;
-    std::unique_ptr<Camera> camera;
+    std::shared_ptr<Camera> camera;
     std::unique_ptr<Fonts> fonts;
     std::unique_ptr<Skybox> skybox;
 
@@ -40,7 +41,7 @@ class Renderer {
     ~Renderer();
     [[nodiscard]] auto init(std::shared_ptr<Window> window) -> tl::expected<void, Error>;
 
-    auto render(float deltaTime) -> void;
+    auto render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void;
     auto setVSync(bool enabled) -> void;
 
     auto loadSkybox(const std::vector<std::string>& faceFiles) -> bool;

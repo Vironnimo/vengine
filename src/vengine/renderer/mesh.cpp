@@ -1,24 +1,32 @@
 #include "mesh.hpp"
 
 #include <glad/glad.h>
-#include <glm/gtc/matrix_transform.hpp>
+// #include <glm/gtc/matrix_transform.hpp> // No longer needed here
 #include <spdlog/spdlog.h>
 
 namespace Vengine {
 
+// Constructor implementations remain largely the same, just ensure VertexBuffer layout is set correctly
 Mesh::Mesh(const std::vector<float>& vertices) : m_vertices(vertices) {
     spdlog::debug("Constructor Mesh without indices, vertices count: {}", m_vertices.size());
     m_vertexArray = std::make_shared<VertexArray>();
-    m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float));
+    // Assuming 3 floats per vertex (pos) if no indices. Adjust if needed.
+    // You might need a way to specify the layout (e.g., does it have tex coords?)
+    // For now, assuming only position data if no indices.
+    bool hasTexCoords = false;  // Determine this based on data or constructor args
+    m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float), hasTexCoords);
 
     m_vertexArray->addVertexBuffer(m_vertexBuffer);
 }
 
 Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
     : m_vertices(vertices), m_indices(indices), m_useIndices(true) {
-    spdlog::debug("Constructor Mesh with indices, indices count: {}, vertices count: {}", m_indices.size(), m_vertices.size());
+    spdlog::debug("Constructor Mesh with indices, indices count: {}, vertices count: {}", m_indices.size(),
+                  m_vertices.size());
     m_vertexArray = std::make_shared<VertexArray>();
-    m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float), true);
+    // Assuming 5 floats per vertex (pos + tex) if indices are used (common case from loader). Adjust if needed.
+    bool hasTexCoords = true;  // Determine this based on data or constructor args
+    m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float), hasTexCoords);
 
     m_vertexArray->addVertexBuffer(m_vertexBuffer);
 
@@ -36,51 +44,27 @@ auto Mesh::draw() const -> void {
     if (m_useIndices) {
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indexBuffer->getCount()), GL_UNSIGNED_INT, nullptr);
     } else {
-        // Calculate vertex count based on whether texture coordinates are present
+        // Calculate vertex count based on buffer layout
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(getVertexCount()));
+    }
+    // Unbind VAO? Usually done after all meshes of the same type are drawn.
+    m_vertexArray->unbind();
+}
+
+// Helper function implementation
+[[nodiscard]] auto Mesh::getVertexCount() const -> size_t {
+    if (m_useIndices) {
+        // This doesn't make sense for indexed drawing, the count comes from index buffer
+        return m_indices.size();  // Or maybe return 0?
+    } else {
+        if (!m_vertexBuffer)
+            return 0;
+        // Calculate vertex count based on whether texture coordinates are present in the buffer's layout
         auto floatsPerVertex = m_vertexBuffer->hasTexCoords() ? 5 : 3;
-        auto vertexCount = static_cast<GLsizei>(m_vertices.size() / static_cast<size_t>(floatsPerVertex));
-
-        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+        if (floatsPerVertex == 0)
+            return 0;  // Avoid division by zero
+        return static_cast<size_t>(m_vertexBuffer->getSize() / (floatsPerVertex * sizeof(float)));
     }
-}
-
-auto Mesh::setPosition(const glm::vec3& position) -> void {
-    m_position = position;
-    updateTransform();
-}
-
-auto Mesh::setRotation(float angle, const glm::vec3& axis) -> void {
-    float angleInRadians = glm::radians(angle);
-    m_rotation = axis * angleInRadians;
-    updateTransform();
-}
-
-auto Mesh::setScale(const glm::vec3& scale) -> void {
-    m_scale = scale;
-    updateTransform();
-}
-
-auto Mesh::updateTransform() -> void {
-    // reset transform, but why?
-    m_transform = glm::mat4(1.0f);
-    // apply transformations in order: scale, rotate, translate
-    m_transform = glm::translate(m_transform, m_position);
-
-    if (m_rotation.x != 0.0f) {
-        m_transform = glm::rotate(m_transform, m_rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-    }
-    if (m_rotation.y != 0.0f) {
-        m_transform = glm::rotate(m_transform, m_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    }
-    if (m_rotation.z != 0.0f) {
-        m_transform = glm::rotate(m_transform, m_rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-    }
-
-    m_transform = glm::scale(m_transform, m_scale);
-}
-
-[[nodiscard]] auto Mesh::getTransform() const -> glm::mat4 {
-    return m_transform;
 }
 
 }  // namespace Vengine

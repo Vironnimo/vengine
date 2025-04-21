@@ -24,46 +24,57 @@ using ComponentBitset = std::bitset<32>;
 
 class ECS {
    public:
+    std::shared_ptr<Entities> entities;
+
     ECS() {
-        m_entities = std::make_shared<Entities>();
+        entities = std::make_shared<Entities>();
         spdlog::debug("Constructor ECS");
     }
 
-    auto createEntity() -> EntityId {
-        return m_entities->createEntity();
+    auto createEntity() const -> EntityId {
+        return entities->createEntity();
     }
 
-    auto destroyEntity(EntityId entity) -> void {
-        m_entities->destroyEntity(entity);
+    auto destroyEntity(EntityId entity) const -> void {
+        entities->destroyEntity(entity);
     }
 
-    template <typename T>
-    auto registerComponentType(ComponentType componentType) -> void {
-        m_entities->registerComponentType<T>(componentType);
-    }
-
-    auto addComponent(EntityId entity, ComponentType componentType) -> void {
-        m_entities->addComponent(entity, componentType);
+    template <typename T, typename... Args>
+    auto addComponent(EntityId entity, ComponentType componentType, Args&&... args) -> void {
+        entities->addComponent<T>(entity, componentType, std::forward<Args>(args)...);
     }
 
     template <typename T>
     auto getEntityComponent(EntityId entity, ComponentType componentType) -> std::shared_ptr<T> {
-        return m_entities->getEntityComponent<T>(entity, componentType);
+        return entities->getEntityComponent<T>(entity, componentType);
     }
 
     auto registerSystem(std::string id, std::shared_ptr<BaseSystem> system) -> void {
         m_systems.emplace(id, std::move(system));
     }
 
+    template <typename T>
+    auto getSystem(const std::string& id) -> std::shared_ptr<T> {
+        auto it = m_systems.find(id);
+        if (it != m_systems.end()) {
+            return std::dynamic_pointer_cast<T>(it->second);
+        }
+
+        return nullptr;
+    }
+
     auto runSystems(float deltaTime) -> void {
         for (const auto& [id, system] : m_systems) {
-            system->update(m_entities, deltaTime);
+            if (!system->isEnabled()) {
+                continue;
+            }
+
+            system->update(entities, deltaTime);
         }
     }
 
    private:
     std::unordered_map<std::string, std::shared_ptr<BaseSystem>> m_systems;
-    std::shared_ptr<Entities> m_entities;
 };
 
 }  // namespace Vengine
