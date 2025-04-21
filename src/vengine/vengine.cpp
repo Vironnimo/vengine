@@ -58,8 +58,10 @@ Vengine::~Vengine() {
 
     // ecs
     ecs = std::make_shared<ECS>();
-    // ecs->registerComponentType<PositionComponent>(ComponentType::Position);
-    // ecs->registerComponentType<VelocityComponent>(ComponentType::Velocity);
+    // NOTE: add default systems
+    auto renderSystem = std::make_shared<RenderSystem>(renderer->camera);
+    renderSystem->setEnabled(false);
+    ecs->registerSystem("RenderSystem", renderSystem);
     ecs->registerSystem("MovementSystem", std::make_shared<MovementSystem>());
 
     // this is weird here, needs to move

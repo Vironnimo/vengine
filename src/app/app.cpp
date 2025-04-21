@@ -83,19 +83,6 @@ App::App() {
     });
     m_vengine->actions->addKeybinding("turn_camera", {GLFW_MOUSE_BUTTON_LEFT, false, false, false});
 
-    // on pressing x set velocity to 1.0f, 1.0f for entity 1
-    m_vengine->actions->add("set_velocity", "Set Velocity", [this]() {
-        m_vengine->ecs->getEntityComponent<Vengine::VelocityComponent>(1, Vengine::ComponentType::VelocityBit)->dx =
-            1.0f;
-        m_vengine->ecs->getEntityComponent<Vengine::VelocityComponent>(1, Vengine::ComponentType::VelocityBit)->dy =
-            1.0f;
-    });
-    m_vengine->actions->addKeybinding("set_velocity", {GLFW_KEY_X, false, false, false});
-
-
-    // 3d cube
-    auto cube = m_vengine->meshLoader->loadFromObj("box.obj");
-
 
     // load textures
     m_vengine->resourceManager->load<Vengine::Texture>("test_texture", "test.jpg");
@@ -156,42 +143,28 @@ App::App() {
     auto end = m_vengine->timers->stop("app_constructor");
     spdlog::info("App constructor took {} ms", end);
 
+    // meshes
+    auto cube = m_vengine->meshLoader->loadFromObj("box.obj");
+    auto chair = m_vengine->meshLoader->loadFromObj("chair02.obj");
+
     // ecs stuff
-    auto renderSystem = std::make_shared<Vengine::RenderSystem>(m_vengine->renderer->camera);
-    renderSystem->setEnabled(false);
-    m_vengine->ecs->registerSystem("MovementSystem", std::make_shared<Vengine::MovementSystem>());
-    m_vengine->ecs->registerSystem("RenderSystem", renderSystem);
+    auto chairEntity = m_vengine->ecs->createEntity();
+    m_vengine->ecs->addComponent<Vengine::MeshComponent>(chairEntity, Vengine::ComponentType::MeshBit, chair);
+    m_vengine->ecs->addComponent<Vengine::TransformComponent>(chairEntity, Vengine::ComponentType::TransformBit);
+    m_vengine->ecs->addComponent<Vengine::MaterialComponent>(chairEntity, Vengine::ComponentType::MaterialBit, textured);
+    m_vengine->ecs->addComponent<Vengine::PositionComponent>(chairEntity, Vengine::ComponentType::PositionBit);
+    m_vengine->ecs->addComponent<Vengine::VelocityComponent>(chairEntity, Vengine::ComponentType::VelocityBit);
+    auto transform = m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity, Vengine::ComponentType::TransformBit);
+    transform->position = glm::vec3(0.0f, 0.0f, 15.0f);
+    transform->scale = glm::vec3(0.05f, 0.05f, 0.05f);
 
-    auto entity = m_vengine->ecs->createEntity();
-    m_vengine->ecs->addComponent<Vengine::MeshComponent>(entity, Vengine::ComponentType::MeshBit, cube);
-    m_vengine->ecs->addComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit);
-    m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured);
-    m_vengine->ecs->addComponent<Vengine::PositionComponent>(entity, Vengine::ComponentType::PositionBit);
-    m_vengine->ecs->addComponent<Vengine::VelocityComponent>(entity, Vengine::ComponentType::VelocityBit);
-    m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)
-        ->position = glm::vec3(1.2f, 2.3f, 0.0f);
-
-    // for (int i = 0; i < 1000; ++i) {
-    //     auto entity = m_vengine->ecs->createEntity();
-    //     m_vengine->ecs->addComponent<Vengine::MeshComponent>(entity, Vengine::ComponentType::MeshBit, cube);
-    //     m_vengine->ecs->addComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit);
-    //     if (i % 2 == 0) {
-    //         m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured);
-    //     } else {
-    //         m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit,
-    //                                                                  textured2);
-    //     }
-    //     auto posX = 2.4f;
-    //     m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)
-    //         ->position = glm::vec3(posX * i, 0.0f, 0.0f);
-    // }
-    // lets make a grid of 1000 entities (100 wide, 10 high)
+    // a grid of cubes
     int gridWidth = 30;
-    int gridHeight = 30; // 1000 / 100
-    float spacingX = 2.4f; // Horizontal spacing between cubes
-    float spacingY = 2.4f; // Vertical spacing between cubes
-    float startX = - (gridWidth / 2.0f) * spacingX; // Center the grid horizontally
-    float startY = (gridHeight / 2.0f) * spacingY;  // Start from top
+    int gridHeight = 30; 
+    float spacingX = 2.4f; 
+    float spacingY = 2.4f; 
+    float startX = - (static_cast<float>(gridWidth) / 2.0f) * spacingX; 
+    float startY = (static_cast<float>(gridHeight) / 2.0f) * spacingY;  
 
     for (int row = 0; row < gridHeight; ++row) {
         for (int col = 0; col < gridWidth; ++col) {
@@ -199,7 +172,6 @@ App::App() {
             m_vengine->ecs->addComponent<Vengine::MeshComponent>(entity, Vengine::ComponentType::MeshBit, cube);
             m_vengine->ecs->addComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit);
 
-            // Alternate material based on overall index
             int overallIndex = row * gridWidth + col;
             if (overallIndex % 2 == 0) {
                 m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured);
@@ -207,9 +179,8 @@ App::App() {
                 m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured2);
             }
 
-            // Calculate position based on row and column
-            float currentX = startX + col * spacingX;
-            float currentY = startY - row * spacingY; // Subtract because Y typically goes down in screen coords
+            float currentX = startX + static_cast<float>(col) * spacingX;
+            float currentY = startY - static_cast<float>(row) * spacingY;
             m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)
                 ->position = glm::vec3(currentX, currentY, 0.0f);
         }

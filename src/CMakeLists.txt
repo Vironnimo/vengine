@@ -11,7 +11,6 @@ set(SOURCES
         app/test_layer.cpp
         vengine/vengine.cpp
         vengine/core/resource_manager.cpp
-        vengine/core/resources.cpp
         vengine/core/action.cpp
         vengine/core/uuid.cpp
         vengine/core/actions.cpp

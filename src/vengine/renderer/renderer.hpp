@@ -45,12 +45,11 @@ class Renderer {
     auto setVSync(bool enabled) -> void;
 
     auto loadSkybox(const std::vector<std::string>& faceFiles) -> bool;
-    auto addRenderObject(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material) -> void;
+    // todo text should become a component
     auto addTextObject(std::shared_ptr<TextObject> textObject) -> void;
 
    private:
     std::shared_ptr<Window> m_window;
-    std::vector<RenderObject> m_renderObjects;
     std::vector<std::shared_ptr<TextObject>> m_textObjects;
     bool m_skyboxEnabled = false;
 };

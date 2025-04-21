@@ -28,7 +28,7 @@ class Font {
     [[nodiscard]] auto load(const std::string& fileName, FT_Library& ftLibrary) -> bool;
     auto unload() -> bool;
 
-    auto draw(std::string text, float x, float y, float scale, const glm::vec4& color) -> void;
+    auto draw(const std::string& text, float x, float y, float scale, const glm::vec4& color) -> void;
 
     // set these before calling load()
     void setFontSize(unsigned int size);

@@ -2,7 +2,6 @@
 
 #include <bitset>
 #include <cstdint>
-#include <functional>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -35,11 +34,6 @@ class Entities {
             entityMap.erase(entity);
         }
     }
-
-    // template <typename T>
-    // auto registerComponentType(ComponentType componentType) -> void {
-    //     m_typeFactories[componentType] = [] { return std::make_shared<T>(); };
-    // }
 
     template <typename T, typename... Args>
     auto addComponent(EntityId entity, ComponentType componentType, Args&&... args) -> void {
@@ -74,6 +68,7 @@ class Entities {
     }
 
     auto getEntity(EntityId entityId) -> Entity {
+        // todo HEREHREHREHRE
         // fill entity with references to its components
         Entity entity(entityId);
         return entity;  

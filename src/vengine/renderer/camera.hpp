@@ -8,8 +8,8 @@ namespace Vengine {
 struct CameraSettings {
     float fov = 45.0f;
     float aspectRatio = 16.0f / 9.0f;
-    float nearPlane = 0.1f;   // Near clipping plane
-    float farPlane = 1000.0f;  // Far clipping plane
+    float nearPlane = 0.1f;   
+    float farPlane = 1000.0f; 
 };
 
 class Camera {
@@ -36,7 +36,7 @@ class Camera {
     CameraSettings m_settings;
 
     glm::vec3 m_position = glm::vec3(0.0f);
-    glm::vec3 m_rotation = glm::vec3(0.0f);  // Euler angles (pitch, yaw, roll)
+    glm::vec3 m_rotation = glm::vec3(0.0f);  
 
     glm::mat4 m_viewMatrix = glm::mat4(1.0f);
     glm::mat4 m_projectionMatrix = glm::mat4(1.0f);

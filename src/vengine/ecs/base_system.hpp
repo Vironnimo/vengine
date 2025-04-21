@@ -21,7 +21,7 @@ class BaseSystem {
     }
 
    private:
-    bool m_enabled = true;  // Systems are enabled by default
+    bool m_enabled = true;
 };
 
 }  // namespace Vengine

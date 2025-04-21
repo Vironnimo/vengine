@@ -13,7 +13,7 @@ Font::~Font() {
     unload();
 }
 
-auto Font::draw(std::string text, float x, float y, float scale, const glm::vec4& color) -> void {
+auto Font::draw(const std::string& text, float x, float y, float scale, const glm::vec4& color) -> void {
     if (!m_isLoaded) {
         spdlog::error("Cannot draw text - font not loaded");
         return;
@@ -63,7 +63,7 @@ auto Font::draw(std::string text, float x, float y, float scale, const glm::vec4
 
         const Character& ch = it->second;
 
-        float xpos = x + ch.bearing.x * scale;
+        float xpos = x + static_cast<float>(ch.bearing.x) * scale;
         float ypos = y - (ch.size.y - ch.bearing.y) * scale;
 
         float w = ch.size.x * scale;

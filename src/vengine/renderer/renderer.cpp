@@ -6,7 +6,6 @@
 #include <tl/expected.hpp>
 #include "vengine/core/error.hpp"
 #include <utility>
-#include "material.hpp"
 #include "vengine/renderer/camera.hpp"
 #include "vengine/vengine.hpp"
 #include "vengine/renderer/fonts.hpp"
@@ -43,17 +42,6 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
     } else {
         spdlog::warn("RenderSystem not found in ECS");
     }
-    // render renderObjects
-    // for (const auto& object : m_renderObjects) {
-    //     object.material->bind();
-
-    //     // NOTE setting all uniforms for each object is bad, lots of redundant calls.. but it works for now
-    //     object.material->getShader()->setUniformMat4("uView", camera->getViewMatrix());
-    //     object.material->getShader()->setUniformMat4("uProjection", camera->getProjectionMatrix());
-    //     object.material->getShader()->setUniformMat4("uTransform", object.mesh->getTransform());
-
-    //     object.mesh->draw();
-    // }
 
     // render text objects
     for (const auto& textObject : m_textObjects) {
@@ -117,23 +105,22 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
         fov -= static_cast<float>(yoffset);
         if (fov < 1.0f) {
             fov = 1.0f;
-        } else if (fov > 45.0f) {
-            fov = 45.0f;
+        } else if (fov > 90.0f) {
+            fov = 90.0f;
         }
         vengine->renderer->camera->setFov(fov);
     });
 
     setVSync(true);
 
-    // test skybox
-    shaders->add(std::make_shared<Shader>("skybox", "resources/shaders/skybox.vert", "resources/shaders/skybox.frag"));
-    skybox = std::make_unique<Skybox>();
-    skybox->setShader(shaders->get("skybox").value());
-
     return {};
 }
 
 [[nodiscard]] auto Renderer::loadSkybox(const std::vector<std::string>& faceFiles) -> bool {
+    shaders->add(std::make_shared<Shader>("skybox", "resources/shaders/skybox.vert", "resources/shaders/skybox.frag"));
+    skybox = std::make_unique<Skybox>();
+    skybox->setShader(shaders->get("skybox").value());
+
     if (skybox->load(faceFiles)) {
         m_skyboxEnabled = true;
         return true;
@@ -148,10 +135,6 @@ auto Renderer::setVSync(bool enabled) -> void {
     } else {
         glfwSwapInterval(0);
     }
-}
-
-auto Renderer::addRenderObject(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material) -> void {
-    m_renderObjects.push_back({std::move(mesh), std::move(material)});
 }
 
 auto Renderer::addTextObject(std::shared_ptr<TextObject> textObject) -> void {

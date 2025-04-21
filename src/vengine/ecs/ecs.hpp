@@ -15,12 +15,6 @@ namespace Vengine {
 
 using EntityId = uint64_t;
 using ComponentBitset = std::bitset<32>;
-// adding component to bitmask:
-// entityComponentMask[entityID] |= RenderComponent;
-// to check if an entity has a component:
-// if (entityComponentMask[entityID] & RenderComponent) {
-// Entity has a RenderComponent
-// }
 
 class ECS {
    public:

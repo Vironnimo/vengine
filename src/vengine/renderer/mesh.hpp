@@ -14,11 +14,8 @@ class Mesh {
     Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices);
     ~Mesh();
 
-    // Removed transform methods: setPosition, setRotation, setScale, getTransform
-
     auto draw() const -> void;
 
-    // Added getter for vertex buffer info needed in draw calculation
     [[nodiscard]] auto getVertexBuffer() const -> const std::shared_ptr<VertexBuffer>& {
         return m_vertexBuffer;
     }
@@ -28,11 +25,11 @@ class Mesh {
     [[nodiscard]] auto useIndices() const -> bool {
         return m_useIndices;
     }
-    [[nodiscard]] auto getVertexCount() const -> size_t;  // Helper to get vertex count
+    [[nodiscard]] auto getVertexCount() const -> size_t;  
 
    private:
-    std::vector<float> m_vertices;    // Keep raw data for potential re-use? Optional.
-    std::vector<uint32_t> m_indices;  // Keep raw data for potential re-use? Optional.
+    std::vector<float> m_vertices; // keep raw data for who knows what?   
+    std::vector<uint32_t> m_indices;  
     std::shared_ptr<VertexArray> m_vertexArray;
     std::shared_ptr<VertexBuffer> m_vertexBuffer;
     std::shared_ptr<IndexBuffer> m_indexBuffer;

@@ -1,4 +1,5 @@
 #include "mesh_loader.hpp"
+#include <cstddef>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
@@ -48,7 +49,7 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
     for (const auto& shape : shapes) {
         size_t index_offset = 0;
         for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
-            int fv = shape.mesh.num_face_vertices[f];
+            size_t fv = shape.mesh.num_face_vertices[f];
 
             for (size_t v = 0; v < fv; v++) {
                 tinyobj::index_t idx = shape.mesh.indices[index_offset + v];
@@ -56,19 +57,19 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
                 VertexKey key{idx.vertex_index, idx.texcoord_index, idx.normal_index};
 
                 if (uniqueVertices.count(key) == 0) {
-                    uniqueVertices[key] = static_cast<uint32_t>(vertices.size() / floatsPerVertex);
+                    uniqueVertices[key] = static_cast<uint32_t>(vertices.size() / static_cast<size_t>(floatsPerVertex));
 
                     // position
-                    vertices.push_back(attrib.vertices[3 * idx.vertex_index + 0]);
-                    vertices.push_back(attrib.vertices[3 * idx.vertex_index + 1]);
-                    vertices.push_back(attrib.vertices[3 * idx.vertex_index + 2]);
+                    vertices.push_back(attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 0]);
+                    vertices.push_back(attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 1]);
+                    vertices.push_back(attrib.vertices[3 * static_cast<size_t>(idx.vertex_index) + 2]);
 
                     // texture stuff if available
                     if (hasTexCoords && idx.texcoord_index >= 0) {
-                        vertices.push_back(attrib.texcoords[2 * idx.texcoord_index + 0]);
-                        vertices.push_back(attrib.texcoords[2 * idx.texcoord_index + 1]);
+                        vertices.push_back(attrib.texcoords[2 * static_cast<size_t>(idx.texcoord_index) + 0]);
+                        vertices.push_back(attrib.texcoords[2 * static_cast<size_t>(idx.texcoord_index) + 1]);
                     } else if (hasTexCoords) {
-                        // Add dummy tex coords if format expects them but model doesn't provide for this vertex
+                        // add dummy tex coords 
                         vertices.push_back(0.0f);
                         vertices.push_back(0.0f);
                     }
@@ -76,7 +77,7 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
 
                 indices.push_back(uniqueVertices[key]);
             }
-            index_offset += fv;
+            index_offset += static_cast<size_t>(fv);
         }
     }
 
