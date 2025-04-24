@@ -83,7 +83,6 @@ App::App() {
     });
     m_vengine->actions->addKeybinding("turn_camera", {GLFW_MOUSE_BUTTON_LEFT, false, false, false});
 
-
     // load textures
     m_vengine->resourceManager->load<Vengine::Texture>("test_texture", "test.jpg");
     auto texture = m_vengine->resourceManager->get<Vengine::Texture>("test_texture");
@@ -148,23 +147,52 @@ App::App() {
     auto chair = m_vengine->meshLoader->loadFromObj("chair02.obj");
 
     // ecs stuff
+    auto planeMesh = m_vengine->meshLoader->createPlane(500.0f, 500.0f, 1, 1);
+    auto groundEntity = m_vengine->ecs->createEntity();
+    m_vengine->ecs->addComponent<Vengine::MeshComponent>(groundEntity, Vengine::ComponentType::MeshBit, planeMesh);
+    m_vengine->ecs->addComponent<Vengine::TransformComponent>(groundEntity, Vengine::ComponentType::TransformBit);
+    m_vengine->ecs->addComponent<Vengine::RigidbodyComponent>(groundEntity, Vengine::ComponentType::RigidBodyBit);
+    auto rigidBody = m_vengine->ecs->getEntityComponent<Vengine::RigidbodyComponent>(
+        groundEntity, Vengine::ComponentType::RigidBodyBit);
+    rigidBody->isStatic = true;
+    // m_vengine->ecs->addComponent<Vengine::ColliderComponent>(groundEntity, Vengine::ComponentType::ColliderBit);
+
+    float planeHalfWidth = 500.0f / 2.0f;
+    float planeHalfHeight = 500.0f / 2.0f; // Corresponds to Z dimension
+    float colliderThickness = 0.1f; 
+    m_vengine->ecs->addComponent<Vengine::ColliderComponent>(groundEntity, Vengine::ComponentType::ColliderBit,
+        glm::vec3(-planeHalfWidth, -colliderThickness / 2.0f, -planeHalfHeight), // Min corner
+        glm::vec3( planeHalfWidth,  colliderThickness / 2.0f,  planeHalfHeight)  // Max corner
+    );
+    
+
+    m_vengine->ecs->addComponent<Vengine::MaterialComponent>(groundEntity, Vengine::ComponentType::MaterialBit,
+                                                             defaultMaterial);
+    auto groundTransform = m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(
+        groundEntity, Vengine::ComponentType::TransformBit);
+    groundTransform->position = glm::vec3(0.0f, -5.5f, 0.0f);
+
     auto chairEntity = m_vengine->ecs->createEntity();
     m_vengine->ecs->addComponent<Vengine::MeshComponent>(chairEntity, Vengine::ComponentType::MeshBit, chair);
     m_vengine->ecs->addComponent<Vengine::TransformComponent>(chairEntity, Vengine::ComponentType::TransformBit);
-    m_vengine->ecs->addComponent<Vengine::MaterialComponent>(chairEntity, Vengine::ComponentType::MaterialBit, textured);
+    m_vengine->ecs->addComponent<Vengine::ColliderComponent>(chairEntity, Vengine::ComponentType::ColliderBit);
+    m_vengine->ecs->addComponent<Vengine::MaterialComponent>(chairEntity, Vengine::ComponentType::MaterialBit,
+                                                             textured);
     m_vengine->ecs->addComponent<Vengine::PositionComponent>(chairEntity, Vengine::ComponentType::PositionBit);
     m_vengine->ecs->addComponent<Vengine::VelocityComponent>(chairEntity, Vengine::ComponentType::VelocityBit);
-    auto transform = m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity, Vengine::ComponentType::TransformBit);
-    transform->position = glm::vec3(0.0f, 0.0f, 15.0f);
-    transform->scale = glm::vec3(0.05f, 0.05f, 0.05f);
+    m_vengine->ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity, Vengine::ComponentType::RigidBodyBit);
+    auto chairTransform = m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(
+        chairEntity, Vengine::ComponentType::TransformBit);
+    chairTransform->position = glm::vec3(0.0f, 14.0f, 15.0f);
+    chairTransform->scale = glm::vec3(0.05f, 0.05f, 0.05f);
 
     // a grid of cubes
     int gridWidth = 30;
-    int gridHeight = 30; 
-    float spacingX = 2.4f; 
-    float spacingY = 2.4f; 
-    float startX = - (static_cast<float>(gridWidth) / 2.0f) * spacingX; 
-    float startY = (static_cast<float>(gridHeight) / 2.0f) * spacingY;  
+    int gridHeight = 30;
+    float spacingX = 2.4f;
+    float spacingY = 2.4f;
+    float startX = -(static_cast<float>(gridWidth) / 2.0f) * spacingX;
+    float startY = (static_cast<float>(gridHeight) / 2.0f) * spacingY;
 
     for (int row = 0; row < gridHeight; ++row) {
         for (int col = 0; col < gridWidth; ++col) {
@@ -174,14 +202,17 @@ App::App() {
 
             int overallIndex = row * gridWidth + col;
             if (overallIndex % 2 == 0) {
-                m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured);
+                m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit,
+                                                                         textured);
             } else {
-                m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured2);
+                m_vengine->ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit,
+                                                                         textured2);
             }
 
             float currentX = startX + static_cast<float>(col) * spacingX;
             float currentY = startY - static_cast<float>(row) * spacingY;
-            m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)
+            m_vengine->ecs
+                ->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)
                 ->position = glm::vec3(currentX, currentY, 0.0f);
         }
     }

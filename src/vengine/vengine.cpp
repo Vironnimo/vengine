@@ -63,6 +63,8 @@ Vengine::~Vengine() {
     renderSystem->setEnabled(false);
     ecs->registerSystem("RenderSystem", renderSystem);
     ecs->registerSystem("MovementSystem", std::make_shared<MovementSystem>());
+    ecs->registerSystem("SimplePhysicsSystem", std::make_shared<PhysicsSystem>());
+    ecs->registerSystem("CollisionSystem", std::make_shared<CollisionSystem>());
 
     // this is weird here, needs to move
     glfwSetWindowUserPointer(window->get(), this);

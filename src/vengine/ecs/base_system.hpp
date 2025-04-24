@@ -5,8 +5,6 @@
 
 namespace Vengine {
 
-class ECS;
-
 class BaseSystem {
    public:
     virtual ~BaseSystem() = default;
