@@ -36,9 +36,9 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
     }
 
     // render all viable entities
-    auto renderSystem = ecs->getSystem<RenderSystem>("RenderSystem");  
+    auto renderSystem = ecs->getSystem<RenderSystem>("RenderSystem");
     if (renderSystem) {
-        renderSystem->update(ecs->entities, deltaTime);  
+        renderSystem->update(ecs->entities, deltaTime);
     } else {
         spdlog::warn("RenderSystem not found in ECS");
     }
@@ -111,7 +111,8 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
         vengine->renderer->camera->setFov(fov);
     });
 
-    setVSync(true);
+    // should also be somewhere else
+    setVSync(false);
 
     return {};
 }

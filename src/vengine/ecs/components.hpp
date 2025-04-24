@@ -52,7 +52,6 @@ struct TransformComponent : public BaseComponent {
     glm::vec3 scale = glm::vec3(1.0f);
     glm::mat4 transform = glm::mat4(1.0f);
 
-    // Helper to update the matrix (could be moved to a TransformSystem later)
     void updateMatrix() {
         transform = glm::mat4(1.0f);
         transform = glm::translate(transform, position);
@@ -73,28 +72,22 @@ struct RigidbodyComponent : public BaseComponent {
 
 struct ColliderComponent : public BaseComponent {
     using EntityId = uint64_t;
-    // AABB defined by min and max points relative to the entity's origin
-    glm::vec3 min = glm::vec3(-0.5f); // Default half-unit cube centered at origin
+
+    glm::vec3 min = glm::vec3(-0.5f); 
     glm::vec3 max = glm::vec3(0.5f);
 
-    // Optional: Store world-space AABB after transformation for easier checks
     glm::vec3 worldMin;
     glm::vec3 worldMax;
 
-    // Flag to indicate if a collision occurred this frame
     bool colliding = false;
-    EntityId collidingWith = 0; // ID of the entity it's colliding with (simple case)
+    EntityId collidingWith = 0;
 
-    // Constructor to set initial bounds (relative to origin)
     ColliderComponent(const glm::vec3& minBounds, const glm::vec3& maxBounds)
         : min(minBounds), max(maxBounds) {}
-
-    // Default constructor
     ColliderComponent() = default;
 
-    // Helper to update world bounds based on transform
+    // update world bounds for collision detection
     void updateWorldBounds(const glm::mat4& transform) {
-         // Transform the 8 corners of the local AABB to world space
         glm::vec4 corners[8] = {
             transform * glm::vec4(min.x, min.y, min.z, 1.0f),
             transform * glm::vec4(max.x, min.y, min.z, 1.0f),
@@ -106,7 +99,6 @@ struct ColliderComponent : public BaseComponent {
             transform * glm::vec4(max.x, max.y, max.z, 1.0f)
         };
 
-        // Find the min and max extents in world space
         worldMin = glm::vec3(corners[0]);
         worldMax = glm::vec3(corners[0]);
         for (int i = 1; i < 8; ++i) {

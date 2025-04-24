@@ -11,10 +11,10 @@
 namespace Vengine {
 
 struct WindowParams {
-    std::string title = "My App";
+    std::string title = "Vengine";
     bool centered = true;
-    int width = 640;
-    int height = 480;
+    int width = 1024;
+    int height = 768;
     int widthMin = 0;
     int heightMin = 0;
     int maxFps = 0;

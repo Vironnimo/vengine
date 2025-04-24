@@ -23,7 +23,7 @@ Vengine::~Vengine() {
 
 [[nodiscard]] auto Vengine::init() -> tl::expected<void, Error> {
     timers = std::make_unique<Timers>();
-    timers->start("Vengine.start");
+    timers->start("vengine.start");
 
     // spdlog stuff
     spdlog::set_level(spdlog::level::debug);
@@ -32,7 +32,7 @@ Vengine::~Vengine() {
 
     events = std::make_unique<EventSystem>();
 
-    timers->start("Vengine.window_creation");
+    timers->start("vengine.window_creation");
     window = std::make_shared<Window>();
     if (auto result = window->init(); !result) {
         return tl::unexpected(result.error());
@@ -41,7 +41,7 @@ Vengine::~Vengine() {
     if (auto result = window->create(params); !result) {
         return tl::unexpected(result.error());
     }
-    spdlog::info("Vengine: window creation time: {} ms", timers->stop("Vengine.window_creation"));
+    spdlog::info("Vengine: window creation time: {} ms", timers->stop("vengine.window_creation"));
 
     renderer = std::make_unique<Renderer>();
     if (auto result = renderer->init(window); !result) {
@@ -60,17 +60,18 @@ Vengine::~Vengine() {
     ecs = std::make_shared<ECS>();
     // NOTE: add default systems
     auto renderSystem = std::make_shared<RenderSystem>(renderer->camera);
-    renderSystem->setEnabled(false);
-    ecs->registerSystem("RenderSystem", renderSystem);
+    renderSystem->setEnabled(false); // because it's not called automatically, it's called manually by the renderer
     ecs->registerSystem("MovementSystem", std::make_shared<MovementSystem>());
-    ecs->registerSystem("SimplePhysicsSystem", std::make_shared<PhysicsSystem>());
+    ecs->registerSystem("TransformSystem", std::make_shared<TransformSystem>());
     ecs->registerSystem("CollisionSystem", std::make_shared<CollisionSystem>());
+    ecs->registerSystem("PhysicsSystem", std::make_shared<PhysicsSystem>());
+    ecs->registerSystem("RenderSystem", renderSystem);
 
     // this is weird here, needs to move
     glfwSetWindowUserPointer(window->get(), this);
 
     // end timer and print
-    auto elapsedTime = timers->getElapsed("Vengine.start");
+    auto elapsedTime = timers->getElapsed("vengine.start");
     spdlog::info("Vengine: initialization took {} ms", elapsedTime);
 
     spdlog::info("Vengine: successfully started.");

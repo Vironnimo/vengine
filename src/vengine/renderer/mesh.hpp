@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include "vertex_array.hpp"
 #include "vertex_buffer.hpp"
-#include "index_buffer.hpp"  // Added missing include
+#include "index_buffer.hpp" 
 
 namespace Vengine {
 
@@ -16,6 +16,13 @@ class Mesh {
 
     auto draw() const -> void;
 
+    [[nodiscard]] auto getBounds() const -> std::pair<glm::vec3, glm::vec3>; 
+    [[nodiscard]] auto getVertexArray() const -> const std::shared_ptr<VertexArray>& {
+        return m_vertexArray;
+    }
+    [[nodiscard]] auto getVertexBuffer() -> std::shared_ptr<VertexBuffer>& {
+        return m_vertexBuffer;
+    }
     [[nodiscard]] auto getVertexBuffer() const -> const std::shared_ptr<VertexBuffer>& {
         return m_vertexBuffer;
     }
