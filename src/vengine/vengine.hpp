@@ -10,8 +10,9 @@
 #include "vengine/core/actions.hpp"
 #include "vengine/core/event_system.hpp"
 #include "vengine/core/timers.hpp"
-#include "vengine/core/layer.hpp"
+#include "vengine/core/module.hpp"
 #include "vengine/ecs/ecs.hpp"
+#include "vengine/core/scenes.hpp"
 
 namespace Vengine {
 
@@ -31,13 +32,23 @@ class Vengine {
     ~Vengine();
     [[nodiscard]] auto init() -> tl::expected<void, Error>;
 
-    void addLayer(std::shared_ptr<Layer> layer);
-    void removeLayer(std::shared_ptr<Layer> layer);
+    void addModule(std::shared_ptr<Module> module);
+    void removeModule(std::shared_ptr<Module> module);
+
+    // TODO: move this somewhere else i guess
+    void addScene(const std::string& name, std::shared_ptr<Scene> scene);
+
+    template <typename T>
+    void addScene(const std::string& name);
+
+    void switchToScene(const std::string& name);
+    void removeScene(const std::string& name);
 
     auto run() -> void;
 
    private:
-    std::vector<std::shared_ptr<Layer>> m_layers;
+    std::unique_ptr<Scenes> m_scenes;
+    std::vector<std::shared_ptr<Module>> m_modules;
 };
 
 }  // namespace Vengine

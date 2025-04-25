@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "app/test_scene.hpp"
 #include "vengine/ecs/components.hpp"
 #include "vengine/vengine.hpp"
 #include "vengine/renderer/renderer.hpp"
@@ -19,32 +20,38 @@ App::App() {
     // lets add actions to move the camera
     const float cameraSpeed = 100.0f;
     m_vengine->actions->add("camera.move.right", "Move Camera", [this, cameraSpeed]() {
-        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() + glm::vec3(cameraSpeed * m_vengine->timers->deltaTime(), 0.0f, 0.0f));
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(cameraSpeed * m_vengine->timers->deltaTime(), 0.0f, 0.0f));
     });
     m_vengine->actions->addKeybinding("camera.move.right", {GLFW_KEY_F, false, false, false});
 
     m_vengine->actions->add("camera.move.left", "Move Camera", [this, cameraSpeed]() {
-        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() + glm::vec3(-cameraSpeed * m_vengine->timers->deltaTime(), 0.0f, 0.0f));
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(-cameraSpeed * m_vengine->timers->deltaTime(), 0.0f, 0.0f));
     });
     m_vengine->actions->addKeybinding("camera.move.left", {GLFW_KEY_S, false, false, false});
 
     m_vengine->actions->add("camera.move.up", "Move Camera", [this, cameraSpeed]() {
-        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() + glm::vec3(0.0f, cameraSpeed * m_vengine->timers->deltaTime(), 0.0f));
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(0.0f, cameraSpeed * m_vengine->timers->deltaTime(), 0.0f));
     });
     m_vengine->actions->addKeybinding("camera.move.up", {GLFW_KEY_BACKSPACE, false, false, false});
 
     m_vengine->actions->add("camera.move.down", "Move Camera", [this, cameraSpeed]() {
-        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() + glm::vec3(0.0f, -cameraSpeed * m_vengine->timers->deltaTime(), 0.0f));
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(0.0f, -cameraSpeed * m_vengine->timers->deltaTime(), 0.0f));
     });
     m_vengine->actions->addKeybinding("camera.move.down", {GLFW_KEY_DELETE, false, false, false});
 
     m_vengine->actions->add("camera.move.forward", "Move Camera", [this, cameraSpeed]() {
-        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() + glm::vec3(0.0f, 0.0f, -cameraSpeed * m_vengine->timers->deltaTime()));
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(0.0f, 0.0f, -cameraSpeed * m_vengine->timers->deltaTime()));
     });
     m_vengine->actions->addKeybinding("camera.move.forward", {GLFW_KEY_E, false, false, false});
 
     m_vengine->actions->add("camera.move.backward", "Move Camera", [this, cameraSpeed]() {
-        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() + glm::vec3(0.0f, 0.0f, cameraSpeed * m_vengine->timers->deltaTime()));
+        m_vengine->renderer->camera->setPosition(m_vengine->renderer->camera->getPosition() +
+                                                 glm::vec3(0.0f, 0.0f, cameraSpeed * m_vengine->timers->deltaTime()));
     });
     m_vengine->actions->addKeybinding("camera.move.backward", {GLFW_KEY_D, false, false, false});
 
@@ -62,6 +69,7 @@ App::App() {
         double xpos;
         double ypos;
         glfwGetCursorPos(m_vengine->window->get(), &xpos, &ypos);
+        // glfwSetCursorPos(m_vengine->window->get(), 1024 / 2, 768 / 2);
 
         static double lastX = xpos;
         static double lastY = ypos;
@@ -127,12 +135,18 @@ App::App() {
     auto time = m_vengine->timers->stop("skybox");
     spdlog::info("Skybox loaded in {} ms", time);
 
-    // layers
-    m_testLayer = std::make_shared<TestLayer>(m_vengine);
-    m_vengine->addLayer(m_testLayer);
+    // modules
+    m_testModule = std::make_shared<TestModule>(m_vengine);
+    m_vengine->addModule(m_testModule);
 
     auto end = m_vengine->timers->stop("app_constructor");
     spdlog::info("App constructor took {} ms", end);
+
+    // scene stuff
+    // create a scene and add it to the scene manager
+    auto testScene = std::make_shared<TestScene>("TestScene");
+    m_vengine->addScene("TestScene", testScene);
+    m_vengine->switchToScene("TestScene");
 
     // meshes
     auto cubeMesh = m_vengine->meshLoader->loadFromObj("box.obj");

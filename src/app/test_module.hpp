@@ -3,12 +3,12 @@
 #include <memory>
 
 #include "vengine/vengine.hpp"
-#include "vengine/core/layer.hpp"
+#include "vengine/core/module.hpp"
 #include "vengine/renderer/renderer.hpp"
 
-class TestLayer : public Vengine::Layer {
+class TestModule : public Vengine::Module {
    public:
-    TestLayer(const std::shared_ptr<Vengine::Vengine>& vengine);
+    TestModule(const std::shared_ptr<Vengine::Vengine>& vengine);
 
     void onUpdate(float deltaTime) override;
 

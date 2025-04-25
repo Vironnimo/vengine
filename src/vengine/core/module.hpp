@@ -2,9 +2,9 @@
 
 namespace Vengine {
 
-class Layer {
+class Module {
 public:
-    virtual ~Layer() = default;
+    virtual ~Module() = default;
     
     virtual void onUpdate(float deltaTime) = 0;
     virtual void onAttach() {}

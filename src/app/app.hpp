@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "app/test_layer.hpp"
+#include "app/test_module.hpp"
 #include "vengine/vengine.hpp"
 
 class App {
@@ -12,5 +12,5 @@ class App {
 
    private:
     std::shared_ptr<Vengine::Vengine> m_vengine;
-    std::shared_ptr<TestLayer> m_testLayer;
+    std::shared_ptr<TestModule> m_testModule;
 };

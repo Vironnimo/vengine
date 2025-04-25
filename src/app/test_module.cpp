@@ -1,11 +1,11 @@
-#include "test_layer.hpp"
+#include "test_module.hpp"
 
 #include <memory>
 #include <string>
 
 #include "vengine/vengine.hpp"
 
-TestLayer::TestLayer(const std::shared_ptr<Vengine::Vengine>& vengine) : m_vengine(vengine) {
+TestModule::TestModule(const std::shared_ptr<Vengine::Vengine>& vengine) : m_vengine(vengine) {
     auto venginePtr = m_vengine.lock();
     if (!venginePtr) {
         spdlog::error("TestLayer: Vengine pointer is invalid");
@@ -23,7 +23,7 @@ TestLayer::TestLayer(const std::shared_ptr<Vengine::Vengine>& vengine) : m_vengi
     venginePtr->renderer->addTextObject(m_textObject);
 }
 
-void TestLayer::onUpdate(float deltaTime) {
+void TestModule::onUpdate(float deltaTime) {
     auto venginePtr = m_vengine.lock();
     if (!venginePtr) {
         return;
@@ -34,6 +34,6 @@ void TestLayer::onUpdate(float deltaTime) {
     if (m_fpsUpdateTimer >= 0.2f) {
         m_fpsUpdateTimer = 0.0f;
         int fps = static_cast<int>(1.0f / deltaTime);
-        m_textObject->text = "FPS: " + std::to_string(fps) + "\n" + "Entity count: " + std::to_string(venginePtr->ecs->entities->getEntityCount());
+        m_textObject->text = "FPS: " + std::to_string(fps) + "\n" + "Entity count: " + std::to_string(venginePtr->ecs->getEntityCount());
     }
 }

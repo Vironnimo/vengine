@@ -18,29 +18,29 @@ using ComponentBitset = std::bitset<32>;
 
 class ECS {
    public:
-    std::shared_ptr<Entities> entities;
+    // active entities set
 
     ECS() {
-        entities = std::make_shared<Entities>();
         spdlog::debug("Constructor ECS");
+        m_activeEntities = std::make_shared<Entities>();
     }
 
     auto createEntity() const -> EntityId {
-        return entities->createEntity();
+        return m_activeEntities->createEntity();
     }
 
     auto destroyEntity(EntityId entity) const -> void {
-        entities->destroyEntity(entity);
+        m_activeEntities->destroyEntity(entity);
     }
 
     template <typename T, typename... Args>
     auto addComponent(EntityId entity, ComponentType componentType, Args&&... args) -> void {
-        entities->addComponent<T>(entity, componentType, std::forward<Args>(args)...);
+        m_activeEntities->addComponent<T>(entity, componentType, std::forward<Args>(args)...);
     }
 
     template <typename T>
     auto getEntityComponent(EntityId entity, ComponentType componentType) -> std::shared_ptr<T> {
-        return entities->getEntityComponent<T>(entity, componentType);
+        return m_activeEntities->getEntityComponent<T>(entity, componentType);
     }
 
     auto registerSystem(std::string id, std::shared_ptr<BaseSystem> system) -> void {
@@ -63,11 +63,39 @@ class ECS {
                 continue;
             }
 
-            system->update(entities, deltaTime);
+            system->update(m_activeEntities, deltaTime);
         }
+    }
+    
+    auto getEntityCount() const -> size_t {
+        return m_activeEntities->getEntityCount();
+    }
+
+    auto setActiveEntities(std::shared_ptr<Entities> entities) -> void {
+        m_activeEntities = std::move(entities);
+    }
+
+    auto createEntitySet(const std::string& name) -> std::shared_ptr<Entities> {
+        auto entitySet = std::make_shared<Entities>();
+        m_entitySets[name] = entitySet;
+        return entitySet;
+    }
+
+    [[nodiscard]] auto getActiveEntities() const -> std::shared_ptr<Entities> {
+        return m_activeEntities;
+    }
+
+    auto getEntitySet(const std::string& name) const -> std::shared_ptr<Entities> {
+        auto it = m_entitySets.find(name);
+        if (it != m_entitySets.end()) {
+            return it->second;
+        }
+        return nullptr;
     }
 
    private:
+    std::shared_ptr<Entities> m_activeEntities;
+    std::unordered_map<std::string, std::shared_ptr<Entities>> m_entitySets;
     std::unordered_map<std::string, std::shared_ptr<BaseSystem>> m_systems;
 };
 

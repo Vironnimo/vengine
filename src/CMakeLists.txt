@@ -8,7 +8,8 @@ find_package(Freetype REQUIRED)
 
 set(SOURCES
         app/app.cpp
-        app/test_layer.cpp
+        app/test_module.cpp
+        app/test_scene.cpp
         vengine/vengine.cpp
         vengine/core/resource_manager.cpp
         vengine/core/action.cpp
@@ -16,6 +17,7 @@ set(SOURCES
         vengine/core/actions.cpp
         vengine/core/timers.cpp
         vengine/core/event_system.cpp
+        vengine/core/scenes.cpp
         vengine/renderer/renderer.cpp
         vengine/renderer/camera.cpp
         vengine/renderer/material.cpp

@@ -38,7 +38,7 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
     // render all viable entities
     auto renderSystem = ecs->getSystem<RenderSystem>("RenderSystem");
     if (renderSystem) {
-        renderSystem->update(ecs->entities, deltaTime);
+        renderSystem->update(ecs->getActiveEntities(), deltaTime);
     } else {
         spdlog::warn("RenderSystem not found in ECS");
     }

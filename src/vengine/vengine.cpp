@@ -56,11 +56,13 @@ Vengine::~Vengine() {
     actions = std::make_unique<Actions>();
     meshLoader = std::make_unique<MeshLoader>();
 
+    m_scenes = std::make_unique<Scenes>();
+
     // ecs
     ecs = std::make_shared<ECS>();
     // NOTE: add default systems
     auto renderSystem = std::make_shared<RenderSystem>(renderer->camera);
-    renderSystem->setEnabled(false); // because it's not called automatically, it's called manually by the renderer
+    renderSystem->setEnabled(false);  // because it's not called automatically, it's called manually by the renderer
     ecs->registerSystem("MovementSystem", std::make_shared<MovementSystem>());
     ecs->registerSystem("TransformSystem", std::make_shared<TransformSystem>());
     ecs->registerSystem("CollisionSystem", std::make_shared<CollisionSystem>());
@@ -70,7 +72,7 @@ Vengine::~Vengine() {
     // this is weird here, needs to move
     glfwSetWindowUserPointer(window->get(), this);
 
-    // end timer and print
+    // vengine startup time
     auto elapsedTime = timers->getElapsed("vengine.start");
     spdlog::info("Vengine: initialization took {} ms", elapsedTime);
 
@@ -88,28 +90,45 @@ auto Vengine::run() -> void {
             break;
         }
 
-        for (auto& layer : m_layers) {
-            layer->onUpdate(timers->deltaTime());
-        }
-
         timers->update();
+        for (auto& module : m_modules) {
+            module->onUpdate(timers->deltaTime());
+        }
         actions->handleInput(window->get());
         ecs->runSystems(timers->deltaTime());
         renderer->render(ecs, timers->deltaTime());
     }
 }
 
-void Vengine::addLayer(std::shared_ptr<Layer> layer) {
-    layer->onAttach();
-    m_layers.push_back(std::move(layer));
+void Vengine::addModule(std::shared_ptr<Module> module) {
+    module->onAttach();
+    m_modules.push_back(std::move(module));
 }
 
-void Vengine::removeLayer(std::shared_ptr<Layer> layer) {
-    auto it = std::find(m_layers.begin(), m_layers.end(), layer);
-    if (it != m_layers.end()) {
+void Vengine::removeModule(std::shared_ptr<Module> module) {
+    auto it = std::find(m_modules.begin(), m_modules.end(), module);
+    if (it != m_modules.end()) {
         (*it)->onDetach();
-        m_layers.erase(it);
+        m_modules.erase(it);
     }
+}
+
+void Vengine::addScene(const std::string& name, std::shared_ptr<Scene> scene) {
+    m_scenes->add(name, std::move(scene), ecs->createEntitySet(name));
+}
+
+template <typename T>
+void Vengine::addScene(const std::string& name) {
+    auto scene = std::make_shared<T>(name);
+    m_scenes->add(name, std::move(scene), ecs->createEntitySet(name));
+}
+
+void Vengine::switchToScene(const std::string& name) {
+    m_scenes->switchTo(name);
+}
+
+void Vengine::removeScene(const std::string& name) {
+    m_scenes->remove(name);
 }
 
 }  // namespace Vengine
