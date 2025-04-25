@@ -71,8 +71,8 @@ class ECS {
         return m_activeEntities->getEntityCount();
     }
 
-    auto setActiveEntities(std::shared_ptr<Entities> entities) -> void {
-        m_activeEntities = std::move(entities);
+    auto setActiveEntities(const std::string& name) -> void {
+        m_activeEntities = getEntitySet(name);
     }
 
     auto createEntitySet(const std::string& name) -> std::shared_ptr<Entities> {

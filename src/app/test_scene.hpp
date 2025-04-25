@@ -5,6 +5,6 @@
 class TestScene : public Vengine::Scene {
     public:
         TestScene(std::string name) : Scene(std::move(name)) {}
-        void load() override; 
+        void load(Vengine::Vengine& vengine) override; 
         void cleanup() override;
 };

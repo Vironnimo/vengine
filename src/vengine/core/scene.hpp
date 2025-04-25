@@ -14,13 +14,16 @@ namespace Vengine {
 // current entitites list.
 // on scene switch: ??
 // for now we leave the systems as they are, just that they now use the current entities list.
+
+class Vengine;  
+
 class Scene {
    public:
     Scene(std::string name) : m_name(std::move(name)) {
     }
     virtual ~Scene() = default;
 
-    virtual void load() = 0;
+    virtual void load(Vengine& vengine) = 0;
     virtual void cleanup() = 0;
 
     auto setEntities(std::shared_ptr<Entities> entities) -> void {
@@ -37,7 +40,7 @@ class Scene {
 
    protected:
     std::string m_name;
-
+    
    private:
     std::shared_ptr<Entities> m_entities;
 };

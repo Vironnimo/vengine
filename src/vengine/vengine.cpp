@@ -92,7 +92,7 @@ auto Vengine::run() -> void {
 
         timers->update();
         for (auto& module : m_modules) {
-            module->onUpdate(timers->deltaTime());
+            module->onUpdate(*this, timers->deltaTime());
         }
         actions->handleInput(window->get());
         ecs->runSystems(timers->deltaTime());
@@ -101,14 +101,14 @@ auto Vengine::run() -> void {
 }
 
 void Vengine::addModule(std::shared_ptr<Module> module) {
-    module->onAttach();
+    module->onAttach(*this);
     m_modules.push_back(std::move(module));
 }
 
 void Vengine::removeModule(std::shared_ptr<Module> module) {
     auto it = std::find(m_modules.begin(), m_modules.end(), module);
     if (it != m_modules.end()) {
-        (*it)->onDetach();
+        (*it)->onDetach(*this);
         m_modules.erase(it);
     }
 }
@@ -124,7 +124,8 @@ void Vengine::addScene(const std::string& name) {
 }
 
 void Vengine::switchToScene(const std::string& name) {
-    m_scenes->switchTo(name);
+    ecs->setActiveEntities(name);
+    m_scenes->switchTo(name, *this);
 }
 
 void Vengine::removeScene(const std::string& name) {

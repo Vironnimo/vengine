@@ -7,18 +7,15 @@ void Scenes::add(const std::string& name, std::shared_ptr<Scene> scene, std::sha
     m_scenes[name]->setEntities(std::move(entities));
 }
 
-void Scenes::switchTo(std::shared_ptr<Scene> scene) {
-    // if (m_currentScene) {
-    //     m_currentScene->cleanup();
-    // }
-    m_currentScene = std::move(scene);
-    m_currentScene->load();
-}
-
-void Scenes::switchTo(const std::string& name) {
+void Scenes::switchTo(const std::string& name, Vengine& vengine) {
     auto it = m_scenes.find(name);
     if (it != m_scenes.end()) {
-        switchTo(it->second);
+        if (m_currentScene) {
+            m_currentScene->cleanup();
+        }   
+        m_currentScene = it->second;
+
+        m_currentScene->load(vengine);
     } else {
         spdlog::error("Scene '{}' not found", name);
     }

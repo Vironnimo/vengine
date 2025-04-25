@@ -7,11 +7,12 @@
 
 namespace Vengine {
 
+class Vengine;  // Forward declaration of Vengine class
+
 class Scenes {
    public:
     void add(const std::string& name, std::shared_ptr<Scene> scene, std::shared_ptr<Entities> entities); 
-    void switchTo(std::shared_ptr<Scene> scene);
-    void switchTo(const std::string& name);
+    void switchTo(const std::string& name, Vengine& vengine);
     void remove(std::string name); 
 
    private:
