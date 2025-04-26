@@ -5,6 +5,7 @@
 void TestScene::load(Vengine::Vengine& vengine) {
     m_name = "TestScene"; // todo set this in the constructor or during addScene, where we have a name anyway
     spdlog::info("Loading TestScene: {}", m_name);
+
     // load textures
     vengine.resourceManager->load<Vengine::Texture>("test_texture", "test.jpg");
     vengine.resourceManager->load<Vengine::Texture>("test_texture2", "test2.jpg");

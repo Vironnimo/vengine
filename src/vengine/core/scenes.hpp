@@ -15,6 +15,10 @@ class Scenes {
     void switchTo(const std::string& name, Vengine& vengine);
     void remove(std::string name); 
 
+    [[nodiscard]] auto getCurrentSceneName() const -> std::string {
+        return m_currentScene->getName();
+    }
+
    private:
     std::shared_ptr<Scene> m_currentScene;
     std::unordered_map<std::string, std::shared_ptr<Scene>> m_scenes;

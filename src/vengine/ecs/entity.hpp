@@ -39,4 +39,5 @@ class Entity {
     EntityId m_id;
     std::unordered_map<ComponentType, std::shared_ptr<BaseComponent>> m_components;
 };
+
 }  // namespace Vengine

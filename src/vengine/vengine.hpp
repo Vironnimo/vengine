@@ -43,6 +43,9 @@ class Vengine {
 
     void switchToScene(const std::string& name);
     void removeScene(const std::string& name);
+    [[nodiscard]] auto getCurrentSceneName() const -> std::string {
+        return m_scenes->getCurrentSceneName();
+    }
 
     auto run() -> void;
 

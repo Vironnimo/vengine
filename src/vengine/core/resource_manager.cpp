@@ -1,20 +1,24 @@
 #include "resource_manager.hpp"
+#define MINIAUDIO_IMPLEMENTATION
+#include <miniaudio.h>
 
 // note might be wrong here, we'll see
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #endif
+#include <stb_image.h>
 
 #include <spdlog/spdlog.h>
 #include <tl/expected.hpp>
 #include <vengine/core/error.hpp>
+
+
 #include "resources.hpp"
 
 namespace Vengine {
 
 ResourceManager::ResourceManager() {
     spdlog::debug("Constructor ResourceManager");
-    init();
 }
 
 auto ResourceManager::init() -> tl::expected<void, Error> {
@@ -24,6 +28,12 @@ auto ResourceManager::init() -> tl::expected<void, Error> {
         // spdlog::warn("Resource root does not exist: {}", m_resourceRoot.string());
         return tl::unexpected(Error{"Resource root does not exist"});
     }
+
+    ma_result result = ma_engine_init(nullptr, &m_audioEngine);
+    if (result != MA_SUCCESS) {
+        return tl::unexpected(Error{"Failed to initialize audio engine"});
+    }
+    spdlog::info("Audio engine initialized successfully");
 
     return {};
 }

@@ -19,6 +19,18 @@ Vengine::Vengine() {
 
 Vengine::~Vengine() {
     spdlog::debug("Destructor Vengine");
+    // making sure resource manager is destroyed last
+    m_scenes.reset();
+    meshLoader.reset();
+    actions.reset();
+    renderer.reset();
+    events.reset();
+    timers.reset();
+    ecs.reset();
+    m_modules.clear();
+    window.reset();
+    resourceManager.reset();
+
 }
 
 [[nodiscard]] auto Vengine::init() -> tl::expected<void, Error> {
