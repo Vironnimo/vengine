@@ -5,6 +5,7 @@
 #include <memory>
 #include <tl/expected.hpp>
 
+#include "vengine/core/thread_manager.hpp"
 #include "vengine/renderer/renderer.hpp"
 #include "vengine/core/resource_manager.hpp"
 
@@ -30,7 +31,6 @@ Vengine::~Vengine() {
     m_modules.clear();
     window.reset();
     resourceManager.reset();
-
 }
 
 [[nodiscard]] auto Vengine::init() -> tl::expected<void, Error> {
@@ -60,7 +60,9 @@ Vengine::~Vengine() {
         return tl::unexpected(result.error());
     }
 
-    resourceManager = std::make_unique<ResourceManager>();
+    threadManager = std::make_shared<ThreadManager>();
+
+    resourceManager = std::make_unique<ResourceManager>(threadManager);
     if (auto result = resourceManager->init(); !result) {
         return tl::unexpected(result.error());
     }
@@ -75,10 +77,16 @@ Vengine::~Vengine() {
     // NOTE: add default systems
     auto renderSystem = std::make_shared<RenderSystem>(renderer->camera);
     renderSystem->setEnabled(false);  // because it's not called automatically, it's called manually by the renderer
+    auto collisionSystem = std::make_shared<CollisionSystem>();
+    auto physicsSystem = std::make_shared<PhysicsSystem>();
+    auto transformSystem = std::make_shared<TransformSystem>();
+    transformSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
+    collisionSystem->setEnabled(false);  // these two run on an extra thread
+    physicsSystem->setEnabled(false);
     ecs->registerSystem("MovementSystem", std::make_shared<MovementSystem>());
     ecs->registerSystem("TransformSystem", std::make_shared<TransformSystem>());
-    ecs->registerSystem("CollisionSystem", std::make_shared<CollisionSystem>());
-    ecs->registerSystem("PhysicsSystem", std::make_shared<PhysicsSystem>());
+    ecs->registerSystem("CollisionSystem", collisionSystem);
+    ecs->registerSystem("PhysicsSystem", physicsSystem);
     ecs->registerSystem("RenderSystem", renderSystem);
 
     // this is weird here, needs to move
@@ -103,10 +111,31 @@ auto Vengine::run() -> void {
         }
 
         timers->update();
+
+        threadManager->processMainThreadTasks();
+
         for (auto& module : m_modules) {
             module->onUpdate(*this, timers->deltaTime());
         }
         actions->handleInput(window->get());
+
+        auto transformSystem = ecs->getSystem<TransformSystem>("TransformSystem");
+        transformSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+
+        auto physicsTaskFuture = threadManager->enqueueTask(
+            [this]() {
+                auto collisionSystem = ecs->getSystem<CollisionSystem>("CollisionSystem");
+                auto physicsSystem = ecs->getSystem<PhysicsSystem>("PhysicsSystem");
+                if (collisionSystem) {
+                    collisionSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+                }
+                if (physicsSystem) {
+                    physicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+                }
+            },
+            "Physics and Collision System");
+        physicsTaskFuture.wait();
+
         ecs->runSystems(timers->deltaTime());
         renderer->render(ecs, timers->deltaTime());
     }
@@ -117,7 +146,7 @@ void Vengine::addModule(std::shared_ptr<Module> module) {
     m_modules.push_back(std::move(module));
 }
 
-void Vengine::removeModule(std::shared_ptr<Module> module) {
+void Vengine::removeModule(const std::shared_ptr<Module>& module) {
     auto it = std::find(m_modules.begin(), m_modules.end(), module);
     if (it != m_modules.end()) {
         (*it)->onDetach(*this);

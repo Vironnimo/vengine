@@ -28,40 +28,64 @@ class IResource {
 
 class Texture : public IResource {
    public:
+    struct RawImageData {
+        unsigned char* pixels = nullptr;
+        int width = 0;
+        int height = 0;
+        int channels = 0;
+    };
+
     auto load(const std::string& fileName) -> bool override {
         auto folder = std::filesystem::path("resources/textures");
         auto fullPath = folder / fileName;
 
-        // stbi_set_flip_vertically_on_load(true);  // do we need this?
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // without this we have rainbowcolors i feel like
+        if (!m_rawData) {
+            m_rawData = std::make_shared<RawImageData>();
+        }
 
-        unsigned char* textureData = stbi_load(fullPath.string().c_str(), &m_width, &m_height, &m_channels, 0);
-        if (textureData == nullptr) {
-            spdlog::error("Failed to load texture: {}", fullPath.string());
+        m_rawData->pixels = stbi_load(fullPath.string().c_str(), &m_rawData->width, &m_rawData->height, &m_rawData->channels, 0);
+
+        if (!m_rawData->pixels) {
+            spdlog::error("Failed to load texture from file: {}", fullPath.string());
             return false;
         }
 
-        glGenTextures(1, &m_textureID);
-        glBindTexture(GL_TEXTURE_2D, m_textureID);
+        m_width = m_rawData->width;
+        m_height = m_rawData->height;
+        m_needsGpuInit = true;
+        m_isLoaded = true;
+        // spdlog::info("Loaded texture data from: {}", fullPath.string());
 
-        if (m_channels == 3) {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
-        } else if (m_channels == 4) {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
-        } else {
-            spdlog::error("Unknown number of channels: {}", m_channels);
-            stbi_image_free(textureData);
+        return true;
+    }
+
+    // send data to gpu
+    auto finalizeOnGpu() -> bool {
+        if (!m_needsGpuInit || !m_rawData || !m_rawData->pixels) {
             return false;
         }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        if (m_id == 0) {
+            glGenTextures(1, &m_id);
+        }
+
+        glBindTexture(GL_TEXTURE_2D, m_id);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        stbi_image_free(textureData);
+        GLenum format = (m_rawData->channels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, m_rawData->width, m_rawData->height, 0, format, GL_UNSIGNED_BYTE, m_rawData->pixels);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
-        glBindTexture(GL_TEXTURE_2D, 0);
+        // free memory after upload
+        stbi_image_free(m_rawData->pixels);
+        m_rawData.reset();
 
-        m_isLoaded = true;
+        m_needsGpuInit = false;
+        // spdlog::info("Texture finalized on GPU, ID: {}", m_id);
         return true;
     }
 
@@ -69,15 +93,31 @@ class Texture : public IResource {
         if (!m_isLoaded) {
             return false;
         }
-        glDeleteTextures(1, &m_textureID);
-        m_textureID = 0;
+        glDeleteTextures(1, &m_id);
+        m_id = 0;
         m_isLoaded = false;
 
         return true;
     }
 
     [[nodiscard]] auto getTextureID() const -> GLuint {
-        return m_textureID;
+        return m_id;
+    }
+
+    [[nodiscard]] auto getRawData() const -> std::shared_ptr<RawImageData> {
+        return m_rawData;
+    }
+
+    [[nodiscard]] auto getPixels() const -> unsigned char* {
+        return m_rawData ? m_rawData->pixels : nullptr;
+    }
+
+    [[nodiscard]] auto getFormat() const -> GLenum {
+        return (m_channels == 4) ? GL_RGBA : GL_RGB;
+    }
+
+    [[nodiscard]] auto getChannels() const -> int {
+        return m_channels;
     }
 
     [[nodiscard]] auto getWidth() const -> int {
@@ -88,10 +128,16 @@ class Texture : public IResource {
         return m_height;
     }
 
+    [[nodiscard]] auto needsGpuInit() const -> bool {
+        return m_needsGpuInit;
+    }
+
    private:
-    GLuint m_textureID = 0;
+    GLuint m_id = 0;
     int m_width = 0;
     int m_height = 0;
+    std::shared_ptr<RawImageData> m_rawData;
+    bool m_needsGpuInit = false;
     int m_channels = 0;
 };
 

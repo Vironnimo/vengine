@@ -3,14 +3,9 @@
 #include "vengine/vengine.hpp"
 
 void TestScene::load(Vengine::Vengine& vengine) {
-    m_name = "TestScene"; // todo set this in the constructor or during addScene, where we have a name anyway
+    m_name = "TestScene";  // todo set this in the constructor or during addScene, where we have a name anyway
     spdlog::info("Loading TestScene: {}", m_name);
 
-    // load textures
-    vengine.resourceManager->load<Vengine::Texture>("test_texture", "test.jpg");
-    vengine.resourceManager->load<Vengine::Texture>("test_texture2", "test2.jpg");
-    auto texture = vengine.resourceManager->get<Vengine::Texture>("test_texture");
-    auto texture2 = vengine.resourceManager->get<Vengine::Texture>("test_texture2");
     // load fonts
     auto fonts = vengine.renderer->fonts->load("default", "inter_24_regular.ttf", 24);
     if (!fonts) {
@@ -20,15 +15,29 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // load shaders
     vengine.renderer->shaders->add(
         std::make_shared<Vengine::Shader>("default", "resources/shaders/default.vert", "resources/shaders/default.frag"));
-    // vengine.renderer->shaders->add(std::make_shared<Vengine::Shader>("colored", "resources/shaders/vertex.glsl",
-    // "resources/shaders/fragment.glsl"));
     auto defaultShader = vengine.renderer->shaders->get("default");
     if (!defaultShader) {
         spdlog::error(defaultShader.error().message);
         return;
     }
 
+    // skybox
+    // order matters here! right, left, top, bottom, back, front
+    auto skyboxRight = vengine.resourceManager->get<Vengine::Texture>("skybox_right");
+    auto skyboxLeft = vengine.resourceManager->get<Vengine::Texture>("skybox_left");
+    auto skyboxTop = vengine.resourceManager->get<Vengine::Texture>("skybox_top");
+    auto skyboxBottom = vengine.resourceManager->get<Vengine::Texture>("skybox_bottom");
+    auto skyboxBack = vengine.resourceManager->get<Vengine::Texture>("skybox_back");
+    auto skyboxFront = vengine.resourceManager->get<Vengine::Texture>("skybox_front");
+
+    std::vector<std::shared_ptr<Vengine::Texture>> skyboxTextures = {skyboxRight, skyboxLeft, skyboxTop, skyboxBottom,
+                                                                       skyboxBack,  skyboxFront};
+    vengine.renderer->loadSkybox(skyboxTextures);
+
     // create materials (textures + shaders or just shaders)
+    auto texture = vengine.resourceManager->get<Vengine::Texture>("test_texture");
+    auto texture2 = vengine.resourceManager->get<Vengine::Texture>("test_texture2");
+
     vengine.renderer->materials->add("colored", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto coloredMaterial = vengine.renderer->materials->get("colored");
     coloredMaterial->setBool("uUseTexture", false);
@@ -43,16 +52,6 @@ void TestScene::load(Vengine::Vengine& vengine) {
     auto texturedMaterial2 = vengine.renderer->materials->get("default2");
     texturedMaterial2->setBool("uUseTexture", true);
     texturedMaterial2->setTexture("uTexture", std::move(texture2));
-
-    // skybox
-    // order matters here! right, left, top, bottom, back, front
-    std::vector<std::string> skyboxFaces = {"resources/textures/skybox/cube_right.png", "resources/textures/skybox/cube_left.png",
-                                            "resources/textures/skybox/cube_up.png",    "resources/textures/skybox/cube_down.png",
-                                            "resources/textures/skybox/cube_back.png",  "resources/textures/skybox/cube_front.png"};
-
-    if (!vengine.renderer->loadSkybox(skyboxFaces)) {
-        spdlog::error("Failed to load skybox textures");
-    }
 
     // load objects into meshes
     auto cubeMesh = vengine.meshLoader->loadFromObj("box.obj");

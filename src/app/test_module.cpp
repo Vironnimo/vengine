@@ -6,6 +6,8 @@
 #include "vengine/vengine.hpp"
 
 void TestModule::onAttach(Vengine::Vengine& vengine) {
+    // start timer on attach
+    vengine.timers->start("test_module.attach");
     m_textObject = std::make_shared<Vengine::TextObject>();
     m_textObject->text = "FPS: 0";
     m_textObject->font = vengine.renderer->fonts->get("default").value();
@@ -17,7 +19,11 @@ void TestModule::onAttach(Vengine::Vengine& vengine) {
     vengine.renderer->addTextObject(m_textObject);
 
     // load sounds
-    vengine.resourceManager->load<Vengine::Sound>("click", "click.wav");
+    vengine.resourceManager->loadAsync<Vengine::Sound>("click", "click.wav");
+
+    // end timer on attach
+    auto elapsedTime = vengine.timers->stop("test_module.attach");
+    spdlog::info("TestModule: attach took {} ms", elapsedTime);
 }
 
 void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {

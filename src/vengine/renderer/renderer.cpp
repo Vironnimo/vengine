@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
+#include <memory>
 #include <tl/expected.hpp>
 #include "vengine/core/error.hpp"
 #include <utility>
@@ -117,15 +118,16 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
     return {};
 }
 
-[[nodiscard]] auto Renderer::loadSkybox(const std::vector<std::string>& faceFiles) -> bool {
+[[nodiscard]] auto Renderer::loadSkybox(const std::vector<std::shared_ptr<Texture>>& faceFiles) -> bool {
     shaders->add(std::make_shared<Shader>("skybox", "resources/shaders/skybox.vert", "resources/shaders/skybox.frag"));
     skybox = std::make_unique<Skybox>();
     skybox->setShader(shaders->get("skybox").value());
 
-    if (skybox->load(faceFiles)) {
+    if (skybox->loadFromTextures(faceFiles)) {
         m_skyboxEnabled = true;
         return true;
     }
+
     m_skyboxEnabled = false;
     return false;
 }

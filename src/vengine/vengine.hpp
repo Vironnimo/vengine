@@ -4,6 +4,7 @@
 #include <tl/expected.hpp>
 
 #include "vengine/core/error.hpp"
+#include "vengine/core/thread_manager.hpp"
 #include "vengine/renderer/mesh_loader.hpp"
 #include "vengine/renderer/renderer.hpp"
 #include "vengine/core/resource_manager.hpp"
@@ -27,13 +28,14 @@ class Vengine {
     std::unique_ptr<EventSystem> events;
     std::unique_ptr<Timers> timers;
     std::shared_ptr<ECS> ecs;
+    std::shared_ptr<ThreadManager> threadManager;
 
     Vengine();
     ~Vengine();
     [[nodiscard]] auto init() -> tl::expected<void, Error>;
 
     void addModule(std::shared_ptr<Module> module);
-    void removeModule(std::shared_ptr<Module> module);
+    void removeModule(const std::shared_ptr<Module>& module);
 
     // TODO: move this somewhere else i guess
     void addScene(const std::string& name, std::shared_ptr<Scene> scene);

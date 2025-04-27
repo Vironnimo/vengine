@@ -6,14 +6,14 @@ namespace Vengine {
 
 VertexBuffer::VertexBuffer(const float* vertices, uint32_t size, bool hasTexCoords)
     : m_size(size), m_hasTexCoords(hasTexCoords) {
-    spdlog::debug("Constructor VertexBuffer, vertices size: {}, hasTexture: {}", m_size, hasTexCoords);
+    // spdlog::debug("Constructor VertexBuffer, vertices size: {}, hasTexture: {}", m_size, hasTexCoords);
     glGenBuffers(1, &m_id);
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
     glBufferData(GL_ARRAY_BUFFER, m_size, vertices, GL_STATIC_DRAW);
 }
 
 VertexBuffer::~VertexBuffer() {
-    spdlog::debug("Destructor VertexBuffer");
+    // spdlog::debug("Destructor VertexBuffer");
     glDeleteBuffers(1, &m_id);
 }
 

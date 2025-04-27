@@ -5,12 +5,10 @@
 namespace Vengine {
 
 VertexArray::VertexArray() {
-    spdlog::debug("Constructor VertexArray");
     glGenVertexArrays(1, &m_id);
 }
 
 VertexArray::~VertexArray() {
-    spdlog::debug("Destructor VertexArray");
     glDeleteVertexArrays(1, &m_id);
 }
 

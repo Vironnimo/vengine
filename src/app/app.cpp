@@ -10,6 +10,21 @@ App::App() {
     m_vengine = std::make_shared<Vengine::Vengine>();
     m_vengine->timers->start("app_constructor");
 
+    // load resources async at the beginning
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("test_texture", "test.jpg");
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("test_texture2", "test2.jpg");
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_right", "skybox/cube_right.png");
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_left", "skybox/cube_left.png");
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_top", "skybox/cube_up.png");
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_bottom", "skybox/cube_down.png");
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_back", "skybox/cube_back.png");
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_front", "skybox/cube_front.png");
+    
+    // sleep until test_texture is loaded
+    while (!m_vengine->resourceManager->isLoaded("test_texture") || !m_vengine->resourceManager->isLoaded("skybox_front")) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
     m_vengine->renderer->camera->setPosition(glm::vec3(0.0f, 20.0f, 205.0f));
     // -------------------- ACTIONS ---------------------
     m_vengine->actions->add("quit", "Quit", [this]() { m_vengine->isRunning = false; });
@@ -98,6 +113,7 @@ App::App() {
 void App::run() {
     auto end = m_vengine->timers->stop("vengine.start");
     spdlog::info("Full App initialization took {} ms", end);
+
     m_vengine->run();
 }
 

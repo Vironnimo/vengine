@@ -44,6 +44,52 @@ Skybox::~Skybox() {
     }
 }
 
+auto Skybox::loadFromTextures(const std::vector<std::shared_ptr<Texture>>& textures) -> bool {
+    if (textures.size() != 6) {
+        spdlog::error("Skybox requires exactly 6 textures");
+        return false;
+    }
+
+    // cubemap texture for skybox
+    glGenTextures(1, &m_textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureID);
+
+    for (unsigned int i = 0; i < textures.size(); ++i) {
+        const auto& texture = textures[i];
+        if (!texture || !texture->isLoaded()) {
+             spdlog::error("Skybox face texture at index {} is not loaded or invalid.", i);
+             glDeleteTextures(1, &m_textureID); 
+             m_textureID = 0;
+             return false;
+        }
+
+        auto rawData = texture->getRawData();
+
+        if (rawData && rawData->pixels) {
+            GLenum format = (rawData->channels == 4) ? GL_RGBA : GL_RGB;
+            GLint internalFormat = (rawData->channels == 4) ? GL_RGBA8 : GL_RGB8;
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, rawData->width, rawData->height, 0, format, GL_UNSIGNED_BYTE, rawData->pixels);
+            // spdlog::debug("Loaded skybox face {} from texture ({}x{}, {} channels)", i, rawData->width, rawData->height, rawData->channels);
+        } else {
+            spdlog::error("Failed to get raw image data for skybox texture at index {}", i);
+             glDeleteTextures(1, &m_textureID); 
+             m_textureID = 0;
+            return false;
+        }
+    }
+
+    // set texture parameters
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0); 
+    spdlog::info("Skybox loaded successfully from Texture objects. ID: {}", m_textureID);
+    return true;
+}
+
 auto Skybox::load(const std::vector<std::string>& faceFiles) -> bool {
     if (faceFiles.size() != 6) {
         spdlog::error("Skybox requires exactly 6 face textures");
