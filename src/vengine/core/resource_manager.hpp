@@ -51,7 +51,7 @@ class ResourceManager {
                 }
 
                 if (resource->load(fileName)) {
-                    spdlog::info("Successfully loaded {} resource: {}", typeid(T).name(), name);
+                    // spdlog::info("Successfully loaded {} resource: {}", typeid(T).name(), name);
                     {
                         std::lock_guard<std::mutex> lock(m_resourceMutex);
                         m_resources[name] = resource;
@@ -64,7 +64,7 @@ class ResourceManager {
                             m_threadManager->enqueueMainThreadTask(
                                 [texture, name]() {
                                     if (texture->finalizeOnGpu()) {
-                                        spdlog::info("Finalized texture on GPU: {}", name);
+                                        // spdlog::info("Finalized texture on GPU: {}", name);
                                     } else {
                                         spdlog::error("Failed to finalize texture on GPU: {}", name);
                                     }

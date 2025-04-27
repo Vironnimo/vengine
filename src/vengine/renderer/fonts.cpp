@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include "vengine/renderer/vertex_layout.hpp"
 
 namespace Vengine {
 
@@ -25,7 +26,7 @@ auto Fonts::init(std::shared_ptr<Shader> textShader) -> tl::expected<void, Error
     m_shader = std::move(textShader);
     m_vao = std::make_shared<VertexArray>();
     float vertices[] = {0.0f}; // empty for now, will be updated for each character
-    m_vbo = std::make_shared<VertexBuffer>(vertices, sizeof(float) * 24, true);  // 6 vertices * 4 floats each
+    m_vbo = std::make_shared<VertexBuffer>(vertices, sizeof(float) * 24);  // 6 vertices * 4 floats each
 
     // text quads (will be updated for each character)
     m_vao->bind();

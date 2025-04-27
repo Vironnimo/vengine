@@ -34,7 +34,7 @@ class ThreadManager {
             threadCount = std::max<size_t>(1, std::thread::hardware_concurrency() - 1);
         }
 
-        spdlog::info("Initializing ThreadManager with {} worker threads", threadCount);
+        spdlog::debug("Constructor ThreadManager, {} worker threads", threadCount);
         startWorkers(threadCount);
     }
 
@@ -86,7 +86,7 @@ class ThreadManager {
             Task& task = tasks.front();
 
             try {
-                spdlog::debug("Main thread executing task: {}", task.name);
+                // spdlog::debug("Main thread executing task: {}", task.name);
                 task.function();
             } catch (const std::exception& e) {
                 spdlog::error("Exception in main thread task '{}': {}", task.name, e.what());
@@ -148,7 +148,7 @@ class ThreadManager {
     void startWorkers(size_t threadCount) {
         for (size_t i = 0; i < threadCount; ++i) {
             m_workers.emplace_back([this, i] {
-                spdlog::debug("Worker thread {} started", i);
+                // spdlog::debug("Worker thread {} started", i);
 
                 while (true) {
                     Task task;

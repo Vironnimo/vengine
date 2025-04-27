@@ -3,8 +3,8 @@
 #include "vengine/vengine.hpp"
 
 void TestScene::load(Vengine::Vengine& vengine) {
+    spdlog::info("Constructor TestScene");
     m_name = "TestScene";  // todo set this in the constructor or during addScene, where we have a name anyway
-    spdlog::info("Loading TestScene: {}", m_name);
 
     // load fonts
     auto fonts = vengine.renderer->fonts->load("default", "inter_24_regular.ttf", 24);
@@ -14,7 +14,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
 
     // load shaders
     vengine.renderer->shaders->add(
-        std::make_shared<Vengine::Shader>("default", "resources/shaders/default.vert", "resources/shaders/default.frag"));
+        std::make_shared<Vengine::Shader>("default", "resources/shaders/default_new.vert", "resources/shaders/default_new.frag"));
     auto defaultShader = vengine.renderer->shaders->get("default");
     if (!defaultShader) {
         spdlog::error(defaultShader.error().message);

@@ -2,6 +2,7 @@
 #include <spdlog/spdlog.h>
 #include <stb_image.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include "vengine/renderer/vertex_layout.hpp"
 
 namespace Vengine {
 
@@ -26,7 +27,7 @@ Skybox::Skybox() {
                               1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
 
     m_vao = std::make_shared<VertexArray>();
-    m_vbo = std::make_shared<VertexBuffer>(skyboxVertices, sizeof(skyboxVertices), false);
+    m_vbo = std::make_shared<VertexBuffer>(skyboxVertices, sizeof(skyboxVertices));
 
     m_vao->bind();
     m_vbo->bind();
@@ -86,7 +87,6 @@ auto Skybox::loadFromTextures(const std::vector<std::shared_ptr<Texture>>& textu
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0); 
-    spdlog::info("Skybox loaded successfully from Texture objects. ID: {}", m_textureID);
     return true;
 }
 

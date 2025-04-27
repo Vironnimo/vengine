@@ -2,30 +2,33 @@
 
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
+#include <cstddef>
+
+#include "vertex_array.hpp"
 
 namespace Vengine {
 
-Mesh::Mesh(const std::vector<float>& vertices) : m_vertices(vertices) {
-    spdlog::debug("Constructor Mesh without indices, vertices count: {}", m_vertices.size());
+Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, VertexLayout layout)
+    : m_vertices(vertices), m_indices(indices), m_useIndices(!indices.empty()), m_layout(layout) {
+    int floatsPerVertex = getFloatsPerVertex();
+    spdlog::debug("Constructor Mesh. Indices: {}, Vertices: {}, Layout: (Pos:{}, Tex:{}, Norm:{}), FloatsPerVertex: {}", m_indices.size(),
+                  m_vertices.size() / static_cast<size_t>(floatsPerVertex), m_layout.hasPosition, m_layout.hasTexCoords, m_layout.hasNormals, floatsPerVertex);
+
+    if (m_vertices.empty() || (m_vertices.size() % static_cast<size_t>(floatsPerVertex) != 0)) {
+        spdlog::error("Mesh vertex data size ({}) is not a multiple of floatsPerVertex ({})", m_vertices.size(), floatsPerVertex);
+    }
+
+    m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float));
+
     m_vertexArray = std::make_shared<VertexArray>();
+    m_vertexArray->addVertexBuffer(m_vertexBuffer, m_layout);
 
-    bool hasTexCoords = false;
-    m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float), hasTexCoords);
-
-    m_vertexArray->addVertexBuffer(m_vertexBuffer);
-}
-
-Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices)
-    : m_vertices(vertices), m_indices(indices), m_useIndices(true) {
-    spdlog::debug("Constructor Mesh with indices, indices count: {}, vertices count: {}", m_indices.size(), m_vertices.size());
-    m_vertexArray = std::make_shared<VertexArray>();
-    bool hasTexCoords = true;
-    m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float), hasTexCoords);
-
-    m_vertexArray->addVertexBuffer(m_vertexBuffer);
-
-    m_indexBuffer = std::make_shared<IndexBuffer>(m_indices.data(), m_indices.size());
-    m_vertexArray->addIndexBuffer(m_indexBuffer);
+    if (m_useIndices) {
+        m_indexBuffer = std::make_shared<IndexBuffer>(m_indices.data(), m_indices.size());
+        m_vertexArray->addIndexBuffer(m_indexBuffer);
+    } else {
+        spdlog::warn("Mesh created without indices.");
+    }
 }
 
 Mesh::~Mesh() {
@@ -43,30 +46,40 @@ auto Mesh::draw() const -> void {
     m_vertexArray->unbind();
 }
 
+[[nodiscard]] auto Mesh::getFloatsPerVertex() const -> int {
+    int count = 0;
+
+    if (m_layout.hasPosition) {
+        count += 3;
+    }
+    if (m_layout.hasTexCoords) {
+        count += 2;
+    }
+    if (m_layout.hasNormals) {
+        count += 3;
+    }
+
+    return count;
+}
+
 [[nodiscard]] auto Mesh::getVertexCount() const -> size_t {
-    if (m_useIndices) {
-        return m_indices.size();
-    }
-
-    if (!m_vertexBuffer) {
-        return 0;
-    }
-
-    auto floatsPerVertex = m_vertexBuffer->hasTexCoords() ? 5 : 3;
+    int floatsPerVertex = getFloatsPerVertex();
     if (floatsPerVertex == 0) {
         return 0;
     }
-
-    return static_cast<size_t>(m_vertexBuffer->getSize() / (floatsPerVertex * sizeof(float)));
+    return m_vertices.size() / static_cast<size_t>(floatsPerVertex);
 }
 
 [[nodiscard]] auto Mesh::getBounds() const -> std::pair<glm::vec3, glm::vec3> {
-    if (m_vertices.empty()) {
+    if (m_vertices.empty() || !m_layout.hasPosition) {
         return {glm::vec3(0.0f), glm::vec3(0.0f)};
     }
+
     glm::vec3 min(m_vertices[0], m_vertices[1], m_vertices[2]);
     glm::vec3 max = min;
-    for (size_t i = 0; i + 2 < m_vertices.size(); i += 3) {
+    int floatsPerVertex = getFloatsPerVertex();
+
+    for (size_t i = 0; i < m_vertices.size(); i += static_cast<size_t>(floatsPerVertex)) {
         glm::vec3 v(m_vertices[i], m_vertices[i + 1], m_vertices[i + 2]);
         min = glm::min(min, v);
         max = glm::max(max, v);
