@@ -73,9 +73,9 @@ auto Skybox::loadFromTextures(const std::vector<std::shared_ptr<Texture>>& textu
             // spdlog::debug("Loaded skybox face {} from texture ({}x{}, {} channels)", i, rawData->width, rawData->height, rawData->channels);
         } else {
             spdlog::error("Failed to get raw image data for skybox texture at index {}", i);
-             glDeleteTextures(1, &m_textureID); 
-             m_textureID = 0;
-            return false;
+            //  glDeleteTextures(1, &m_textureID); 
+            //  m_textureID = 0;
+            // return false;
         }
     }
 
@@ -162,6 +162,13 @@ auto Skybox::render(const glm::mat4& view, const glm::mat4& projection) -> void 
 
 auto Skybox::setShader(std::shared_ptr<Shader> shader) -> void {
     m_shader = std::move(shader);
+}
+
+auto Skybox::unload() -> void {
+    if (m_textureID != 0) {
+        glDeleteTextures(1, &m_textureID);
+        m_textureID = 0;
+    }
 }
 
 }  // namespace Vengine

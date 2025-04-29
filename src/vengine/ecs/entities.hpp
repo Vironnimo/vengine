@@ -86,11 +86,16 @@ class Entities {
         return m_entityComponents.size();
     }
 
+    auto clear() -> void {
+        m_entities.clear();
+        m_components.clear();
+        m_entityComponents.clear();
+    }
+
    private:
     std::unordered_set<EntityId> m_entities;
     std::unordered_map<ComponentType, std::unordered_map<EntityId, std::shared_ptr<BaseComponent>>> m_components;
     std::unordered_map<EntityId, ComponentBitset> m_entityComponents;
-    // std::unordered_map<ComponentType, std::function<std::shared_ptr<BaseComponent>()>> m_typeFactories;
 };
 
 }  // namespace Vengine

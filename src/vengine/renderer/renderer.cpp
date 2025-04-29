@@ -132,6 +132,15 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
     return false;
 }
 
+auto Renderer::unloadSkybox() -> void {
+    if (skybox) {
+        skybox->unload();
+        m_skyboxEnabled = false;
+    } else {
+        spdlog::warn("Skybox not loaded, cannot unload");
+    }
+}
+
 auto Renderer::setVSync(bool enabled) -> void {
     if (enabled) {
         glfwSwapInterval(1);

@@ -20,6 +20,7 @@ class Skybox {
 
     [[nodiscard]] auto load(const std::vector<std::string>& faceFiles) -> bool;
     [[nodiscard]] auto loadFromTextures(const std::vector<std::shared_ptr<Texture>>& textures) -> bool;
+    auto unload() -> void;
 
     auto render(const glm::mat4& view, const glm::mat4& projection) -> void;
 

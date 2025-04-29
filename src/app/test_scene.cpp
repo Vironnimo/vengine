@@ -4,22 +4,6 @@
 
 void TestScene::load(Vengine::Vengine& vengine) {
     spdlog::info("Constructor TestScene");
-    m_name = "TestScene";  // todo set this in the constructor or during addScene, where we have a name anyway
-
-    // load fonts
-    auto fonts = vengine.renderer->fonts->load("default", "inter_24_regular.ttf", 24);
-    if (!fonts) {
-        spdlog::error(fonts.error().message);
-    }
-
-    // load shaders
-    vengine.renderer->shaders->add(
-        std::make_shared<Vengine::Shader>("default", "resources/shaders/default_new.vert", "resources/shaders/default_new.frag"));
-    auto defaultShader = vengine.renderer->shaders->get("default");
-    if (!defaultShader) {
-        spdlog::error(defaultShader.error().message);
-        return;
-    }
 
     // skybox
     // order matters here! right, left, top, bottom, back, front
@@ -37,6 +21,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // create materials (textures + shaders or just shaders)
     auto texture = vengine.resourceManager->get<Vengine::Texture>("test_texture");
     auto texture2 = vengine.resourceManager->get<Vengine::Texture>("test_texture2");
+    auto defaultShader = vengine.renderer->shaders->get("default");
 
     vengine.renderer->materials->add("colored", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto coloredMaterial = vengine.renderer->materials->get("colored");
@@ -100,36 +85,10 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // boxRigidBody->isStatic = true;
     vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity, Vengine::ComponentType::ColliderBit, cubeBounds.first,
                                                           cubeBounds.second);
-
-    // a grid of cubes
-    // int gridWidth = 30;
-    // int gridHeight = 30;
-    // float spacingX = 2.4f;
-    // float spacingY = 2.4f;
-    // float startX = -(static_cast<float>(gridWidth) / 2.0f) * spacingX;
-    // float startY = (static_cast<float>(gridHeight) / 2.0f) * spacingY;
-
-    // for (int row = 0; row < gridHeight; ++row) {
-    //     for (int col = 0; col < gridWidth; ++col) {
-    //         auto entity = vengine.ecs->createEntity();
-    //         vengine.ecs->addComponent<Vengine::MeshComponent>(entity, Vengine::ComponentType::MeshBit, cube);
-    //         vengine.ecs->addComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit);
-
-    //         int overallIndex = row * gridWidth + col;
-    //         if (overallIndex % 2 == 0) {
-    //             vengine.ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured);
-    //         } else {
-    //             vengine.ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, textured2);
-    //         }
-
-    //         float currentX = startX + static_cast<float>(col) * spacingX;
-    //         float currentY = startY - static_cast<float>(row) * spacingY;
-    //         vengine.ecs->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)->position =
-    //             glm::vec3(currentX, currentY, 0.0f);
-    //     }
-    // }
 }
 
-void TestScene::cleanup() {
+void TestScene::cleanup(Vengine::Vengine& vengine) {
     spdlog::info("Cleaning up TestScene: {}", m_name);
+
+    vengine.renderer->unloadSkybox();
 }

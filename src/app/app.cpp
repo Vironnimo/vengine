@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "app/test_scene.hpp"
+#include "app/test_scene2.hpp"
 #include "vengine/vengine.hpp"
 
 App::App() {
@@ -19,6 +20,24 @@ App::App() {
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_bottom", "skybox/cube_down.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_back", "skybox/cube_back.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_front", "skybox/cube_front.png");
+
+    // load sounds
+    m_vengine->resourceManager->loadAsync<Vengine::Sound>("click", "click.wav");
+
+    // load fonts
+    auto fonts = m_vengine->renderer->fonts->load("default", "inter_24_regular.ttf", 24);
+    if (!fonts) {
+        spdlog::error(fonts.error().message);
+    }
+
+    // load shaders
+    m_vengine->renderer->shaders->add(
+        std::make_shared<Vengine::Shader>("default", "resources/shaders/default_new.vert", "resources/shaders/default_new.frag"));
+    auto defaultShader = m_vengine->renderer->shaders->get("default");
+    if (!defaultShader) {
+        spdlog::error(defaultShader.error().message);
+        return;
+    }
     
     // sleep until test_texture is loaded
     while (!m_vengine->resourceManager->isLoaded("test_texture") || !m_vengine->resourceManager->isLoaded("skybox_front")) {
@@ -99,8 +118,24 @@ App::App() {
 
     // add scenes
     auto testScene = std::make_shared<TestScene>("TestScene");
+    auto testScene2 = std::make_shared<TestScene2>("TestScene2");
     m_vengine->addScene("TestScene", testScene);
+    m_vengine->addScene("TestScene2", testScene2);
     m_vengine->switchToScene("TestScene");
+    
+    // switch scenes (o and p)
+    m_vengine->actions->add("scene.switch.scene1", "Switch Scene", [this]() {
+        if (m_vengine->getCurrentSceneName() != "TestScene") {
+            m_vengine->switchToScene("TestScene");
+        }
+    });
+    m_vengine->actions->add("scene.switch.scene2", "Switch Scene", [this]() {
+        if (m_vengine->getCurrentSceneName() != "TestScene2") {
+            m_vengine->switchToScene("TestScene2");
+        }
+    });
+    m_vengine->actions->addKeybinding("scene.switch.scene1", {GLFW_KEY_O, false, false, false});
+    m_vengine->actions->addKeybinding("scene.switch.scene2", {GLFW_KEY_P, false, false, false});
 
     // add modules
     m_testModule = std::make_shared<TestModule>();

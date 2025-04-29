@@ -80,9 +80,10 @@ class Texture : public IResource {
         glTexImage2D(GL_TEXTURE_2D, 0, format, m_rawData->width, m_rawData->height, 0, format, GL_UNSIGNED_BYTE, m_rawData->pixels);
         glGenerateMipmap(GL_TEXTURE_2D);
 
+        // todo reactivate i guess. for now the skybox needs the data on reload the scene
         // free memory after upload
-        stbi_image_free(m_rawData->pixels);
-        m_rawData.reset();
+        // stbi_image_free(m_rawData->pixels);
+        // m_rawData.reset();
 
         m_needsGpuInit = false;
         // spdlog::info("Texture finalized on GPU, ID: {}", m_id);

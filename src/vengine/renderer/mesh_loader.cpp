@@ -39,8 +39,8 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
     if (hasNormals) {
         floatsPerVertex += 3;
     }
-    spdlog::debug("Loading OBJ: '{}'. Has TexCoords: {}, Has Normals: {}, FloatsPerVertex: {}", filename, hasTexCoords, hasNormals,
-                  floatsPerVertex);
+    // spdlog::debug("Loading OBJ: '{}'. Has TexCoords: {}, Has Normals: {}, FloatsPerVertex: {}", filename, hasTexCoords, hasNormals,
+    //               floatsPerVertex);
 
     // helper thingy to make sure we don't have duplicate vertices
     struct VertexKey {
@@ -127,7 +127,7 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
     layout.hasNormals = hasNormals;
 
     auto mesh = std::make_shared<Mesh>(vertices, indices, layout);
-    spdlog::info("Loaded mesh '{}': {} vertices, {} indices", filename, vertices.size() / static_cast<size_t>(floatsPerVertex), indices.size());
+    // spdlog::info("Loaded mesh '{}': {} vertices, {} indices", filename, vertices.size() / static_cast<size_t>(floatsPerVertex), indices.size());
     return mesh;
 }
 

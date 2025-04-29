@@ -18,9 +18,6 @@ void TestModule::onAttach(Vengine::Vengine& vengine) {
 
     vengine.renderer->addTextObject(m_textObject);
 
-    // load sounds
-    vengine.resourceManager->loadAsync<Vengine::Sound>("click", "click.wav");
-
     // end timer on attach
     auto elapsedTime = vengine.timers->stop("test_module.attach");
     spdlog::info("TestModule: attach took {} ms", elapsedTime);
@@ -29,7 +26,7 @@ void TestModule::onAttach(Vengine::Vengine& vengine) {
 void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
     // fps
     m_fpsUpdateTimer += deltaTime;
-    if (m_fpsUpdateTimer >= 0.2f) {
+    if (m_fpsUpdateTimer >= 0.1f) {
         m_fpsUpdateTimer = 0.0f;
         int fps = static_cast<int>(1.0f / deltaTime);
         m_textObject->text = "Scene: " + vengine.getCurrentSceneName() + "\nFPS: " + std::to_string(fps) + "\n" +
@@ -40,6 +37,7 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
     auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(2, Vengine::ComponentType::RigidBodyBit);
     if (rigidBody && rigidBody->isGrounded) {
         if (firstClick) {
+            // doesn't work when we reload the scene. entities differ. we need a string id on the entitites to find them by name
             vengine.resourceManager->get<Vengine::Sound>("click")->play();
             firstClick = false;
         }

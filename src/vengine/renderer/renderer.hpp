@@ -45,6 +45,8 @@ class Renderer {
     auto setVSync(bool enabled) -> void;
 
     auto loadSkybox(const std::vector<std::shared_ptr<Texture>>& faceFiles) -> bool;
+    auto unloadSkybox() -> void;
+
     // todo text should become a component
     auto addTextObject(std::shared_ptr<TextObject> textObject) -> void;
 

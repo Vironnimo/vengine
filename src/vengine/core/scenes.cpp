@@ -10,8 +10,15 @@ void Scenes::add(const std::string& name, std::shared_ptr<Scene> scene, std::sha
 void Scenes::switchTo(const std::string& name, Vengine& vengine) {
     auto it = m_scenes.find(name);
     if (it != m_scenes.end()) {
+        if (m_currentScene == it->second) {
+            spdlog::warn("Scene '{}' is already active", name);
+            return;
+        }
+
         if (m_currentScene) {
-            m_currentScene->cleanup();
+            m_currentScene->cleanup(vengine);
+            // NOTE for now clear all entities on switch
+            m_currentScene->clearEntities();
         }   
         m_currentScene = it->second;
 
