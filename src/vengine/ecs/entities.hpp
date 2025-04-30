@@ -70,7 +70,7 @@ class Entities {
     auto getEntity(EntityId entityId) -> Entity {
         // todo HEREHREHREHRE
         // fill entity with references to its components
-        Entity entity(entityId);
+        Entity entity(entityId, this);
         return entity;  
     }
 
@@ -80,6 +80,14 @@ class Entities {
             return (it->second & ComponentBitset(componentType)) == ComponentBitset(componentType);
         }
         return false;
+    }
+
+    auto removeComponent(EntityId entity, ComponentType componentType) -> void {
+        auto it = m_entityComponents.find(entity);
+        if (it != m_entityComponents.end()) {
+            it->second &= ~ComponentBitset(componentType);
+            m_components[componentType].erase(entity);
+        }
     }
 
     auto getEntityCount() -> size_t {

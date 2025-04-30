@@ -19,6 +19,7 @@ set(SOURCES
         vengine/core/timers.cpp
         vengine/core/event_system.cpp
         vengine/core/scenes.cpp
+        vengine/ecs/entity.cpp
         vengine/renderer/renderer.cpp
         vengine/renderer/camera.cpp
         vengine/renderer/material.cpp

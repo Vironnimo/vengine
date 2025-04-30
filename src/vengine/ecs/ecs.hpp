@@ -33,6 +33,10 @@ class ECS {
         m_activeEntities->destroyEntity(entity);
     }
 
+    auto getEntity(EntityId entity) const -> Entity {
+        return {entity, m_activeEntities.get()};
+    }
+
     template <typename T, typename... Args>
     auto addComponent(EntityId entity, ComponentType componentType, Args&&... args) -> void {
         m_activeEntities->addComponent<T>(entity, componentType, std::forward<Args>(args)...);

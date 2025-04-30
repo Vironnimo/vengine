@@ -1,5 +1,6 @@
 #include "test_scene.hpp"
 
+#include "vengine/ecs/components.hpp"
 #include "vengine/vengine.hpp"
 
 void TestScene::load(Vengine::Vengine& vengine) {
@@ -40,7 +41,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
 
     // load objects into meshes
     auto cubeMesh = vengine.meshLoader->loadFromObj("box.obj");
-    auto chairMesh = vengine.meshLoader->loadFromObj("chair02.obj");
+    auto chairMesh = vengine.meshLoader->loadFromObj("chair.obj");
     auto groundMesh = vengine.meshLoader->createPlane(500.0f, 500.0f, 1, 1);
 
     // ecs stuff
@@ -62,7 +63,6 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, Vengine::ComponentType::MeshBit, chairMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity, Vengine::ComponentType::TransformBit);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, Vengine::ComponentType::MaterialBit, texturedMaterial2);
-    vengine.ecs->addComponent<Vengine::PositionComponent>(chairEntity, Vengine::ComponentType::PositionBit);
     vengine.ecs->addComponent<Vengine::VelocityComponent>(chairEntity, Vengine::ComponentType::VelocityBit);
     vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity, Vengine::ComponentType::RigidBodyBit);
     auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity, Vengine::ComponentType::TransformBit);
@@ -85,6 +85,30 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // boxRigidBody->isStatic = true;
     vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity, Vengine::ComponentType::ColliderBit, cubeBounds.first,
                                                           cubeBounds.second);
+
+
+    // test entity class
+    auto testEntity = vengine.ecs->getEntity(2);
+    spdlog::warn("Test entity ID: {}", testEntity.getId());
+    auto comp = testEntity.getComponent<Vengine::MeshComponent>(Vengine::ComponentType::MeshBit);
+    spdlog::warn("Test entity component stuff: {}", comp->mesh->getVertexCount());
+    auto transform = testEntity.getComponent<Vengine::TransformComponent>(Vengine::ComponentType::TransformBit);
+    spdlog::warn("Test entity transform stuff: {} {} {}", transform->position.x, transform->position.y,
+                transform->position.z);
+    auto result = testEntity.hasComponent(Vengine::ComponentType::PositionBit);
+    spdlog::warn("Test entity has position component: {}", result);
+    testEntity.addComponent<Vengine::PositionComponent>(Vengine::ComponentType::PositionBit);
+    auto result2 = testEntity.hasComponent(Vengine::ComponentType::PositionBit);
+    spdlog::warn("Test entity has position component2: {}", result2);
+    auto position = testEntity.getComponent<Vengine::PositionComponent>(Vengine::ComponentType::PositionBit);
+    spdlog::warn("Test entity position stuff: {} {}", position->x, position->y);
+    testEntity.removeComponent(Vengine::ComponentType::PositionBit);
+    auto position2 = testEntity.getComponent<Vengine::PositionComponent>(Vengine::ComponentType::PositionBit);
+    if (position2) {
+        spdlog::warn("Test entity position stuff: {} {}", position2->x, position2->y);
+    } else {
+        spdlog::warn("Test entity position component removed successfully");
+    }
 }
 
 void TestScene::cleanup(Vengine::Vengine& vengine) {

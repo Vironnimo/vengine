@@ -3,41 +3,39 @@
 #include <bitset>
 #include <cstdint>
 #include <memory>
-#include <unordered_map>
-#include <utility>
 #include "vengine/ecs/components.hpp"
 
 namespace Vengine {
+
+class Entities;
 
 using EntityId = uint64_t;
 using ComponentBitset = std::bitset<32>;
 
 class Entity {
    public:
-    Entity(EntityId id) : m_id(id) {
-    }
+    Entity(EntityId id, Entities* manager);
+    Entity(); 
 
     ~Entity() = default;
 
-    [[nodiscard]] auto getId() const -> EntityId {
-        return m_id;
-    }
+    [[nodiscard]] auto getId() const -> EntityId;
+    [[nodiscard]] auto isValid() const -> bool;
 
-    auto setComponent(ComponentType componentType, std::shared_ptr<BaseComponent> component) -> void {
-        m_components[componentType] = std::move(component);
-    }
+    template <typename T, typename... Args>
+    auto addComponent(ComponentType componentType, Args&&... args) -> void;
+    template <typename T>
+    auto getComponent(ComponentType componentType) -> std::shared_ptr<T>;
+    auto hasComponent(ComponentType componentType) -> bool;
+    auto removeComponent(ComponentType componentType) -> void;
 
-    auto addComponent(ComponentType componentType) -> void {
-        // m_components[componentType] = std::make_shared<BaseComponent>();
-    }
+    auto destroy() -> void;
 
-    auto removeComponent(ComponentType componentType) -> void {
-        // m_components.erase(componentType);
-    }
 
    private:
-    EntityId m_id;
-    std::unordered_map<ComponentType, std::shared_ptr<BaseComponent>> m_components;
+    EntityId m_id = 0; 
+    Entities* m_manager = nullptr; 
 };
 
 }  // namespace Vengine
+#include "vengine/ecs/entity_impl.hpp" // include the implementation file for template methods

@@ -16,6 +16,7 @@ set(TEST_SOURCES
     actions_tests.cpp
     ecs_tests.cpp
     ../src/vengine/ecs/entities.hpp
+    ../src/vengine/ecs/entity.hpp
     ../src/vengine/core/uuid.cpp
     ecs_entities_tests.cpp
 )
