@@ -60,6 +60,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // chair entity
     auto chairBounds = chairMesh->getBounds();
     auto chairEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
     vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
@@ -74,6 +75,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // cube entity
     auto cubeBounds = cubeMesh->getBounds();
     auto cubeEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(cubeEntity, "cube");
     vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity, cubeMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(cubeEntity);
     auto boxTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cubeEntity);
@@ -88,7 +90,9 @@ void TestScene::load(Vengine::Vengine& vengine) {
 
 
     // test entity class
-    auto testEntity = vengine.ecs->getEntity(2);
+    // this here crashes, because id 2 is not always valid.
+    auto testEntity = vengine.ecs->getEntityByTag("chair");    
+    // auto testEntity = vengine.ecs->getEntity(2);
     spdlog::warn("Test entity ID: {}", testEntity.getId());
     auto comp = testEntity.getComponent<Vengine::MeshComponent>();
     spdlog::warn("Test entity component stuff: {}", comp->mesh->getVertexCount());

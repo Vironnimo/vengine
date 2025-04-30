@@ -39,7 +39,11 @@ class ECS {
     }
 
     auto getEntity(EntityId entity) const -> Entity {
-        return {entity, m_activeEntities.get()};
+        return m_activeEntities->getEntity(entity);
+    }
+
+    auto getEntityByTag(const std::string& tag) const -> Entity {
+        return m_activeEntities->getEntityByTag(tag);
     }
 
     template <typename T, typename... Args>

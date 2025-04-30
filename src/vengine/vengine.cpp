@@ -6,6 +6,7 @@
 #include <tl/expected.hpp>
 
 #include "vengine/core/thread_manager.hpp"
+#include "vengine/ecs/components.hpp"
 #include "vengine/renderer/renderer.hpp"
 #include "vengine/core/resource_manager.hpp"
 
@@ -75,6 +76,7 @@ Vengine::~Vengine() {
     // ecs
     ecs = std::make_shared<ECS>();
     // register built-in components
+    ecs->registerComponent<TagComponent>("Tag");
     ecs->registerComponent<TransformComponent>("Transform");
     ecs->registerComponent<MeshComponent>("Mesh");
     ecs->registerComponent<MaterialComponent>("Material");

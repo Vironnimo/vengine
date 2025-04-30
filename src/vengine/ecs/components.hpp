@@ -2,6 +2,7 @@
 
 #include <glm/ext/matrix_transform.hpp>
 #include <memory>
+#include <utility>
 
 #include "vengine/renderer/material.hpp"
 #include "vengine/renderer/mesh.hpp"
@@ -12,14 +13,21 @@ struct BaseComponent {
     virtual ~BaseComponent() = default;
 };
 
+struct TagComponent : public BaseComponent {
+    TagComponent(std::string tag) : tag(std::move(tag)) {} 
+    std::string tag;
+};
+
 struct PositionComponent : public BaseComponent {
     float x = 0.0f;
     float y = 0.0f;
+    float z = 0.0f;
 };
 
 struct VelocityComponent : public BaseComponent {
     float dy = 0.0f;
     float dx = 0.0f;
+    float dz = 0.0f;
 };
 
 struct MeshComponent : public BaseComponent {
@@ -38,7 +46,7 @@ struct MaterialComponent : public BaseComponent {
 
 struct TransformComponent : public BaseComponent {
     glm::vec3 position = glm::vec3(0.0f);
-    glm::vec3 rotation = glm::vec3(0.0f); 
+    glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
     glm::mat4 transform = glm::mat4(1.0f);
 
@@ -54,16 +62,16 @@ struct TransformComponent : public BaseComponent {
 
 struct RigidbodyComponent : public BaseComponent {
     glm::vec3 velocity = glm::vec3(0.0f);
-    float mass = 1.0f; 
+    float mass = 1.0f;
     bool useGravity = true;
     bool isGrounded = false;
-    bool isStatic = false; 
+    bool isStatic = false;
 };
 
 struct ColliderComponent : public BaseComponent {
     using EntityId = uint64_t;
 
-    glm::vec3 min = glm::vec3(-0.5f); 
+    glm::vec3 min = glm::vec3(-0.5f);
     glm::vec3 max = glm::vec3(0.5f);
 
     glm::vec3 worldMin;
@@ -72,22 +80,16 @@ struct ColliderComponent : public BaseComponent {
     bool colliding = false;
     EntityId collidingWith = 0;
 
-    ColliderComponent(const glm::vec3& minBounds, const glm::vec3& maxBounds)
-        : min(minBounds), max(maxBounds) {}
+    ColliderComponent(const glm::vec3& minBounds, const glm::vec3& maxBounds) : min(minBounds), max(maxBounds) {
+    }
     ColliderComponent() = default;
 
     // update world bounds for collision detection
     void updateWorldBounds(const glm::mat4& transform) {
-        glm::vec4 corners[8] = {
-            transform * glm::vec4(min.x, min.y, min.z, 1.0f),
-            transform * glm::vec4(max.x, min.y, min.z, 1.0f),
-            transform * glm::vec4(min.x, max.y, min.z, 1.0f),
-            transform * glm::vec4(min.x, min.y, max.z, 1.0f),
-            transform * glm::vec4(max.x, max.y, min.z, 1.0f),
-            transform * glm::vec4(min.x, max.y, max.z, 1.0f),
-            transform * glm::vec4(max.x, min.y, max.z, 1.0f),
-            transform * glm::vec4(max.x, max.y, max.z, 1.0f)
-        };
+        glm::vec4 corners[8] = {transform * glm::vec4(min.x, min.y, min.z, 1.0f), transform * glm::vec4(max.x, min.y, min.z, 1.0f),
+                                transform * glm::vec4(min.x, max.y, min.z, 1.0f), transform * glm::vec4(min.x, min.y, max.z, 1.0f),
+                                transform * glm::vec4(max.x, max.y, min.z, 1.0f), transform * glm::vec4(min.x, max.y, max.z, 1.0f),
+                                transform * glm::vec4(max.x, min.y, max.z, 1.0f), transform * glm::vec4(max.x, max.y, max.z, 1.0f)};
 
         worldMin = glm::vec3(corners[0]);
         worldMax = glm::vec3(corners[0]);
