@@ -8,16 +8,6 @@
 
 namespace Vengine {
 
-enum ComponentType {
-    PositionBit = 1 << 0,
-    VelocityBit = 1 << 1,
-    MeshBit = 1 << 2,
-    TransformBit = 1 << 3,
-    MaterialBit = 1 << 4,
-    RigidBodyBit = 1 << 5,
-    ColliderBit = 1 << 6,
-};
-
 struct BaseComponent {
     virtual ~BaseComponent() = default;
 };

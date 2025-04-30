@@ -12,10 +12,10 @@ namespace Vengine {
 class MovementSystem : public BaseSystem {
    public:
     void update(std::shared_ptr<Entities> entities, float deltaTime) override {
-        auto list = entities->getEntitiesWith(ComponentType::PositionBit, ComponentType::VelocityBit);
+        auto list = entities->getEntitiesWith<PositionComponent, VelocityComponent>();
         for (auto entity : list) {
-            auto position = entities->getEntityComponent<PositionComponent>(entity, ComponentType::PositionBit);
-            auto velocity = entities->getEntityComponent<VelocityComponent>(entity, ComponentType::VelocityBit);
+            auto position = entities->getEntityComponent<PositionComponent>(entity);
+            auto velocity = entities->getEntityComponent<VelocityComponent>(entity);
             position->x += velocity->dx * deltaTime;
             position->y += velocity->dy * deltaTime;
 
@@ -29,9 +29,9 @@ class MovementSystem : public BaseSystem {
 class TransformSystem : public BaseSystem {
    public:
     void update(std::shared_ptr<Entities> entities, float /*deltaTime*/) override {
-        auto list = entities->getEntitiesWith(ComponentType::TransformBit);
+        auto list = entities->getEntitiesWith<TransformComponent>();
         for (auto entityId : list) {
-            auto transform = entities->getEntityComponent<TransformComponent>(entityId, ComponentType::TransformBit);
+            auto transform = entities->getEntityComponent<TransformComponent>(entityId);
             if (transform) {
                 transform->updateMatrix();
             }
@@ -57,12 +57,12 @@ class RenderSystem : public BaseSystem {
         glm::mat4 viewMatrix = m_camera->getViewMatrix();
         glm::mat4 projectionMatrix = m_camera->getProjectionMatrix();
 
-        auto list = entities->getEntitiesWith(ComponentType::TransformBit, ComponentType::MeshBit, ComponentType::MaterialBit);
+        auto list = entities->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
 
         for (auto entity : list) {
-            auto transformComp = entities->getEntityComponent<TransformComponent>(entity, ComponentType::TransformBit);
-            auto meshComp = entities->getEntityComponent<MeshComponent>(entity, ComponentType::MeshBit);
-            auto materialComp = entities->getEntityComponent<MaterialComponent>(entity, ComponentType::MaterialBit);
+            auto transformComp = entities->getEntityComponent<TransformComponent>(entity);
+            auto meshComp = entities->getEntityComponent<MeshComponent>(entity);
+            auto materialComp = entities->getEntityComponent<MaterialComponent>(entity);
 
             if (transformComp && meshComp && meshComp->mesh && materialComp && materialComp->material) {
                 materialComp->material->bind();
@@ -94,11 +94,11 @@ class PhysicsSystem : public BaseSystem {
     float gravityAcceleration = -9.81f;
 
     void update(std::shared_ptr<Entities> entities, float deltaTime) override {
-        auto list = entities->getEntitiesWith(ComponentType::TransformBit, ComponentType::RigidBodyBit);
+        auto list = entities->getEntitiesWith<TransformComponent, RigidbodyComponent>();
 
         for (auto entityId : list) {
-            auto transformComp = entities->getEntityComponent<TransformComponent>(entityId, ComponentType::TransformBit);
-            auto rigidbodyComp = entities->getEntityComponent<RigidbodyComponent>(entityId, ComponentType::RigidBodyBit);
+            auto transformComp = entities->getEntityComponent<TransformComponent>(entityId);
+            auto rigidbodyComp = entities->getEntityComponent<RigidbodyComponent>(entityId);
 
             // todo remove the isGrounded check, it should be handled elsewhere
             if (rigidbodyComp->isStatic || rigidbodyComp->isGrounded) {
@@ -118,7 +118,7 @@ class PhysicsSystem : public BaseSystem {
 class CollisionSystem : public BaseSystem {
    public:
     void update(std::shared_ptr<Entities> entities, float /*deltaTime*/) override {
-        auto collidables = entities->getEntitiesWith(ComponentType::TransformBit, ComponentType::ColliderBit);
+        auto collidables = entities->getEntitiesWith<TransformComponent, ColliderComponent>();
 
         // do we need to reset colliders? probably yes.
         // for (EntityId entityId : collidables) {
@@ -132,8 +132,8 @@ class CollisionSystem : public BaseSystem {
         // inefficient, O(n^2) collision detection
         for (size_t i = 0; i < collidables.size(); ++i) {
             EntityId entityAId = collidables[i];
-            auto transformA = entities->getEntityComponent<TransformComponent>(entityAId, ComponentType::TransformBit);
-            auto colliderA = entities->getEntityComponent<ColliderComponent>(entityAId, ComponentType::ColliderBit);
+            auto transformA = entities->getEntityComponent<TransformComponent>(entityAId);
+            auto colliderA = entities->getEntityComponent<ColliderComponent>(entityAId);
 
             if (!transformA || !colliderA) {
                 continue;
@@ -142,8 +142,8 @@ class CollisionSystem : public BaseSystem {
 
             for (size_t j = i + 1; j < collidables.size(); ++j) {
                 EntityId entityBId = collidables[j];
-                auto transformB = entities->getEntityComponent<TransformComponent>(entityBId, ComponentType::TransformBit);
-                auto colliderB = entities->getEntityComponent<ColliderComponent>(entityBId, ComponentType::ColliderBit);
+                auto transformB = entities->getEntityComponent<TransformComponent>(entityBId);
+                auto colliderB = entities->getEntityComponent<ColliderComponent>(entityBId);
 
                 if (!transformB || !colliderB) {
                     continue;
@@ -163,8 +163,8 @@ class CollisionSystem : public BaseSystem {
                     colliderB->collidingWith = entityAId;
 
                     // todo remove this here, should be handled elsewhere and better
-                    auto rigidbodyA = entities->getEntityComponent<RigidbodyComponent>(entityAId, ComponentType::RigidBodyBit);
-                    auto rigidbodyB = entities->getEntityComponent<RigidbodyComponent>(entityBId, ComponentType::RigidBodyBit);
+                    auto rigidbodyA = entities->getEntityComponent<RigidbodyComponent>(entityAId);
+                    auto rigidbodyB = entities->getEntityComponent<RigidbodyComponent>(entityBId);
                     rigidbodyA->isGrounded = true;
                     rigidbodyB->isGrounded = true;
                 }

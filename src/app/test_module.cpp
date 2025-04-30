@@ -34,7 +34,7 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
     }
 
     static bool firstClick = true;
-    auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(2, Vengine::ComponentType::RigidBodyBit);
+    auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(2);
     if (rigidBody && rigidBody->isGrounded) {
         if (firstClick) {
             // doesn't work when we reload the scene. entities differ. we need a string id on the entitites to find them by name

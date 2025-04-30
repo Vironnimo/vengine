@@ -74,7 +74,15 @@ Vengine::~Vengine() {
 
     // ecs
     ecs = std::make_shared<ECS>();
-    // NOTE: add default systems
+    // register built-in components
+    ecs->registerComponent<TransformComponent>("Transform");
+    ecs->registerComponent<MeshComponent>("Mesh");
+    ecs->registerComponent<MaterialComponent>("Material");
+    ecs->registerComponent<RigidbodyComponent>("Rigidbody");
+    ecs->registerComponent<ColliderComponent>("Collider");
+    ecs->registerComponent<PositionComponent>("Position");
+    ecs->registerComponent<VelocityComponent>("Velocity");
+    // register built-in systems
     auto renderSystem = std::make_shared<RenderSystem>(renderer->camera);
     renderSystem->setEnabled(false);  // because it's not called automatically, it's called manually by the renderer
     auto collisionSystem = std::make_shared<CollisionSystem>();

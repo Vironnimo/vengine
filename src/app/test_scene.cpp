@@ -47,63 +47,63 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // ecs stuff
     // ground entity
     auto groundEntity = vengine.ecs->createEntity();
-    vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity, Vengine::ComponentType::MeshBit, groundMesh);
-    vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity, Vengine::ComponentType::TransformBit);
-    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(groundEntity, Vengine::ComponentType::RigidBodyBit);
-    auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(groundEntity, Vengine::ComponentType::RigidBodyBit);
+    vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity, groundMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity);
+    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(groundEntity);
+    auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(groundEntity);
     rigidBody->isStatic = true;
-    vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, Vengine::ComponentType::MaterialBit, texturedMaterial);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, texturedMaterial);
     auto planeBounds = groundMesh->getBounds();
-    vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, Vengine::ComponentType::ColliderBit, planeBounds.first,
+    vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first,
                                                           planeBounds.second);
 
     // chair entity
     auto chairBounds = chairMesh->getBounds();
     auto chairEntity = vengine.ecs->createEntity();
-    vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, Vengine::ComponentType::MeshBit, chairMesh);
-    vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity, Vengine::ComponentType::TransformBit);
-    vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, Vengine::ComponentType::MaterialBit, texturedMaterial2);
-    vengine.ecs->addComponent<Vengine::VelocityComponent>(chairEntity, Vengine::ComponentType::VelocityBit);
-    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity, Vengine::ComponentType::RigidBodyBit);
-    auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity, Vengine::ComponentType::TransformBit);
+    vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
+    vengine.ecs->addComponent<Vengine::VelocityComponent>(chairEntity);
+    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity);
+    auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
     chairTransform->position = glm::vec3(-25.0f, 100.0f, 5.0f);
     chairTransform->scale = glm::vec3(0.15f, 0.15f, 0.15f);
-    vengine.ecs->addComponent<Vengine::ColliderComponent>(chairEntity, Vengine::ComponentType::ColliderBit, chairBounds.first,
+    vengine.ecs->addComponent<Vengine::ColliderComponent>(chairEntity, chairBounds.first,
                                                           chairBounds.second);
 
     // cube entity
     auto cubeBounds = cubeMesh->getBounds();
     auto cubeEntity = vengine.ecs->createEntity();
-    vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity, Vengine::ComponentType::MeshBit, cubeMesh);
-    vengine.ecs->addComponent<Vengine::TransformComponent>(cubeEntity, Vengine::ComponentType::TransformBit);
-    auto boxTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cubeEntity, Vengine::ComponentType::TransformBit);
+    vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity, cubeMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(cubeEntity);
+    auto boxTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cubeEntity);
     boxTransform->position = glm::vec3(25.0f, 120.0f, 5.0f);
     boxTransform->scale = glm::vec3(20.0f, 20.0f, 20.0f);
-    vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity, Vengine::ComponentType::MaterialBit, coloredMaterial);
-    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(cubeEntity, Vengine::ComponentType::RigidBodyBit);
-    auto boxRigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(cubeEntity, Vengine::ComponentType::RigidBodyBit);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity, coloredMaterial);
+    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(cubeEntity);
+    auto boxRigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(cubeEntity);
     // boxRigidBody->isStatic = true;
-    vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity, Vengine::ComponentType::ColliderBit, cubeBounds.first,
+    vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity, cubeBounds.first,
                                                           cubeBounds.second);
 
 
     // test entity class
     auto testEntity = vengine.ecs->getEntity(2);
     spdlog::warn("Test entity ID: {}", testEntity.getId());
-    auto comp = testEntity.getComponent<Vengine::MeshComponent>(Vengine::ComponentType::MeshBit);
+    auto comp = testEntity.getComponent<Vengine::MeshComponent>();
     spdlog::warn("Test entity component stuff: {}", comp->mesh->getVertexCount());
-    auto transform = testEntity.getComponent<Vengine::TransformComponent>(Vengine::ComponentType::TransformBit);
+    auto transform = testEntity.getComponent<Vengine::TransformComponent>();
     spdlog::warn("Test entity transform stuff: {} {} {}", transform->position.x, transform->position.y,
                 transform->position.z);
-    auto result = testEntity.hasComponent(Vengine::ComponentType::PositionBit);
+    auto result = testEntity.hasComponent<Vengine::PositionComponent>();
     spdlog::warn("Test entity has position component: {}", result);
-    testEntity.addComponent<Vengine::PositionComponent>(Vengine::ComponentType::PositionBit);
-    auto result2 = testEntity.hasComponent(Vengine::ComponentType::PositionBit);
+    testEntity.addComponent<Vengine::PositionComponent>();
+    auto result2 = testEntity.hasComponent<Vengine::PositionComponent>();
     spdlog::warn("Test entity has position component2: {}", result2);
-    auto position = testEntity.getComponent<Vengine::PositionComponent>(Vengine::ComponentType::PositionBit);
+    auto position = testEntity.getComponent<Vengine::PositionComponent>();
     spdlog::warn("Test entity position stuff: {} {}", position->x, position->y);
-    testEntity.removeComponent(Vengine::ComponentType::PositionBit);
-    auto position2 = testEntity.getComponent<Vengine::PositionComponent>(Vengine::ComponentType::PositionBit);
+    testEntity.removeComponent<Vengine::PositionComponent>();
+    auto position2 = testEntity.getComponent<Vengine::PositionComponent>();
     if (position2) {
         spdlog::warn("Test entity position stuff: {} {}", position2->x, position2->y);
     } else {

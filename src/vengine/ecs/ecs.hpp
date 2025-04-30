@@ -7,9 +7,10 @@
 #include <unordered_map>
 
 #include "components.hpp"
-#include "base_system.hpp"
 #include "systems.hpp"
+#include "base_system.hpp"
 #include "vengine/ecs/entities.hpp"
+#include "vengine/ecs/entity.hpp"
 
 namespace Vengine {
 
@@ -18,11 +19,15 @@ using ComponentBitset = std::bitset<32>;
 
 class ECS {
    public:
-    // active entities set
-
     ECS() {
         spdlog::debug("Constructor ECS");
-        m_activeEntities = std::make_shared<Entities>();
+        m_componentRegistry = std::make_shared<ComponentRegistry>();
+        m_activeEntities = std::make_shared<Entities>(m_componentRegistry);
+    }
+
+    template <typename T>
+    auto registerComponent(const std::string& name = "") -> ComponentId {
+        return m_componentRegistry->registerComponent<T>(name);
     }
 
     auto createEntity() const -> EntityId {
@@ -38,13 +43,13 @@ class ECS {
     }
 
     template <typename T, typename... Args>
-    auto addComponent(EntityId entity, ComponentType componentType, Args&&... args) -> void {
-        m_activeEntities->addComponent<T>(entity, componentType, std::forward<Args>(args)...);
+    auto addComponent(EntityId entity, Args&&... args) -> void {
+        m_activeEntities->addComponent<T>(entity, std::forward<Args>(args)...);
     }
 
     template <typename T>
-    auto getEntityComponent(EntityId entity, ComponentType componentType) -> std::shared_ptr<T> {
-        return m_activeEntities->getEntityComponent<T>(entity, componentType);
+    auto getEntityComponent(EntityId entity) -> std::shared_ptr<T> {
+        return m_activeEntities->getEntityComponent<T>(entity);
     }
 
     auto registerSystem(std::string id, std::shared_ptr<BaseSystem> system) -> void {
@@ -70,7 +75,7 @@ class ECS {
             system->update(m_activeEntities, deltaTime);
         }
     }
-    
+
     auto getEntityCount() const -> size_t {
         return m_activeEntities->getEntityCount();
     }
@@ -80,7 +85,7 @@ class ECS {
     }
 
     auto createEntitySet(const std::string& name) -> std::shared_ptr<Entities> {
-        auto entitySet = std::make_shared<Entities>();
+        auto entitySet = std::make_shared<Entities>(m_componentRegistry);
         m_entitySets[name] = entitySet;
         return entitySet;
     }
@@ -98,6 +103,7 @@ class ECS {
     }
 
    private:
+    std::shared_ptr<ComponentRegistry> m_componentRegistry;
     std::shared_ptr<Entities> m_activeEntities;
     std::unordered_map<std::string, std::shared_ptr<Entities>> m_entitySets;
     std::unordered_map<std::string, std::shared_ptr<BaseSystem>> m_systems;

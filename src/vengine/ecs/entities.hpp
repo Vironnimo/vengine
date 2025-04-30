@@ -1,24 +1,25 @@
 #pragma once
 
-#include <bitset>
 #include <cstdint>
+#include <utility>
+#include <vector>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
-
+#include "component_registry.hpp"
 #include "vengine/core/uuid.hpp"
 #include "vengine/ecs/components.hpp"
-#include "vengine/ecs/entity.hpp"
 
 namespace Vengine {
 
+class Entity;
 using EntityId = uint64_t;
 using ComponentBitset = std::bitset<32>;
 
 class Entities {
    public:
-    Entities() = default;
-    ~Entities() = default;
+    Entities(std::shared_ptr<ComponentRegistry> registry) : m_registry(std::move(registry)) {
+    }
 
     auto createEntity() -> EntityId {
         EntityId entity = UUID::create();
@@ -30,63 +31,84 @@ class Entities {
     auto destroyEntity(EntityId entity) -> void {
         m_entityComponents.erase(entity);
         m_entities.erase(entity);
-        for (auto& [componentType, entityMap] : m_components) {
-            entityMap.erase(entity);
+
+        for (uint32_t i = 0; i < m_registry->size(); i++) {
+            auto it = m_components.find(i);
+            if (it != m_components.end()) {
+                it->second.erase(entity);
+            }
         }
     }
 
     template <typename T, typename... Args>
-    auto addComponent(EntityId entity, ComponentType componentType, Args&&... args) -> void {
+    auto addComponent(EntityId entity, Args&&... args) -> void {
+        ComponentId id = m_registry->getComponentId<T>();
+
         if (m_entities.find(entity) == m_entities.end()) {
-            // error handling?
             return;
         }
 
-        m_entityComponents[entity] |= componentType;
-        m_components[componentType][entity] = std::make_shared<T>(std::forward<Args>(args)...);
+        m_entityComponents[entity].set(id);
+        m_components[id][entity] = std::make_shared<T>(std::forward<Args>(args)...);
     }
-
 
     template <typename T>
-    auto getEntityComponent(EntityId entity, ComponentType componentType) -> std::shared_ptr<T> {
-        return std::dynamic_pointer_cast<T>(m_components[componentType][entity]);
-    }
+    auto getEntityComponent(EntityId entity) -> std::shared_ptr<T> {
+        ComponentId id = m_registry->getComponentId<T>();
 
-    template <typename... Args>
-    auto getEntitiesWith(Args... args) -> std::vector<EntityId> {
-        std::vector<EntityId> entities;
-        ComponentBitset queryMask = ComponentBitset();
-        ((queryMask |= ComponentBitset(args)), ...);  
-
-        for (const auto& [entity, components] : m_entityComponents) {
-            if ((components & queryMask) == queryMask) {
-                entities.push_back(entity);
-            }
+        auto compIt = m_components.find(id);
+        if (compIt == m_components.end()) {
+            return nullptr;
         }
 
-        return entities;
+        auto entityIt = compIt->second.find(entity);
+        if (entityIt == compIt->second.end()) {
+            return nullptr;
+        }
+
+        return std::static_pointer_cast<T>(entityIt->second);
     }
 
-    auto getEntity(EntityId entityId) -> Entity {
-        // todo HEREHREHREHRE
-        // fill entity with references to its components
-        Entity entity(entityId, this);
-        return entity;  
-    }
-
-    auto hasComponent(EntityId entity, ComponentType componentType) -> bool {
+    template <typename T>
+    auto hasComponent(EntityId entity) -> bool {
+        ComponentId id = m_registry->getComponentId<T>();
         auto it = m_entityComponents.find(entity);
         if (it != m_entityComponents.end()) {
-            return (it->second & ComponentBitset(componentType)) == ComponentBitset(componentType);
+            return it->second.test(id);
         }
         return false;
     }
 
-    auto removeComponent(EntityId entity, ComponentType componentType) -> void {
+    template <typename T>
+    auto removeComponent(EntityId entity) -> void {
+        ComponentId id = m_registry->getComponentId<T>();
+
         auto it = m_entityComponents.find(entity);
         if (it != m_entityComponents.end()) {
-            it->second &= ~ComponentBitset(componentType);
-            m_components[componentType].erase(entity);
+            it->second.reset(id);
+        }
+
+        auto compIt = m_components.find(id);
+        if (compIt != m_components.end()) {
+            compIt->second.erase(entity);
+        }
+    }
+
+    template <typename... Ts>
+    auto getEntitiesWith() -> std::vector<EntityId> {
+        if constexpr (sizeof...(Ts) == 0) {
+            return {};
+        } else {
+            ComponentBitset mask;
+            (mask.set(m_registry->getComponentId<Ts>()), ...);
+
+            std::vector<EntityId> result;
+            for (auto& [entityId, components] : m_entityComponents) {
+                if ((components & mask) == mask) {
+                    result.push_back(entityId);
+                }
+            }
+            return result;
         }
     }
 
@@ -101,8 +123,9 @@ class Entities {
     }
 
    private:
+    std::shared_ptr<ComponentRegistry> m_registry;
     std::unordered_set<EntityId> m_entities;
-    std::unordered_map<ComponentType, std::unordered_map<EntityId, std::shared_ptr<BaseComponent>>> m_components;
+    std::unordered_map<ComponentId, std::unordered_map<EntityId, std::shared_ptr<BaseComponent>>> m_components;
     std::unordered_map<EntityId, ComponentBitset> m_entityComponents;
 };
 

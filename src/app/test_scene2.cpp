@@ -28,19 +28,19 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     for (int row = 0; row < gridHeight; ++row) {
         for (int col = 0; col < gridWidth; ++col) {
             auto entity = vengine.ecs->createEntity();
-            vengine.ecs->addComponent<Vengine::MeshComponent>(entity, Vengine::ComponentType::MeshBit, cubeMesh);
-            vengine.ecs->addComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit);
+            vengine.ecs->addComponent<Vengine::MeshComponent>(entity, cubeMesh);
+            vengine.ecs->addComponent<Vengine::TransformComponent>(entity);
 
             int overallIndex = row * gridWidth + col;
             if (overallIndex % 2 == 0) {
-                vengine.ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, texturedMaterial);
+                vengine.ecs->addComponent<Vengine::MaterialComponent>(entity, texturedMaterial);
             } else {
-                vengine.ecs->addComponent<Vengine::MaterialComponent>(entity, Vengine::ComponentType::MaterialBit, texturedMaterial2);
+                vengine.ecs->addComponent<Vengine::MaterialComponent>(entity, texturedMaterial2);
             }
 
             float currentX = startX + static_cast<float>(col) * spacingX;
             float currentY = startY - static_cast<float>(row) * spacingY;
-            vengine.ecs->getEntityComponent<Vengine::TransformComponent>(entity, Vengine::ComponentType::TransformBit)->position =
+            vengine.ecs->getEntityComponent<Vengine::TransformComponent>(entity)->position =
                 glm::vec3(currentX, currentY, 0.0f);
         }
     }
