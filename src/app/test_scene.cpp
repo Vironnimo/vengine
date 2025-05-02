@@ -65,6 +65,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
     vengine.ecs->addComponent<Vengine::VelocityComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity);
+    vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, "resources/scripts/move.lua");
     auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
     chairTransform->position = glm::vec3(-25.0f, 100.0f, 5.0f);
     chairTransform->scale = glm::vec3(0.15f, 0.15f, 0.15f);

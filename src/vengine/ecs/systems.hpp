@@ -1,8 +1,16 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
-
 #include "entities.hpp"
+
+extern "C" {
+#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+}
+#include <sol/sol.hpp>
+
+#include "ecs.hpp"
 #include "components.hpp"
 #include "base_system.hpp"
 #include "vengine/renderer/camera.hpp"
@@ -37,6 +45,96 @@ class TransformSystem : public BaseSystem {
             }
         }
     }
+};
+
+class ScriptSystem : public BaseSystem {
+   public:
+    ScriptSystem() {
+        m_luaState = luaL_newstate();
+        if (!m_luaState) {
+            spdlog::error("Failed to create Lua state for ScriptSystem!");
+            return;
+        }
+        // load standard lua libs
+        luaL_openlibs(m_luaState);
+        spdlog::debug("ScriptSystem initialized Lua state.");
+    }
+
+    ~ScriptSystem() override {
+        if (m_luaState) {
+            lua_close(m_luaState);
+            spdlog::debug("ScriptSystem closed Lua state.");
+        }
+    }
+
+    void registerBindings(const std::shared_ptr<ECS>& ecs) {
+        sol::state_view lua(m_luaState);
+
+        lua["cpp_helloWorld"] = []() { spdlog::info("Hello from C++ (via Sol2)!"); };
+
+        // bind TransformComponent
+        sol::usertype<TransformComponent> transform_type = lua.new_usertype<TransformComponent>(
+            "TransformComponent", sol::no_constructor, "getPositionX", &TransformComponent::getPositionX, "getPositionY",
+            &TransformComponent::getPositionY, "getPositionZ", &TransformComponent::getPositionZ,
+            // "getRotationX", &TransformComponent::getRotationX, ...
+            // "getScaleX", &TransformComponent::getScaleX, ...
+            "setPosition", &TransformComponent::setPosition,
+            // "setRotation", &TransformComponent::setRotation,
+            // "setScale", &TransformComponent::setScale,
+            "updateMatrix", &TransformComponent::updateMatrix);
+
+        // expose a function, results in get_transform_component(entityId)
+        lua["get_transform_component"] = [ecs](EntityId entityId) -> std::shared_ptr<TransformComponent> {
+            return ecs->getActiveEntities()->getEntityComponent<TransformComponent>(entityId);
+        };
+    }
+
+    void update(std::shared_ptr<Entities> entities, float deltaTime) override {
+        if (!m_luaState) {
+            spdlog::error("ScriptSystem has no valid Lua state.");
+            return;
+        }
+
+        auto list = entities->getEntitiesWith<ScriptComponent>();
+        for (auto entityId : list) {
+            auto scriptComp = entities->getEntityComponent<ScriptComponent>(entityId);
+            if (!scriptComp || scriptComp->path.empty()) {
+                continue;
+            }
+
+            // load script file
+            if (luaL_dofile(m_luaState, scriptComp->path.c_str()) != LUA_OK) {
+                spdlog::error("Error loading/running Lua script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
+                lua_pop(m_luaState, 1);
+                continue;
+            }
+
+            // call update function in script
+            lua_getglobal(m_luaState, "update");
+            if (lua_isfunction(m_luaState, -1)) {
+                // arguments: entityId and deltaTime for now?
+                lua_pushinteger(m_luaState, static_cast<lua_Integer>(entityId));  
+                lua_pushnumber(m_luaState, static_cast<lua_Number>(deltaTime));   
+
+                // Call the function: 2 arguments, 0 results
+                if (lua_pcall(m_luaState, 2, 0, 0) != LUA_OK) {
+                    spdlog::error("Error calling Lua function 'update' in script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
+                    lua_pop(m_luaState, 1);  
+                }
+            } else {
+                // Pop the non-function value if it's not nil
+                if (!lua_isnil(m_luaState, -1)) {
+                    spdlog::trace("Script '{}' does not have an 'update' function.", scriptComp->path);
+                    lua_pop(m_luaState, 1);
+                }
+            }
+            // Clean up stack potentially left by dofile if it returned values
+            lua_settop(m_luaState, 0);
+        }
+    }
+
+   private:
+    lua_State* m_luaState = nullptr;
 };
 
 class RenderSystem : public BaseSystem {

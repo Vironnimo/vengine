@@ -8,6 +8,8 @@
     "glm",
     "freetype",
     "tl-expected",
-    "miniaudio"
+    "miniaudio",
+    "lua",
+    "sol2"
   ]
 }

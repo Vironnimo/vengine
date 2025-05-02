@@ -85,6 +85,7 @@ Vengine::~Vengine() {
     ecs->registerComponent<ColliderComponent>("Collider");
     ecs->registerComponent<PositionComponent>("Position");
     ecs->registerComponent<VelocityComponent>("Velocity");
+    ecs->registerComponent<ScriptComponent>("Script");
     // register built-in systems
     auto renderSystem = std::make_shared<RenderSystem>(renderer->camera);
     renderSystem->setEnabled(false);  // because it's not called automatically, it's called manually by the renderer
@@ -99,6 +100,9 @@ Vengine::~Vengine() {
     ecs->registerSystem("CollisionSystem", collisionSystem);
     ecs->registerSystem("PhysicsSystem", physicsSystem);
     ecs->registerSystem("RenderSystem", renderSystem);
+    auto scriptSystem = std::make_shared<ScriptSystem>();
+    scriptSystem->registerBindings(ecs);
+    ecs->registerSystem("ScriptSystem", scriptSystem);
 
     // this is weird here, needs to move
     glfwSetWindowUserPointer(window->get(), this);

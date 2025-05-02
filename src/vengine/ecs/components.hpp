@@ -14,8 +14,15 @@ struct BaseComponent {
 };
 
 struct TagComponent : public BaseComponent {
-    TagComponent(std::string tag) : tag(std::move(tag)) {} 
+    TagComponent(std::string tag) : tag(std::move(tag)) {
+    }
     std::string tag;
+};
+
+struct ScriptComponent : public BaseComponent {
+    ScriptComponent(std::string scriptPath) : path(std::move(scriptPath)) {
+    }
+    std::string path;
 };
 
 struct PositionComponent : public BaseComponent {
@@ -49,6 +56,23 @@ struct TransformComponent : public BaseComponent {
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
     glm::mat4 transform = glm::mat4(1.0f);
+
+    // helpers for lua bindings
+    [[nodiscard]] auto getPositionX() const -> float {
+        return position.x;
+    }
+    [[nodiscard]] auto getPositionY() const -> float {
+        return position.y;
+    }
+    [[nodiscard]] auto getPositionZ() const -> float {
+        return position.z;
+    }
+
+    void setPosition(float x, float y, float z) {
+        position.x = x;
+        position.y = y;
+        position.z = z;
+    }
 
     void updateMatrix() {
         transform = glm::mat4(1.0f);

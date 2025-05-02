@@ -5,6 +5,8 @@ find_package(glad REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(tl-expected CONFIG REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(Lua REQUIRED)
+find_package(sol2 CONFIG REQUIRED)
 
 set(SOURCES
         app/app.cpp
@@ -49,10 +51,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         Freetype::Freetype
         tl::expected
         glad::glad
+        ${LUA_LIBRARIES}
+        sol2
 )
 
 find_path(MINIAUDIO_INCLUDE_DIRS "miniaudio.h")
 target_include_directories(${PROJECT_NAME} PRIVATE ${MINIAUDIO_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${LUA_INCLUDE_DIR})
 
 # copy resources to the build directory
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources")
