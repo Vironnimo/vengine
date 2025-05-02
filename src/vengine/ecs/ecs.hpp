@@ -2,12 +2,9 @@
 
 #include <spdlog/spdlog.h>
 
-#include <bitset>
 #include <memory>
 #include <unordered_map>
 
-#include "components.hpp"
-#include "systems.hpp"
 #include "base_system.hpp"
 #include "vengine/ecs/entities.hpp"
 #include "vengine/ecs/entity.hpp"
@@ -15,8 +12,11 @@
 namespace Vengine {
 
 using EntityId = uint64_t;
-using ComponentBitset = std::bitset<32>;
 
+// todo this whole thing needs to be restructured, it's a mess with the circular includes and 
+// dependencies and doesn't work with cpp23
+// todo wrapper functions for all the stuff that's inside the ecs, like register components and systems,
+// create entitites and so on
 class ECS {
    public:
     ECS() {
@@ -27,7 +27,9 @@ class ECS {
 
     template <typename T>
     auto registerComponent(const std::string& name = "") -> ComponentId {
-        return m_componentRegistry->registerComponent<T>(name);
+        auto id = m_componentRegistry->registerComponent<T>(name);
+        spdlog::debug("ECS: Registered component type: {} with ID: {}", name.empty() ? typeid(T).name() : name, id);
+        return id;
     }
 
     auto createEntity() const -> EntityId {
@@ -51,6 +53,8 @@ class ECS {
         m_activeEntities->addComponent<T>(entity, std::forward<Args>(args)...);
     }
 
+    // todo we also need a get component by tag function
+
     template <typename T>
     auto getEntityComponent(EntityId entity) -> std::shared_ptr<T> {
         return m_activeEntities->getEntityComponent<T>(entity);
@@ -58,6 +62,7 @@ class ECS {
 
     auto registerSystem(std::string id, std::shared_ptr<BaseSystem> system) -> void {
         m_systems.emplace(id, std::move(system));
+        spdlog::debug("ECS: Registered system: {}", id);
     }
 
     template <typename T>

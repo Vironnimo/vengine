@@ -37,8 +37,6 @@ class ComponentRegistry {
         m_idToType.insert({id, typeIdx});
         m_idToName[id] = name.empty() ? typeid(T).name() : name;
 
-        spdlog::debug("Registered component type: {} with ID: {}", name.empty() ? typeid(T).name() : name, id);
-
         return id;
     }
 

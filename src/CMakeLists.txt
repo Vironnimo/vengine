@@ -54,7 +54,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 find_path(MINIAUDIO_INCLUDE_DIRS "miniaudio.h")
 target_include_directories(${PROJECT_NAME} PRIVATE ${MINIAUDIO_INCLUDE_DIRS})
 
-
 # copy resources to the build directory
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/resources")
 add_custom_target(copy_resources ALL

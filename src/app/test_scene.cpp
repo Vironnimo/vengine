@@ -4,7 +4,7 @@
 #include "vengine/vengine.hpp"
 
 void TestScene::load(Vengine::Vengine& vengine) {
-    spdlog::info("Constructor TestScene");
+    spdlog::debug("Constructor TestScene");
 
     // skybox
     // order matters here! right, left, top, bottom, back, front
@@ -15,8 +15,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     auto skyboxBack = vengine.resourceManager->get<Vengine::Texture>("skybox_back");
     auto skyboxFront = vengine.resourceManager->get<Vengine::Texture>("skybox_front");
 
-    std::vector<std::shared_ptr<Vengine::Texture>> skyboxTextures = {skyboxRight, skyboxLeft, skyboxTop, skyboxBottom,
-                                                                       skyboxBack,  skyboxFront};
+    std::vector<std::shared_ptr<Vengine::Texture>> skyboxTextures = {skyboxRight,  skyboxLeft, skyboxTop,
+                                                                     skyboxBottom, skyboxBack, skyboxFront};
     vengine.renderer->loadSkybox(skyboxTextures);
 
     // create materials (textures + shaders or just shaders)
@@ -54,13 +54,12 @@ void TestScene::load(Vengine::Vengine& vengine) {
     rigidBody->isStatic = true;
     vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, texturedMaterial);
     auto planeBounds = groundMesh->getBounds();
-    vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first,
-                                                          planeBounds.second);
+    vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first, planeBounds.second);
 
     // chair entity
     auto chairBounds = chairMesh->getBounds();
     auto chairEntity = vengine.ecs->createEntity();
-    vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
+    // vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
     vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
@@ -69,8 +68,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
     chairTransform->position = glm::vec3(-25.0f, 100.0f, 5.0f);
     chairTransform->scale = glm::vec3(0.15f, 0.15f, 0.15f);
-    vengine.ecs->addComponent<Vengine::ColliderComponent>(chairEntity, chairBounds.first,
-                                                          chairBounds.second);
+    vengine.ecs->addComponent<Vengine::ColliderComponent>(chairEntity, chairBounds.first, chairBounds.second);
 
     // cube entity
     auto cubeBounds = cubeMesh->getBounds();
@@ -85,33 +83,30 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::RigidbodyComponent>(cubeEntity);
     auto boxRigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(cubeEntity);
     // boxRigidBody->isStatic = true;
-    vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity, cubeBounds.first,
-                                                          cubeBounds.second);
-
+    vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity, cubeBounds.first, cubeBounds.second);
 
     // test entity class
-    // this here crashes, because id 2 is not always valid.
-    auto testEntity = vengine.ecs->getEntityByTag("chair");    
-    // auto testEntity = vengine.ecs->getEntity(2);
-    spdlog::warn("Test entity ID: {}", testEntity.getId());
-    auto comp = testEntity.getComponent<Vengine::MeshComponent>();
-    spdlog::warn("Test entity component stuff: {}", comp->mesh->getVertexCount());
-    auto transform = testEntity.getComponent<Vengine::TransformComponent>();
-    spdlog::warn("Test entity transform stuff: {} {} {}", transform->position.x, transform->position.y,
-                transform->position.z);
-    auto result = testEntity.hasComponent<Vengine::PositionComponent>();
-    spdlog::warn("Test entity has position component: {}", result);
-    testEntity.addComponent<Vengine::PositionComponent>();
-    auto result2 = testEntity.hasComponent<Vengine::PositionComponent>();
-    spdlog::warn("Test entity has position component2: {}", result2);
-    auto position = testEntity.getComponent<Vengine::PositionComponent>();
-    spdlog::warn("Test entity position stuff: {} {}", position->x, position->y);
-    testEntity.removeComponent<Vengine::PositionComponent>();
-    auto position2 = testEntity.getComponent<Vengine::PositionComponent>();
-    if (position2) {
-        spdlog::warn("Test entity position stuff: {} {}", position2->x, position2->y);
-    } else {
-        spdlog::warn("Test entity position component removed successfully");
+    auto testEntity = vengine.ecs->getEntityByTag("chair");
+    if (testEntity.getId() != 0) {
+        spdlog::warn("Test entity ID: {}", testEntity.getId());
+        auto comp = testEntity.getComponent<Vengine::MeshComponent>();
+        spdlog::warn("Test entity component stuff: {}", comp->mesh->getVertexCount());
+        auto transform = testEntity.getComponent<Vengine::TransformComponent>();
+        spdlog::warn("Test entity transform stuff: {} {} {}", transform->position.x, transform->position.y, transform->position.z);
+        auto result = testEntity.hasComponent<Vengine::PositionComponent>();
+        spdlog::warn("Test entity has position component: {}", result);
+        testEntity.addComponent<Vengine::PositionComponent>();
+        auto result2 = testEntity.hasComponent<Vengine::PositionComponent>();
+        spdlog::warn("Test entity has position component2: {}", result2);
+        auto position = testEntity.getComponent<Vengine::PositionComponent>();
+        spdlog::warn("Test entity position stuff: {} {}", position->x, position->y);
+        testEntity.removeComponent<Vengine::PositionComponent>();
+        auto position2 = testEntity.getComponent<Vengine::PositionComponent>();
+        if (position2) {
+            spdlog::warn("Test entity position stuff: {} {}", position2->x, position2->y);
+        } else {
+            spdlog::warn("Test entity position component removed successfully");
+        }
     }
 }
 

@@ -163,7 +163,8 @@ class Sound : public IResource {
         ma_result result = ma_sound_init_from_file(m_engine, fullPath.string().c_str(), 0, nullptr, nullptr, &m_sound);
 
         if (result != MA_SUCCESS) {
-            spdlog::error("Failed to load sound: {} (Error code: {})", fullPath.string());
+            // why do we need do it like this here with cpp23?
+            spdlog::error(fmt::runtime("Failed to load sound: {} (Error code: {})"), fullPath.string());
             return false;
         }
 

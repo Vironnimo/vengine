@@ -1,6 +1,7 @@
 #include "test_scene2.hpp"
 
 void TestScene2::load(Vengine::Vengine& vengine) {
+    spdlog::debug("Constructor TestScene2");
     auto cubeMesh = vengine.meshLoader->loadFromObj("box.obj");
 
     auto texture = vengine.resourceManager->get<Vengine::Texture>("test_texture");

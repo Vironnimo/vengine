@@ -9,6 +9,7 @@
 #include "vengine/ecs/components.hpp"
 #include "vengine/renderer/renderer.hpp"
 #include "vengine/core/resource_manager.hpp"
+#include "vengine/ecs/systems.hpp"
 
 namespace Vengine {
 
@@ -54,7 +55,7 @@ Vengine::~Vengine() {
     if (auto result = window->create(params); !result) {
         return tl::unexpected(result.error());
     }
-    spdlog::info("Vengine: window creation time: {} ms", timers->stop("vengine.window_creation"));
+    auto windowCreationTime = timers->getElapsed("vengine.window_creation");
 
     renderer = std::make_unique<Renderer>();
     if (auto result = renderer->init(window); !result) {
@@ -102,11 +103,12 @@ Vengine::~Vengine() {
     // this is weird here, needs to move
     glfwSetWindowUserPointer(window->get(), this);
 
-    // vengine startup time
-    auto elapsedTime = timers->getElapsed("vengine.start");
-    spdlog::info("Vengine: initialization took {} ms", elapsedTime);
-
-    spdlog::info("Vengine: successfully started.");
+    // time logging
+    auto vengineStartTime = timers->getElapsed("vengine.start");
+    auto vengineWithoutWindow = vengineStartTime - windowCreationTime;
+    spdlog::info("Vengine: started in {} ms.", vengineStartTime);
+    spdlog::info("Vengine: -- {} ms of that are vengine", vengineWithoutWindow);
+    spdlog::info("Vengine: -- {} ms of that are window creation", windowCreationTime);
     return {};
 }
 

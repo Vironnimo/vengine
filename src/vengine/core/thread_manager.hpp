@@ -141,7 +141,7 @@ class ThreadManager {
         }
         m_workers.clear();
 
-        spdlog::info("ThreadManager shutdown complete");
+        spdlog::debug("ThreadManager shutdown complete");
     }
 
    private:
@@ -188,7 +188,7 @@ class ThreadManager {
                     }
                 }
 
-                spdlog::debug("Worker thread {} exiting", i);
+                // spdlog::debug("Worker thread {} exiting", i);
             });
         }
     }

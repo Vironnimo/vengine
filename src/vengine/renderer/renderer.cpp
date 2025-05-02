@@ -11,6 +11,7 @@
 #include "vengine/vengine.hpp"
 #include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/font.hpp"
+#include "vengine/ecs/systems.hpp"
 
 namespace Vengine {
 

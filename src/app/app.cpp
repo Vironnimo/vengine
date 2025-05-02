@@ -39,8 +39,10 @@ App::App() {
         return;
     }
     
-    // sleep until test_texture is loaded
-    while (!m_vengine->resourceManager->isLoaded("test_texture") || !m_vengine->resourceManager->isLoaded("skybox_front")) {
+    // sleep until skybox textures are loaded
+    while (!m_vengine->resourceManager->isLoaded("skybox_back") || !m_vengine->resourceManager->isLoaded("skybox_front") || 
+           !m_vengine->resourceManager->isLoaded("skybox_left") || !m_vengine->resourceManager->isLoaded("skybox_right") ||
+           !m_vengine->resourceManager->isLoaded("skybox_top") || !m_vengine->resourceManager->isLoaded("skybox_bottom")) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -147,7 +149,7 @@ App::App() {
 
 void App::run() {
     auto end = m_vengine->timers->stop("vengine.start");
-    spdlog::info("Full App initialization took {} ms", end);
+    spdlog::info("App fully loaded in {} ms, starting main loop.", end);
 
     m_vengine->run();
 }

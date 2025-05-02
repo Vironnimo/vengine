@@ -12,6 +12,10 @@ class TestModule : public Vengine::Module {
     void onDetach(Vengine::Vengine& vengine) override;
 
    private:
+    int m_testFps = 0;
+    int m_testFpsCount = 0;
+    float m_testFpsTimer = 0.0f;
+
     float m_fpsUpdateTimer = 0.0f;
     std::shared_ptr<Vengine::TextObject> m_textObject;
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <list>
+#include <string>
 
 namespace Vengine {
 
@@ -23,6 +24,10 @@ class UUID {
 
     static void free(uint64_t id) {
         m_freeIds.push_back(id);
+    }
+
+    static auto toString() -> std::string {
+        return "UUID: nextId: " + std::to_string(m_nextId) + ", freeIds: " + std::to_string(m_freeIds.size());
     }
 
    private:
