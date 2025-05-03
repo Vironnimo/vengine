@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include <fstream>
 
 namespace Vengine {
 
@@ -13,6 +14,15 @@ auto Utils::getRandomFloat(float min, float max) -> float {
 auto Utils::getRandomInt(int min, int max) -> int {
     std::uniform_int_distribution<int> distribution(min, max);
     return distribution(gen);
+}
+
+auto Utils::readFile(const std::string& filePath) -> std::string {
+    std::ifstream file(filePath);
+    if (!file.is_open()) {
+        return {};
+    }
+    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    return content;
 }
 
 }  // namespace Vengine

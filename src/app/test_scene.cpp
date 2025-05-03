@@ -5,6 +5,14 @@
 
 void TestScene::load(Vengine::Vengine& vengine) {
     spdlog::debug("Constructor TestScene");
+    // cam
+    // Vengine::EntityId mainCameraEntity = vengine.ecs->createEntity();
+    // vengine.ecs->addComponent<Vengine::TagComponent>(mainCameraEntity, "MainCamera");
+    // vengine.ecs->addComponent<Vengine::TransformComponent>(mainCameraEntity);
+    // vengine.ecs->addComponent<Vengine::CameraComponent>(mainCameraEntity);
+
+    // auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mainCameraEntity);
+    // camTransform->position = glm::vec3(0.0f, 0.0f, 5.0f);
 
     // skybox
     // order matters here! right, left, top, bottom, back, front
@@ -59,7 +67,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // chair entity
     auto chairBounds = chairMesh->getBounds();
     auto chairEntity = vengine.ecs->createEntity();
-    // vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
+    vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
     vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);

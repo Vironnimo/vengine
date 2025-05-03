@@ -1,10 +1,12 @@
 #include "scenes.hpp"
 
+#include "vengine/vengine.hpp"
+
 namespace Vengine {
 
-void Scenes::add(const std::string& name, std::shared_ptr<Scene> scene, std::shared_ptr<Entities> entities) {
+void Scenes::add(const std::string& name, std::shared_ptr<Scene> scene) {
     m_scenes[name] = std::move(scene);
-    m_scenes[name]->setEntities(std::move(entities));
+    // m_scenes[name]->setEntities(std::move(entities));
 }
 
 void Scenes::switchTo(const std::string& name, Vengine& vengine) {
@@ -15,11 +17,16 @@ void Scenes::switchTo(const std::string& name, Vengine& vengine) {
             return;
         }
 
+        // weird here, probably just it->second->setEntities(vengine.ecs->getActiveEntities()); is enough?
         if (m_currentScene) {
             m_currentScene->cleanup(vengine);
-            // NOTE for now clear all entities on switch
-            m_currentScene->clearEntities();
-        }   
+            // clear all entitites except persistent ones
+            m_currentScene->getEntities()->removeNonPersistentEntities();
+            it->second->setEntities(m_currentScene->getEntities());
+        } else {
+            it->second->setEntities(vengine.ecs->getActiveEntities());
+        }
+
         m_currentScene = it->second;
 
         m_currentScene->load(vengine);

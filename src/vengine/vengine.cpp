@@ -57,11 +57,6 @@ Vengine::~Vengine() {
     }
     auto windowCreationTime = timers->getElapsed("vengine.window_creation");
 
-    renderer = std::make_unique<Renderer>();
-    if (auto result = renderer->init(window); !result) {
-        return tl::unexpected(result.error());
-    }
-
     threadManager = std::make_shared<ThreadManager>();
 
     resourceManager = std::make_unique<ResourceManager>(threadManager);
@@ -76,8 +71,15 @@ Vengine::~Vengine() {
 
     // ecs
     ecs = std::make_shared<ECS>();
+    // renderer
+    renderer = std::make_unique<Renderer>();
+    if (auto result = renderer->init(window, ecs); !result) {
+        return tl::unexpected(result.error());
+    }
+
     // register built-in components
     ecs->registerComponent<TagComponent>("Tag");
+    ecs->registerComponent<PersistentComponent>("Persistent");
     ecs->registerComponent<TransformComponent>("Transform");
     ecs->registerComponent<MeshComponent>("Mesh");
     ecs->registerComponent<MaterialComponent>("Material");
@@ -86,8 +88,9 @@ Vengine::~Vengine() {
     ecs->registerComponent<PositionComponent>("Position");
     ecs->registerComponent<VelocityComponent>("Velocity");
     ecs->registerComponent<ScriptComponent>("Script");
+    ecs->registerComponent<CameraComponent>("Camera");
     // register built-in systems
-    auto renderSystem = std::make_shared<RenderSystem>(renderer->camera);
+    auto renderSystem = std::make_shared<RenderSystem>();
     renderSystem->setEnabled(false);  // because it's not called automatically, it's called manually by the renderer
     auto collisionSystem = std::make_shared<CollisionSystem>();
     auto physicsSystem = std::make_shared<PhysicsSystem>();
@@ -104,8 +107,20 @@ Vengine::~Vengine() {
     scriptSystem->registerBindings(ecs);
     ecs->registerSystem("ScriptSystem", scriptSystem);
 
-    // this is weird here, needs to move
-    glfwSetWindowUserPointer(window->get(), this);
+    // default cam
+    EntityId defaultCameraEntity = ecs->createEntity();
+    ecs->addComponent<TagComponent>(defaultCameraEntity, "DefaultCamera");  
+    ecs->addComponent<PersistentComponent>(defaultCameraEntity); 
+    ecs->addComponent<TransformComponent>(defaultCameraEntity);
+    ecs->addComponent<CameraComponent>(defaultCameraEntity); 
+
+    auto camComp = ecs->getEntityComponent<CameraComponent>(defaultCameraEntity);
+    camComp->aspectRatio = static_cast<float>(params.width) / static_cast<float>(params.height);
+
+    auto camTransform = ecs->getEntityComponent<TransformComponent>(defaultCameraEntity); 
+    camTransform->position = glm::vec3(0.0f, 50.0f, 185.0f);  
+
+    renderer->setActiveCamera(defaultCameraEntity);
 
     // time logging
     auto vengineStartTime = timers->getElapsed("vengine.start");
@@ -171,17 +186,15 @@ void Vengine::removeModule(const std::shared_ptr<Module>& module) {
 }
 
 void Vengine::addScene(const std::string& name, std::shared_ptr<Scene> scene) {
-    m_scenes->add(name, std::move(scene), ecs->createEntitySet(name));
+    m_scenes->add(name, std::move(scene));
 }
 
 template <typename T>
 void Vengine::addScene(const std::string& name) {
     auto scene = std::make_shared<T>(name);
-    m_scenes->add(name, std::move(scene), ecs->createEntitySet(name));
 }
 
 void Vengine::switchToScene(const std::string& name) {
-    ecs->setActiveEntities(name);
     m_scenes->switchTo(name, *this);
 }
 

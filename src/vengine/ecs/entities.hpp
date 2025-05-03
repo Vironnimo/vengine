@@ -24,7 +24,7 @@ class Entities {
 
     auto createEntity() -> EntityId {
         EntityId entity = UUID::create();
-        m_entityComponents[entity] = ComponentBitset();
+        m_entityBitsets[entity] = ComponentBitset();
         m_entities.insert(entity);
         return entity;
     }
@@ -47,7 +47,7 @@ class Entities {
     }
 
     auto destroyEntity(EntityId entity) -> void {
-        m_entityComponents.erase(entity);
+        m_entityBitsets.erase(entity);
         m_entities.erase(entity);
         UUID::free(entity);
 
@@ -67,7 +67,7 @@ class Entities {
             return;
         }
 
-        m_entityComponents[entity].set(id);
+        m_entityBitsets[entity].set(id);
         m_components[id][entity] = std::make_shared<T>(std::forward<Args>(args)...);
     }
 
@@ -91,8 +91,8 @@ class Entities {
     template <typename T>
     auto hasComponent(EntityId entity) -> bool {
         ComponentId id = m_registry->getComponentId<T>();
-        auto it = m_entityComponents.find(entity);
-        if (it != m_entityComponents.end()) {
+        auto it = m_entityBitsets.find(entity);
+        if (it != m_entityBitsets.end()) {
             return it->second.test(id);
         }
         return false;
@@ -102,8 +102,8 @@ class Entities {
     auto removeComponent(EntityId entity) -> void {
         ComponentId id = m_registry->getComponentId<T>();
 
-        auto it = m_entityComponents.find(entity);
-        if (it != m_entityComponents.end()) {
+        auto it = m_entityBitsets.find(entity);
+        if (it != m_entityBitsets.end()) {
             it->second.reset(id);
         }
 
@@ -122,7 +122,7 @@ class Entities {
             (mask.set(m_registry->getComponentId<Ts>()), ...);
 
             std::vector<EntityId> result;
-            for (auto& [entityId, components] : m_entityComponents) {
+            for (auto& [entityId, components] : m_entityBitsets) {
                 if ((components & mask) == mask) {
                     result.push_back(entityId);
                 }
@@ -132,7 +132,7 @@ class Entities {
     }
 
     auto getEntityCount() -> size_t {
-        return m_entityComponents.size();
+        return m_entityBitsets.size();
     }
 
     auto clear() -> void {
@@ -142,14 +142,50 @@ class Entities {
         }
         m_entities.clear();
         m_components.clear();
-        m_entityComponents.clear();
+        m_entityBitsets.clear();
+    }
+
+    auto removeNonPersistentEntities() -> void {
+        ComponentId persistentCompId = m_registry->getComponentId<PersistentComponent>();
+
+        auto entityIt = m_entities.begin();
+        while (entityIt != m_entities.end()) {
+            EntityId currentEntityId = *entityIt;
+            bool isPersistent = false;
+
+            auto bitsetIt = m_entityBitsets.find(currentEntityId);
+            if (bitsetIt != m_entityBitsets.end()) {
+                isPersistent = bitsetIt->second.test(persistentCompId);
+            }
+
+            if (!isPersistent) {
+                EntityId idToDestroy = currentEntityId;
+                // advance iterator BEFORE erasing the element it points to
+                entityIt = m_entities.erase(entityIt);
+                // remove bitset
+                if (bitsetIt != m_entityBitsets.end()) {
+                     m_entityBitsets.erase(bitsetIt);
+                }
+                // remove components 
+                for (uint32_t i = 0; i < m_registry->size(); i++) {
+                    auto compMapIt = m_components.find(i);
+                    if (compMapIt != m_components.end()) {
+                        compMapIt->second.erase(idToDestroy);
+                    }
+                }
+
+                UUID::free(idToDestroy);
+            } else {
+                ++entityIt;
+            }
+        }
     }
 
    private:
     std::shared_ptr<ComponentRegistry> m_registry;
     std::unordered_set<EntityId> m_entities;
     std::unordered_map<ComponentId, std::unordered_map<EntityId, std::shared_ptr<BaseComponent>>> m_components;
-    std::unordered_map<EntityId, ComponentBitset> m_entityComponents;
+    std::unordered_map<EntityId, ComponentBitset> m_entityBitsets;
 };
 
 }  // namespace Vengine

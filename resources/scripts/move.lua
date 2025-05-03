@@ -5,15 +5,15 @@ function update(entityId, dt)
     local currentY = transform:getPositionY()
     local currentZ = transform:getPositionZ()
 
-    print("Current Position: " .. currentX .. ", " .. currentY .. ", " .. currentZ)
+    -- print("Current Position: " .. currentX .. ", " .. currentY .. ", " .. currentZ)
 
     transform:setPosition(currentX - 10.0 * dt, currentY, currentZ)
     transform:updateMatrix()
 
-    print("New Position X: " .. transform:getPositionX() .. ", Y: " .. transform:getPositionY() .. ", Z: " .. transform:getPositionZ())
+    -- print("New Position X: " .. transform:getPositionX() .. ", Y: " .. transform:getPositionY() .. ", Z: " .. transform:getPositionZ())
   else
     print("Entity " .. entityId .. " has no TransformComponent")
   end
 end
 
-print("move.lua loaded")
+-- print("move.lua loaded")

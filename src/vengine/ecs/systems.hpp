@@ -13,7 +13,6 @@ extern "C" {
 #include "ecs.hpp"
 #include "components.hpp"
 #include "base_system.hpp"
-#include "vengine/renderer/camera.hpp"
 
 namespace Vengine {
 
@@ -103,6 +102,7 @@ class ScriptSystem : public BaseSystem {
             }
 
             // load script file
+            // todo don't load it every frame, only when it changes (or just once?)
             if (luaL_dofile(m_luaState, scriptComp->path.c_str()) != LUA_OK) {
                 spdlog::error("Error loading/running Lua script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
                 lua_pop(m_luaState, 1);
@@ -113,13 +113,13 @@ class ScriptSystem : public BaseSystem {
             lua_getglobal(m_luaState, "update");
             if (lua_isfunction(m_luaState, -1)) {
                 // arguments: entityId and deltaTime for now?
-                lua_pushinteger(m_luaState, static_cast<lua_Integer>(entityId));  
-                lua_pushnumber(m_luaState, static_cast<lua_Number>(deltaTime));   
+                lua_pushinteger(m_luaState, static_cast<lua_Integer>(entityId));
+                lua_pushnumber(m_luaState, static_cast<lua_Number>(deltaTime));
 
                 // Call the function: 2 arguments, 0 results
                 if (lua_pcall(m_luaState, 2, 0, 0) != LUA_OK) {
                     spdlog::error("Error calling Lua function 'update' in script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
-                    lua_pop(m_luaState, 1);  
+                    lua_pop(m_luaState, 1);
                 }
             } else {
                 // Pop the non-function value if it's not nil
@@ -139,21 +139,36 @@ class ScriptSystem : public BaseSystem {
 
 class RenderSystem : public BaseSystem {
    public:
-    RenderSystem(std::shared_ptr<Camera> camera) : m_camera(std::move(camera)) {
-        if (!m_camera) {
-            spdlog::warn("RenderSystem created without a valid Camera!");
-        }
-    }
-
     void update(std::shared_ptr<Entities> entities, float /*deltaTime*/) override {
-        if (!m_camera) {
-            spdlog::error("RenderSystem cannot update without a camera.");
-            return;
+        // new camera stuff, needs to move somewhere else? camera component/system?
+        // find active camera
+        EntityId activeCameraId = 0;
+        auto cameraEntities = entities->getEntitiesWith<CameraComponent, TransformComponent>();
+        for (auto camId : cameraEntities) {
+            auto camComp = entities->getEntityComponent<CameraComponent>(camId);
+            if (camComp && camComp->isActive) {
+                activeCameraId = camId;
+                break;
+            }
         }
 
-        // camera matrices
-        glm::mat4 viewMatrix = m_camera->getViewMatrix();
-        glm::mat4 projectionMatrix = m_camera->getProjectionMatrix();
+        if (activeCameraId == 0) {
+            spdlog::error("RenderSystem: No active camera found.");
+            // TODO: defaults on error?
+            return;  
+        }
+
+        auto cameraTransform = entities->getEntityComponent<TransformComponent>(activeCameraId);
+        auto cameraComponent = entities->getEntityComponent<CameraComponent>(activeCameraId);
+
+        glm::mat4 camRotationMat = glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+                                   glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                                   glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 camTranslationMat = glm::translate(glm::mat4(1.0f), -cameraTransform->position);
+
+        glm::mat4 viewMatrix = camRotationMat * camTranslationMat;  
+        glm::mat4 projectionMatrix = cameraComponent->getProjectionMatrix();
+        // camera stuff end
 
         auto list = entities->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
 
@@ -184,7 +199,6 @@ class RenderSystem : public BaseSystem {
     }
 
    private:
-    std::shared_ptr<Camera> m_camera;
 };
 
 class PhysicsSystem : public BaseSystem {

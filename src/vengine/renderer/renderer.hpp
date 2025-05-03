@@ -4,7 +4,6 @@
 #include <tl/expected.hpp>
 
 #include "vengine/core/error.hpp"
-#include "vengine/renderer/camera.hpp"
 #include "vengine/renderer/materials.hpp"
 #include "vengine/renderer/mesh.hpp"
 #include "vengine/renderer/window.hpp"
@@ -33,13 +32,12 @@ class Renderer {
    public:
     std::unique_ptr<Materials> materials;
     std::unique_ptr<Shaders> shaders;
-    std::shared_ptr<Camera> camera;
     std::unique_ptr<Fonts> fonts;
     std::unique_ptr<Skybox> skybox;
 
     Renderer();
     ~Renderer();
-    [[nodiscard]] auto init(std::shared_ptr<Window> window) -> tl::expected<void, Error>;
+    [[nodiscard]] auto init(std::shared_ptr<Window> window, std::shared_ptr<ECS> ecs) -> tl::expected<void, Error>;
 
     auto render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void;
     auto setVSync(bool enabled) -> void;
@@ -50,10 +48,17 @@ class Renderer {
     // todo text should become a component
     auto addTextObject(std::shared_ptr<TextObject> textObject) -> void;
 
+    auto setActiveCamera(EntityId camera) -> void;
+    [[nodiscard]] auto getActiveCamera() const -> EntityId {
+        return m_activeCamera;
+    }
+
    private:
+    std::shared_ptr<ECS> m_ecs;
     std::shared_ptr<Window> m_window;
     std::vector<std::shared_ptr<TextObject>> m_textObjects;
     bool m_skyboxEnabled = false;
+    EntityId m_activeCamera;
 };
 
 }  // namespace Vengine

@@ -51,6 +51,10 @@ struct MaterialComponent : public BaseComponent {
     std::shared_ptr<Material> material;
 };
 
+struct PersistentComponent : public BaseComponent {
+    bool persistent = true; 
+};
+
 struct TransformComponent : public BaseComponent {
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation = glm::vec3(0.0f);
@@ -121,6 +125,18 @@ struct ColliderComponent : public BaseComponent {
             worldMin = glm::min(worldMin, glm::vec3(corners[i]));
             worldMax = glm::max(worldMax, glm::vec3(corners[i]));
         }
+    }
+};
+
+struct CameraComponent : public BaseComponent {
+    float fov = 70.0f;
+    float aspectRatio = 16.0f / 9.0f;
+    float nearPlane = 0.1f;
+    float farPlane = 1000.0f;
+    bool isActive = true; // current main camera
+
+    [[nodiscard]] auto getProjectionMatrix() const -> glm::mat4 {
+         return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
     }
 };
 

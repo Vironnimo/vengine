@@ -33,6 +33,7 @@ class Utils {
 
     static auto getRandomFloat(float min, float max) -> float;
     static auto getRandomInt(int min, int max) -> int;
+    static auto readFile(const std::string& filePath) -> std::string;
 
    private:
     static std::random_device randomDevice;
