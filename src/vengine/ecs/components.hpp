@@ -61,7 +61,16 @@ struct TransformComponent : public BaseComponent {
     glm::vec3 scale = glm::vec3(1.0f);
     glm::mat4 transform = glm::mat4(1.0f);
 
-    // helpers for lua bindings
+    void updateMatrix() {
+        transform = glm::mat4(1.0f);
+        transform = glm::translate(transform, position);
+        transform = glm::rotate(transform, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        transform = glm::rotate(transform, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        transform = glm::rotate(transform, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        transform = glm::scale(transform, scale);
+    }
+
+    // lua helper functions
     [[nodiscard]] auto getPositionX() const -> float {
         return position.x;
     }
@@ -78,13 +87,38 @@ struct TransformComponent : public BaseComponent {
         position.z = z;
     }
 
-    void updateMatrix() {
-        transform = glm::mat4(1.0f);
-        transform = glm::translate(transform, position);
-        transform = glm::rotate(transform, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-        transform = glm::rotate(transform, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-        transform = glm::rotate(transform, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-        transform = glm::scale(transform, scale);
+    [[nodiscard]] auto getRotationX() const -> float {
+        return rotation.x;
+    }
+    [[nodiscard]] auto getRotationY() const -> float {
+        return rotation.y;
+    }
+    [[nodiscard]] auto getRotationZ() const -> float {
+        return rotation.z;
+    }
+
+    void setRotation(float x, float y, float z) {
+        rotation.x = x;
+        rotation.y = y;
+        rotation.z = z;
+    }
+
+    [[nodiscard]] auto getScaleX() const -> float {
+        return scale.x;
+    }
+    [[nodiscard]] auto getScaleY() const -> float {
+        return scale.y;
+    }
+    [[nodiscard]] auto getScaleZ() const -> float {
+        return scale.z;
+    }
+    void setScale(float x, float y, float z) {
+        scale.x = x;
+        scale.y = y;
+        scale.z = z;
+    }
+    [[nodiscard]] auto getTransform() const -> glm::mat4 {
+        return transform;
     }
 };
 
@@ -137,6 +171,38 @@ struct CameraComponent : public BaseComponent {
 
     [[nodiscard]] auto getProjectionMatrix() const -> glm::mat4 {
          return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+    }
+
+    // lua helper functions
+    [[nodiscard]] auto getFov() const -> float {
+        return fov;
+    }
+    [[nodiscard]] auto getAspectRatio() const -> float {
+        return aspectRatio;
+    }
+    [[nodiscard]] auto getNearPlane() const -> float {
+        return nearPlane;
+    }
+    [[nodiscard]] auto getFarPlane() const -> float {
+        return farPlane;
+    }
+    void setFov(float fov) {
+        this->fov = fov;
+    }
+    void setAspectRatio(float aspectRatio) {
+        this->aspectRatio = aspectRatio;
+    }
+    void setNearPlane(float nearPlane) {
+        this->nearPlane = nearPlane;
+    }
+    void setFarPlane(float farPlane) {
+        this->farPlane = farPlane;
+    }
+    void setActive(bool active) {
+        isActive = active;
+    }
+    [[nodiscard]] auto isActiveCamera() const -> bool {
+        return isActive;
     }
 };
 

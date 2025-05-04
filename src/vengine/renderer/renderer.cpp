@@ -156,7 +156,26 @@ auto Renderer::addTextObject(std::shared_ptr<TextObject> textObject) -> void {
 
 // TODO: what to do with all the glfw callbacks?
 auto Renderer::setActiveCamera(EntityId camera) -> void {
+    if (m_activeCamera != 0 && m_activeCamera != camera) {
+        auto oldCamComp = m_ecs->getActiveEntities()->getEntityComponent<CameraComponent>(m_activeCamera);
+        if (oldCamComp) {
+            oldCamComp->isActive = false;
+        }
+    }
+
+    auto camComp = m_ecs->getActiveEntities()->getEntityComponent<CameraComponent>(camera);
+    if (!camComp) {
+        // TODO: save old camera id and reset. and what happens if the old camera is already destroyed?
+        spdlog::error("Renderer: Cannot set active camera {}. Missing CameraComponent.", camera);
+        glfwSetScrollCallback(m_window->get(), nullptr);
+        m_activeCamera = 0;
+        return;
+    }
+
     m_activeCamera = camera;
+    camComp->isActive = true;
+
+    m_ecs->setActiveCamera(camera);
 
     glfwSetScrollCallback(m_window->get(), [](GLFWwindow* wnd, double, double yoffset) {
         yoffset *= 2.0;  // sens
@@ -180,15 +199,15 @@ auto Renderer::setActiveCamera(EntityId camera) -> void {
 
     glfwSetFramebufferSizeCallback(m_window->get(), [](GLFWwindow* wnd, int width, int height) {
         glViewport(0, 0, width, height);
-        auto* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(wnd)); 
+        auto* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(wnd));
         if (renderer && renderer->m_ecs) {
             auto entities = renderer->m_ecs->getActiveEntities();
-            auto cameraEntities = entities->getEntitiesWith<CameraComponent>(); 
+            auto cameraEntities = entities->getEntitiesWith<CameraComponent>();
             for (auto camId : cameraEntities) {
                 auto camComp = entities->getEntityComponent<CameraComponent>(camId);
-                if (camComp && camComp->isActive) {  
+                if (camComp && camComp->isActive) {
                     camComp->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-                    break;  
+                    break;
                 }
             }
         }

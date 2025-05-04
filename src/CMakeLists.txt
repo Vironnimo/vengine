@@ -22,6 +22,7 @@ set(SOURCES
         vengine/core/event_system.cpp
         vengine/core/scenes.cpp
         vengine/ecs/entity.cpp
+        vengine/ecs/systems/script_system.cpp
         vengine/renderer/renderer.cpp
         vengine/renderer/material.cpp
         vengine/renderer/materials.cpp

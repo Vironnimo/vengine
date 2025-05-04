@@ -113,6 +113,7 @@ Vengine::~Vengine() {
     ecs->addComponent<PersistentComponent>(defaultCameraEntity); 
     ecs->addComponent<TransformComponent>(defaultCameraEntity);
     ecs->addComponent<CameraComponent>(defaultCameraEntity); 
+    ecs->addComponent<ScriptComponent>(defaultCameraEntity, "resources/scripts/camera.lua");
 
     auto camComp = ecs->getEntityComponent<CameraComponent>(defaultCameraEntity);
     camComp->aspectRatio = static_cast<float>(params.width) / static_cast<float>(params.height);
