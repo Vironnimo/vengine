@@ -17,6 +17,7 @@ set(SOURCES
         vengine/core/resource_manager.cpp
         vengine/core/action.cpp
         vengine/core/uuid.cpp
+        vengine/core/input_system.cpp
         vengine/core/actions.cpp
         vengine/core/timers.cpp
         vengine/core/event_system.cpp

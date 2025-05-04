@@ -5,6 +5,7 @@
 #include <memory>
 #include <tl/expected.hpp>
 
+#include "vengine/core/input_system.hpp"
 #include "vengine/core/thread_manager.hpp"
 #include "vengine/ecs/components.hpp"
 #include "vengine/renderer/renderer.hpp"
@@ -64,6 +65,8 @@ Vengine::~Vengine() {
         return tl::unexpected(result.error());
     }
 
+    inputSystem = std::make_unique<InputSystem>();
+    inputSystem->setWindow(window->get());
     actions = std::make_unique<Actions>();
     meshLoader = std::make_unique<MeshLoader>();
 
@@ -143,8 +146,8 @@ auto Vengine::run() -> void {
         }
 
         timers->update();
-
         threadManager->processMainThreadTasks();
+        inputSystem->update();
 
         for (auto& module : m_modules) {
             module->onUpdate(*this, timers->deltaTime());

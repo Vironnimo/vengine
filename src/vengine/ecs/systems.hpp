@@ -64,8 +64,8 @@ class RenderSystem : public BaseSystem {
         auto cameraTransform = entities->getEntityComponent<TransformComponent>(activeCameraId);
         auto cameraComponent = entities->getEntityComponent<CameraComponent>(activeCameraId);
 
-        glm::mat4 camRotationMat = glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                                   glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+        glm::mat4 camRotationMat = glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                                   glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
                                    glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
         glm::mat4 camTranslationMat = glm::translate(glm::mat4(1.0f), -cameraTransform->position);
 

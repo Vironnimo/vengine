@@ -38,9 +38,9 @@ App::App() {
         spdlog::error(defaultShader.error().message);
         return;
     }
-    
+
     // sleep until skybox textures are loaded
-    while (!m_vengine->resourceManager->isLoaded("skybox_back") || !m_vengine->resourceManager->isLoaded("skybox_front") || 
+    while (!m_vengine->resourceManager->isLoaded("skybox_back") || !m_vengine->resourceManager->isLoaded("skybox_front") ||
            !m_vengine->resourceManager->isLoaded("skybox_left") || !m_vengine->resourceManager->isLoaded("skybox_right") ||
            !m_vengine->resourceManager->isLoaded("skybox_top") || !m_vengine->resourceManager->isLoaded("skybox_bottom")) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -50,71 +50,16 @@ App::App() {
     m_vengine->actions->add("quit", "Quit", [this]() { m_vengine->isRunning = false; });
     m_vengine->actions->addKeybinding("quit", {GLFW_KEY_ESCAPE, false, false, false});
 
+    // todo move to the other camera movement stuff in test module
     // lets add actions to move the camera
     auto cam = m_vengine->ecs->getEntityByTag("DefaultCamera");
-    auto camTransform = m_vengine->ecs->getEntityComponent<Vengine::TransformComponent>(cam.getId());
     auto camComp = m_vengine->ecs->getEntityComponent<Vengine::CameraComponent>(cam.getId());
 
-    const float cameraSpeed = 100.0f;
-    m_vengine->actions->add("camera.move.right", "Move Camera", [this, cameraSpeed, camTransform]() {
-        camTransform->position += glm::vec3(cameraSpeed * m_vengine->timers->deltaTime(), 0.0f, 0.0f);
-    });
-    m_vengine->actions->addKeybinding("camera.move.right", {GLFW_KEY_F, false, false, false});
-
-    m_vengine->actions->add("camera.move.left", "Move Camera", [this, cameraSpeed, camTransform]() {
-        camTransform->position += glm::vec3(-cameraSpeed * m_vengine->timers->deltaTime(), 0.0f, 0.0f);
-    });
-    m_vengine->actions->addKeybinding("camera.move.left", {GLFW_KEY_S, false, false, false});
-
-    m_vengine->actions->add("camera.move.up", "Move Camera", [this, cameraSpeed, camTransform]() {
-        camTransform->position += glm::vec3(0.0f, cameraSpeed * m_vengine->timers->deltaTime(), 0.0f);
-    });
-    m_vengine->actions->addKeybinding("camera.move.up", {GLFW_KEY_BACKSPACE, false, false, false});
-
-    m_vengine->actions->add("camera.move.down", "Move Camera", [this, cameraSpeed, camTransform]() {
-        camTransform->position += glm::vec3(0.0f, -cameraSpeed * m_vengine->timers->deltaTime(), 0.0f);
-    });
-    m_vengine->actions->addKeybinding("camera.move.down", {GLFW_KEY_DELETE, false, false, false});
-
-    m_vengine->actions->add("camera.move.forward", "Move Camera", [this, cameraSpeed, camTransform]() {
-        camTransform->position += glm::vec3(0.0f, 0.0f, -cameraSpeed * m_vengine->timers->deltaTime());
-    });
-    m_vengine->actions->addKeybinding("camera.move.forward", {GLFW_KEY_E, false, false, false});
-
-    m_vengine->actions->add("camera.move.backward", "Move Camera", [this, cameraSpeed, camTransform]() {
-        camTransform->position += glm::vec3(0.0f, 0.0f, cameraSpeed * m_vengine->timers->deltaTime());
-    });
-    m_vengine->actions->addKeybinding("camera.move.backward", {GLFW_KEY_D, false, false, false});
-
     // zoom in and out with scrollwheel
-    m_vengine->actions->add("camera.zoom.in", "Zoom In",
-                            [camComp]() { camComp->fov -= 1.0f; });
+    m_vengine->actions->add("camera.zoom.in", "Zoom In", [camComp]() { camComp->fov -= 1.0f; });
     m_vengine->actions->addKeybinding("camera.zoom.in", {GLFW_KEY_UP, false, false, false});
-    m_vengine->actions->add("camera.zoom.out", "Zoom Out",
-                            [camComp]() { camComp->fov += 1.0f; });
+    m_vengine->actions->add("camera.zoom.out", "Zoom Out", [camComp]() { camComp->fov += 1.0f; });
     m_vengine->actions->addKeybinding("camera.zoom.out", {GLFW_KEY_DOWN, false, false, false});
-
-
-    // // this is some weird turning with the mouse..
-    // // we might need/want a mouse class
-    // m_vengine->actions->add("camera.rotate", "Turn Camera", [this]() {
-    //     double xpos;
-    //     double ypos;
-    //     glfwGetCursorPos(m_vengine->window->get(), &xpos, &ypos);
-    //     // glfwSetCursorPos(m_vengine->window->get(), 1024 / 2, 768 / 2);
-
-    //     static double lastX = xpos;
-    //     static double lastY = ypos;
-    //     auto xoffset = static_cast<float>(xpos - lastX);
-    //     auto yoffset = static_cast<float>(lastY - ypos);
-    //     yoffset = -yoffset;
-    //     lastX = xpos;
-    //     lastY = ypos;
-
-    //     m_vengine->renderer->camera->setRotation(m_vengine->renderer->camera->getRotation() +
-    //                                              glm::vec3(yoffset * 0.01f, xoffset * 0.01f, 0.0f));
-    // });
-    // m_vengine->actions->addKeybinding("camera.rotate", {GLFW_MOUSE_BUTTON_LEFT, false, false, false});
 
     // add scenes
     auto testScene = std::make_shared<TestScene>("TestScene");
@@ -122,7 +67,7 @@ App::App() {
     m_vengine->addScene("TestScene", testScene);
     m_vengine->addScene("TestScene2", testScene2);
     m_vengine->switchToScene("TestScene");
-    
+
     // switch scenes (o and p)
     m_vengine->actions->add("scene.switch.scene1", "Switch Scene", [this]() {
         if (m_vengine->getCurrentSceneName() != "TestScene") {

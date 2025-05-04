@@ -57,8 +57,8 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
     auto cameraTransform = ecs->getActiveEntities()->getEntityComponent<TransformComponent>(activeCameraId);
     auto cameraComponent = ecs->getActiveEntities()->getEntityComponent<CameraComponent>(activeCameraId);
 
-    glm::mat4 camRotationMat = glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                               glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+    glm::mat4 camRotationMat = glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                               glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
                                glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
     glm::mat4 camTranslationMat = glm::translate(glm::mat4(1.0f), -cameraTransform->position);
     glm::mat4 viewMatrix = camRotationMat * camTranslationMat;  // Common view matrix calculation
