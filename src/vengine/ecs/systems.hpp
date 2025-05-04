@@ -10,23 +10,6 @@
 
 namespace Vengine {
 
-class MovementSystem : public BaseSystem {
-   public:
-    void update(std::shared_ptr<Entities> entities, float deltaTime) override {
-        auto list = entities->getEntitiesWith<PositionComponent, VelocityComponent>();
-        for (auto entity : list) {
-            auto position = entities->getEntityComponent<PositionComponent>(entity);
-            auto velocity = entities->getEntityComponent<VelocityComponent>(entity);
-            position->x += velocity->dx * deltaTime;
-            position->y += velocity->dy * deltaTime;
-
-            // reset velocity
-            velocity->dx = 0.0f;
-            velocity->dy = 0.0f;
-        }
-    }
-};
-
 class TransformSystem : public BaseSystem {
    public:
     void update(std::shared_ptr<Entities> entities, float /*deltaTime*/) override {

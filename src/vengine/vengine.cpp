@@ -88,8 +88,8 @@ Vengine::~Vengine() {
     ecs->registerComponent<MaterialComponent>("Material");
     ecs->registerComponent<RigidbodyComponent>("Rigidbody");
     ecs->registerComponent<ColliderComponent>("Collider");
-    ecs->registerComponent<PositionComponent>("Position");
-    ecs->registerComponent<VelocityComponent>("Velocity");
+    // ecs->registerComponent<PositionComponent>("Position");
+    // ecs->registerComponent<VelocityComponent>("Velocity");
     ecs->registerComponent<ScriptComponent>("Script");
     ecs->registerComponent<CameraComponent>("Camera");
     // register built-in systems
@@ -101,7 +101,6 @@ Vengine::~Vengine() {
     transformSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
     collisionSystem->setEnabled(false);  // these two run on an extra thread
     physicsSystem->setEnabled(false);
-    ecs->registerSystem("MovementSystem", std::make_shared<MovementSystem>());
     ecs->registerSystem("TransformSystem", std::make_shared<TransformSystem>());
     ecs->registerSystem("CollisionSystem", collisionSystem);
     ecs->registerSystem("PhysicsSystem", physicsSystem);

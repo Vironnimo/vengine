@@ -5,4 +5,5 @@
 build/
 .clang-format
 .clangd
+CMakeUserPresets.json
 TODO.md

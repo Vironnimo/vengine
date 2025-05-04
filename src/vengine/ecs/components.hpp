@@ -25,18 +25,6 @@ struct ScriptComponent : public BaseComponent {
     std::string path;
 };
 
-struct PositionComponent : public BaseComponent {
-    float x = 0.0f;
-    float y = 0.0f;
-    float z = 0.0f;
-};
-
-struct VelocityComponent : public BaseComponent {
-    float dy = 0.0f;
-    float dx = 0.0f;
-    float dz = 0.0f;
-};
-
 struct MeshComponent : public BaseComponent {
     MeshComponent(std::shared_ptr<Mesh> mesh) : mesh(std::move(mesh)) {
     }

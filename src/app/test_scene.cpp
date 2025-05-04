@@ -71,7 +71,6 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
-    vengine.ecs->addComponent<Vengine::VelocityComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, "resources/scripts/move.lua");
     auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
@@ -97,25 +96,11 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // test entity class
     auto testEntity = vengine.ecs->getEntityByTag("chair");
     if (testEntity.getId() != 0) {
-        spdlog::warn("Test entity ID: {}", testEntity.getId());
+        spdlog::debug("Test entity ID: {}", testEntity.getId());
         auto comp = testEntity.getComponent<Vengine::MeshComponent>();
-        spdlog::warn("Test entity component stuff: {}", comp->mesh->getVertexCount());
+        spdlog::debug("Test entity component stuff: {}", comp->mesh->getVertexCount());
         auto transform = testEntity.getComponent<Vengine::TransformComponent>();
-        spdlog::warn("Test entity transform stuff: {} {} {}", transform->position.x, transform->position.y, transform->position.z);
-        auto result = testEntity.hasComponent<Vengine::PositionComponent>();
-        spdlog::warn("Test entity has position component: {}", result);
-        testEntity.addComponent<Vengine::PositionComponent>();
-        auto result2 = testEntity.hasComponent<Vengine::PositionComponent>();
-        spdlog::warn("Test entity has position component2: {}", result2);
-        auto position = testEntity.getComponent<Vengine::PositionComponent>();
-        spdlog::warn("Test entity position stuff: {} {}", position->x, position->y);
-        testEntity.removeComponent<Vengine::PositionComponent>();
-        auto position2 = testEntity.getComponent<Vengine::PositionComponent>();
-        if (position2) {
-            spdlog::warn("Test entity position stuff: {} {}", position2->x, position2->y);
-        } else {
-            spdlog::warn("Test entity position component removed successfully");
-        }
+        spdlog::debug("Test entity transform stuff: {} {} {}", transform->position.x, transform->position.y, transform->position.z);
     }
 }
 
