@@ -44,11 +44,6 @@ auto Window::init() -> tl::expected<void, Error> {
 
     glfwMakeContextCurrent(m_window);
 
-    // glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback);
-
-    // glEnable(GL_BLEND);                                 // enable blending
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // enable transparency
-
     return m_window;
 }
 

@@ -7,6 +7,7 @@
 #include <tl/expected.hpp>
 #include "vengine/core/error.hpp"
 #include <utility>
+#include "vengine/core/event_system.hpp"
 #include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/font.hpp"
 #include "vengine/ecs/systems.hpp"
@@ -109,10 +110,6 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
         return tl::unexpected(Error{"Failed to initialize fonts"});
     }
 
-    // glfw callbacks
-    // user pointer
-    glfwSetWindowUserPointer(m_window->get(), this);
-
     // should also be somewhere else
     setVSync(false);
 
@@ -174,44 +171,30 @@ auto Renderer::setActiveCamera(EntityId camera) -> void {
 
     m_activeCamera = camera;
     camComp->isActive = true;
-
     m_ecs->setActiveCamera(camera);
 
-    glfwSetScrollCallback(m_window->get(), [](GLFWwindow* wnd, double, double yoffset) {
-        yoffset *= 2.0;  // sens
-        auto* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(wnd));
-        if (!renderer || renderer->m_activeCamera == 0) {
-            return;
-        }
-        auto cameraTransform = renderer->m_ecs->getEntityComponent<TransformComponent>(renderer->m_activeCamera);
-        auto camComp = renderer->m_ecs->getEntityComponent<CameraComponent>(renderer->m_activeCamera);
-        if (camComp && cameraTransform) {
-            camComp->fov -= static_cast<float>(yoffset);
-            // TODO: max fov somewhere else? and not hardcoded...
-            if (camComp->fov < 1.0f) {
-                camComp->fov = 1.0f;
-            }
-            if (camComp->fov > 90.0f) {
-                camComp->fov = 90.0f;
-            }
-        }
-    });
+    spdlog::info("Renderer: Set active camera to {}", camera);
+    g_eventSystem.publish(CameraChangedEvent{camera});
 
-    glfwSetFramebufferSizeCallback(m_window->get(), [](GLFWwindow* wnd, int width, int height) {
-        glViewport(0, 0, width, height);
-        auto* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(wnd));
-        if (renderer && renderer->m_ecs) {
-            auto entities = renderer->m_ecs->getActiveEntities();
-            auto cameraEntities = entities->getEntitiesWith<CameraComponent>();
-            for (auto camId : cameraEntities) {
-                auto camComp = entities->getEntityComponent<CameraComponent>(camId);
-                if (camComp && camComp->isActive) {
-                    camComp->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-                    break;
-                }
-            }
-        }
-    });
+    // glfwSetScrollCallback(m_window->get(), [](GLFWwindow* wnd, double, double yoffset) {
+    //     yoffset *= 2.0;  // sens
+    //     auto* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(wnd));
+    //     if (!renderer || renderer->m_activeCamera == 0) {
+    //         return;
+    //     }
+    //     auto cameraTransform = renderer->m_ecs->getEntityComponent<TransformComponent>(renderer->m_activeCamera);
+    //     auto camComp = renderer->m_ecs->getEntityComponent<CameraComponent>(renderer->m_activeCamera);
+    //     if (camComp && cameraTransform) {
+    //         camComp->fov -= static_cast<float>(yoffset);
+    //         // TODO: max fov somewhere else? and not hardcoded...
+    //         if (camComp->fov < 1.0f) {
+    //             camComp->fov = 1.0f;
+    //         }
+    //         if (camComp->fov > 90.0f) {
+    //             camComp->fov = 90.0f;
+    //         }
+    //     }
+    // });
 }
 
 }  // namespace Vengine

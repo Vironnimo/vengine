@@ -6,7 +6,6 @@
 #include "vengine/core/error.hpp"
 #include "vengine/core/thread_manager.hpp"
 #include "vengine/renderer/mesh_loader.hpp"
-#include "vengine/core/input_system.hpp"
 #include "vengine/renderer/renderer.hpp"
 #include "vengine/core/resource_manager.hpp"
 #include "vengine/core/actions.hpp"
@@ -16,6 +15,7 @@
 #include "vengine/core/module.hpp"
 #include "vengine/ecs/ecs.hpp"
 #include "vengine/core/scenes.hpp"
+#include "vengine/core/input_system.hpp"
 
 namespace Vengine {
 
@@ -43,9 +43,7 @@ class Vengine {
     void addModule(std::shared_ptr<Module> module);
     void removeModule(const std::shared_ptr<Module>& module);
 
-    // TODO: move this somewhere else i guess
     void addScene(const std::string& name, std::shared_ptr<Scene> scene);
-
     template <typename T>
     void addScene(const std::string& name);
 
@@ -60,6 +58,8 @@ class Vengine {
    private:
     std::unique_ptr<Scenes> m_scenes;
     std::vector<std::shared_ptr<Module>> m_modules;
+
+    void registerGlfwCallbacks();
 };
 
 }  // namespace Vengine

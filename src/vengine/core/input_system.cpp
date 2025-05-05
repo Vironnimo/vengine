@@ -1,5 +1,6 @@
 #include "input_system.hpp"
 
+#include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
 #include "vengine/core/event_system.hpp"
 
@@ -7,6 +8,8 @@ namespace Vengine {
 
 void InputSystem::setWindow(GLFWwindow* window) {
     m_window = window;
+
+
 }
 
 void InputSystem::update() {
@@ -26,12 +29,21 @@ void InputSystem::pollInput() {
     // keyboard
     for (int key = GLFW_KEY_SPACE; key <= GLFW_KEY_LAST; ++key) {
         int state = glfwGetKey(m_window, key);
+        bool wasDown = m_keysDown[key];
         bool down = state == GLFW_PRESS || state == GLFW_REPEAT;
-        if (down && !m_keysDown[key]) {
-            spdlog::debug("Key {} pressed", key);
+
+        // fresh press
+        if (state == GLFW_PRESS && !wasDown) {
             m_keysPressed[key] = true;
         }
-        if (!down && m_keysDown[key]) {
+
+        // repeat
+        if (state == GLFW_REPEAT) {
+            spdlog::debug("repeat");
+        }
+
+        // release
+        if (!down && wasDown) {
             m_keysReleased[key] = true;
         }
         m_keysDown[key] = down;

@@ -29,4 +29,17 @@ struct KeyPressedEvent : public Event {
     }
 };
 
+struct KeyReleasedEvent : public Event {
+    int key;
+    KeyReleasedEvent(int key) : key(key) {}
+    auto getType() const -> std::type_index override { return typeid(KeyReleasedEvent); }
+};
+
+using EntityId = uint64_t;
+struct CameraChangedEvent : public Event {
+    EntityId newCamera;
+    CameraChangedEvent(EntityId cam) : newCamera(cam) {}
+    auto getType() const -> std::type_index override { return typeid(CameraChangedEvent); }
+};
+
 }  // namespace Vengine

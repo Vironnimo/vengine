@@ -19,9 +19,17 @@ void TestModule::onAttach(Vengine::Vengine& vengine) {
 
     vengine.renderer->addTextObject(m_textObject);
 
+    // subscribe to mouse moved event
     vengine.events->subscribe<Vengine::MouseMovedEvent>([](const Vengine::MouseMovedEvent& event) {
         spdlog::info("Mouse: x " + std::to_string(event.x) + ", y " + std::to_string(event.y) + "\n" +
                      "Last Mouse: " + std::to_string(event.lastX) + ", " + std::to_string(event.lastY));
+    });
+    // subscribe to key pressed and released events
+    vengine.events->subscribe<Vengine::KeyPressedEvent>([](const Vengine::KeyPressedEvent& event) {
+        spdlog::info("Key pressed: " + std::to_string(event.key) + ", repeat: " + std::to_string(event.repeat));
+    });
+    vengine.events->subscribe<Vengine::KeyReleasedEvent>([](const Vengine::KeyReleasedEvent& event) {
+        spdlog::info("Key released: " + std::to_string(event.key));
     });
 }
 
@@ -42,15 +50,17 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
         m_fpsUpdateTimer = 0.0f;
         int fps = static_cast<int>(1.0f / deltaTime);
         m_textObject->text = "Scene: " + vengine.getCurrentSceneName() + "\nDeltaTime: " + std::to_string(deltaTime) +
-                             "\nDeltaTime FPS: " + std::to_string(fps) + "\n" + "Counter FPS: " + std::to_string(m_testFps) + "\n" +
-                             "Entity count: " + std::to_string(vengine.ecs->getEntityCount()) + "\n" + Vengine::UUID::toString();
+                             "\nDeltaTime FPS: " + std::to_string(fps) + "\n" + "Counter FPS: " + std::to_string(m_testFps) +
+                             "\n" + "Entity count: " + std::to_string(vengine.ecs->getEntityCount()) + "\n" +
+                             Vengine::UUID::toString();
     }
 
     static bool firstClick = true;
     auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(2);
     if (rigidBody && rigidBody->isGrounded) {
         if (firstClick) {
-            // todo doesn't work when we reload the scene. entities differ. we need a string id on the entitites to find them by name
+            // todo doesn't work when we reload the scene. entities differ. we need a string id on the entitites to find them
+            // by name
             vengine.resourceManager->get<Vengine::Sound>("click")->play();
             firstClick = false;
         }
