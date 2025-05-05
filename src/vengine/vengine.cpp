@@ -28,7 +28,7 @@ Vengine::~Vengine() {
     meshLoader.reset();
     actions.reset();
     renderer.reset();
-    events.reset();
+    signals.reset();
     timers.reset();
     ecs.reset();
     m_modules.clear();
@@ -45,7 +45,8 @@ Vengine::~Vengine() {
     spdlog::flush_on(spdlog::level::debug);
     spdlog::info("Vengine: starting...");
 
-    events = std::make_unique<EventSystem>();
+    signals = std::make_unique<SignalSystem>();
+    events = &g_eventSystem;
 
     timers->start("vengine.window_creation");
     window = std::make_shared<Window>();

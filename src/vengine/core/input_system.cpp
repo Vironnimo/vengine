@@ -1,6 +1,7 @@
 #include "input_system.hpp"
 
 #include <spdlog/spdlog.h>
+#include "vengine/core/event_system.hpp"
 
 namespace Vengine {
 
@@ -54,6 +55,14 @@ void InputSystem::pollInput() {
     glfwGetCursorPos(m_window, &m_mouseX, &m_mouseY);
     m_mouseDeltaX = m_mouseX - m_lastMouseX;
     m_mouseDeltaY = m_mouseY - m_lastMouseY;
+
+    // send mouse moved event
+    if (m_mouseDeltaX != 0.0 || m_mouseDeltaY != 0.0) {
+        g_eventSystem.publish(MouseMovedEvent{static_cast<int>(m_mouseX),
+                                              static_cast<int>(m_mouseY),
+                                              static_cast<int>(m_lastMouseX),
+                                              static_cast<int>(m_lastMouseY)});
+    }
 }
 
 auto InputSystem::isKeyDown(int key) const -> bool {

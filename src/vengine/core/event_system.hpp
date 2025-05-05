@@ -1,22 +1,37 @@
 #pragma once
 
 #include <functional>
-#include <string>
 #include <unordered_map>
+#include <vector>
+#include <typeindex>
+#include "events.hpp"
 
 namespace Vengine {
 
 class EventSystem {
    public:
-    EventSystem();
-    ~EventSystem();
+    template <typename EventType>
+    using Handler = std::function<void(const EventType&)>;
 
-    void subscribe(const std::string& eventName, std::function<void(void*)> callback);
-    void publish(const std::string& eventName, void* data = nullptr);
+    template <typename EventType>
+    void subscribe(Handler<EventType> handler) {
+        auto wrapper = [handler](const Event& e) { handler(static_cast<const EventType&>(e)); };
+        m_handlers[typeid(EventType)].push_back(wrapper);
+    }
+
+    void publish(const Event& event) {
+        auto it = m_handlers.find(event.getType());
+        if (it != m_handlers.end()) {
+            for (auto& handler : it->second) {
+                handler(event);
+            }
+        }
+    }
 
    private:
-    // is vector a bad choise here, since we keep adding/removing callbacks?
-    std::unordered_map<std::string, std::vector<std::function<void(void*)>>> m_observers;
+    std::unordered_map<std::type_index, std::vector<std::function<void(const Event&)>>> m_handlers;
 };
+
+extern EventSystem g_eventSystem;
 
 }  // namespace Vengine

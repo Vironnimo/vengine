@@ -1,8 +1,8 @@
 #include <doctest.h>
-#include "vengine/core/event_system.hpp"
+#include "vengine/core/signal_system.hpp"
 
 TEST_CASE("SubscribeAndEmit") {
-    Vengine::EventSystem eventSystem;
+    Vengine::SignalSystem eventSystem;
     bool eventTriggered = false;
     eventSystem.subscribe("test_event", [&eventTriggered](void* data) {
         eventTriggered = true;
@@ -13,7 +13,7 @@ TEST_CASE("SubscribeAndEmit") {
 }
 
 TEST_CASE("EmitWithData") {
-    Vengine::EventSystem eventSystem;
+    Vengine::SignalSystem eventSystem;
     int eventData = 0;
     eventSystem.subscribe("test_event", [&eventData](void* data) {
         eventData = *static_cast<int*>(data);
@@ -25,7 +25,7 @@ TEST_CASE("EmitWithData") {
 }
 
 TEST_CASE("MultipleSubscribers") {
-    Vengine::EventSystem eventSystem;
+    Vengine::SignalSystem eventSystem;
     float eventData1 = 0.0f;
     int eventData2 = 0;
 
@@ -44,20 +44,20 @@ TEST_CASE("MultipleSubscribers") {
 }
 
 TEST_CASE("NoSubscribers") {
-    Vengine::EventSystem eventSystem;
+    Vengine::SignalSystem eventSystem;
     // publish event with no subscribers, should not cause any issues
     CHECK_NOTHROW(eventSystem.publish("non_existent_event"));
 }
 
 TEST_CASE("EmitWithoutSubscription") {
-    Vengine::EventSystem eventSystem;
+    Vengine::SignalSystem eventSystem;
     bool eventTriggered = false;
     eventSystem.publish("test_event");
     CHECK(eventTriggered == false);  
 }
 
 TEST_CASE("EmitWithIncorrectData") {
-    Vengine::EventSystem eventSystem;
+    Vengine::SignalSystem eventSystem;
     int eventData = 0;
     eventSystem.subscribe("test_event", [&eventData](void* data) {
         eventData = *static_cast<int*>(data);
@@ -69,7 +69,7 @@ TEST_CASE("EmitWithIncorrectData") {
 }
 
 TEST_CASE("EmitWithNullData") {
-    Vengine::EventSystem eventSystem;
+    Vengine::SignalSystem eventSystem;
     int eventData = 0;
     eventSystem.subscribe("test_event", [&eventData](void* data) {
         if (data) {
@@ -82,7 +82,7 @@ TEST_CASE("EmitWithNullData") {
 }
 
 TEST_CASE("MultipleSubscribersWithDifferentData") {
-    Vengine::EventSystem eventSystem;
+    Vengine::SignalSystem eventSystem;
     int eventData1 = 0;
     float eventData2 = 0.0f;
 

@@ -10,6 +10,7 @@
 #include "vengine/renderer/renderer.hpp"
 #include "vengine/core/resource_manager.hpp"
 #include "vengine/core/actions.hpp"
+#include "vengine/core/signal_system.hpp"
 #include "vengine/core/event_system.hpp"
 #include "vengine/core/timers.hpp"
 #include "vengine/core/module.hpp"
@@ -29,10 +30,11 @@ class Vengine {
     std::unique_ptr<MeshLoader> meshLoader;
     std::unique_ptr<InputSystem> inputSystem;
     std::unique_ptr<Actions> actions;
-    std::unique_ptr<EventSystem> events;
+    std::unique_ptr<SignalSystem> signals;
     std::unique_ptr<Timers> timers;
     std::shared_ptr<ECS> ecs;
     std::shared_ptr<ThreadManager> threadManager;
+    EventSystem* events = nullptr;
 
     Vengine();
     ~Vengine();

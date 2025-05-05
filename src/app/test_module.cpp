@@ -18,6 +18,11 @@ void TestModule::onAttach(Vengine::Vengine& vengine) {
     m_textObject->color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     vengine.renderer->addTextObject(m_textObject);
+
+    vengine.events->subscribe<Vengine::MouseMovedEvent>([](const Vengine::MouseMovedEvent& event) {
+        spdlog::info("Mouse: x " + std::to_string(event.x) + ", y " + std::to_string(event.y) + "\n" +
+                     "Last Mouse: " + std::to_string(event.lastX) + ", " + std::to_string(event.lastY));
+    });
 }
 
 void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
@@ -53,7 +58,7 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
         firstClick = true;
     }
 
-    // camera movement
+    // camera movement, here for testing
     auto cam = vengine.ecs->getEntityByTag("DefaultCamera");
     auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cam.getId());
     const float cameraSpeed = 100.0f;
@@ -67,22 +72,22 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
         glm::vec3 forward = glm::normalize(glm::vec3(std::sin(yaw), 0.0f, -std::cos(yaw)));
         glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_E)) {  
+        if (vengine.inputSystem->isKeyDown(GLFW_KEY_E)) {
             camTransform->position += forward * cameraSpeed * deltaTime;
         }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_D)) {  
+        if (vengine.inputSystem->isKeyDown(GLFW_KEY_D)) {
             camTransform->position -= forward * cameraSpeed * deltaTime;
         }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_S)) {  
+        if (vengine.inputSystem->isKeyDown(GLFW_KEY_S)) {
             camTransform->position -= right * cameraSpeed * deltaTime;
         }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_F)) {  
+        if (vengine.inputSystem->isKeyDown(GLFW_KEY_F)) {
             camTransform->position += right * cameraSpeed * deltaTime;
         }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_BACKSPACE)) {  
+        if (vengine.inputSystem->isKeyDown(GLFW_KEY_BACKSPACE)) {
             camTransform->position += glm::vec3(0.0f, cameraSpeed * deltaTime, 0.0f);
         }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_DELETE)) {  
+        if (vengine.inputSystem->isKeyDown(GLFW_KEY_DELETE)) {
             camTransform->position -= glm::vec3(0.0f, cameraSpeed * deltaTime, 0.0f);
         }
 

@@ -20,6 +20,7 @@ set(SOURCES
         vengine/core/input_system.cpp
         vengine/core/actions.cpp
         vengine/core/timers.cpp
+        vengine/core/signal_system.cpp
         vengine/core/event_system.cpp
         vengine/core/scenes.cpp
         vengine/ecs/entity.cpp
