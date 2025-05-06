@@ -60,6 +60,12 @@ class ECS {
         return m_activeEntities->getEntityComponent<T>(entity);
     }
 
+    // get entities with multiple components
+    template <typename... Components>
+    [[nodiscard]] auto getEntitiesWith() const -> std::vector<EntityId> {
+        return m_activeEntities->getEntitiesWith<Components...>();
+    }
+
     auto registerSystem(std::string id, std::shared_ptr<BaseSystem> system) -> void {
         m_systems.emplace(id, std::move(system));
         spdlog::debug("ECS: Registered system: {}", id);
@@ -124,7 +130,7 @@ class ECS {
     std::shared_ptr<Entities> m_activeEntities;
     std::unordered_map<std::string, std::shared_ptr<Entities>> m_entitySets;
     std::unordered_map<std::string, std::shared_ptr<BaseSystem>> m_systems;
-    // TODO: we probably need the active camera stored here
+    // TODO: the active camera is also stored in the renderer, should it be stored here or there?
     EntityId m_activeCameraId = 0;
 };
 

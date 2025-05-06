@@ -40,7 +40,7 @@ struct MaterialComponent : public BaseComponent {
 };
 
 struct PersistentComponent : public BaseComponent {
-    bool persistent = true; 
+    bool persistent = true;
 };
 
 struct TransformComponent : public BaseComponent {
@@ -136,10 +136,14 @@ struct ColliderComponent : public BaseComponent {
 
     // update world bounds for collision detection
     void updateWorldBounds(const glm::mat4& transform) {
-        glm::vec4 corners[8] = {transform * glm::vec4(min.x, min.y, min.z, 1.0f), transform * glm::vec4(max.x, min.y, min.z, 1.0f),
-                                transform * glm::vec4(min.x, max.y, min.z, 1.0f), transform * glm::vec4(min.x, min.y, max.z, 1.0f),
-                                transform * glm::vec4(max.x, max.y, min.z, 1.0f), transform * glm::vec4(min.x, max.y, max.z, 1.0f),
-                                transform * glm::vec4(max.x, min.y, max.z, 1.0f), transform * glm::vec4(max.x, max.y, max.z, 1.0f)};
+        glm::vec4 corners[8] = {transform * glm::vec4(min.x, min.y, min.z, 1.0f),
+                                transform * glm::vec4(max.x, min.y, min.z, 1.0f),
+                                transform * glm::vec4(min.x, max.y, min.z, 1.0f),
+                                transform * glm::vec4(min.x, min.y, max.z, 1.0f),
+                                transform * glm::vec4(max.x, max.y, min.z, 1.0f),
+                                transform * glm::vec4(min.x, max.y, max.z, 1.0f),
+                                transform * glm::vec4(max.x, min.y, max.z, 1.0f),
+                                transform * glm::vec4(max.x, max.y, max.z, 1.0f)};
 
         worldMin = glm::vec3(corners[0]);
         worldMax = glm::vec3(corners[0]);
@@ -155,10 +159,17 @@ struct CameraComponent : public BaseComponent {
     float aspectRatio = 16.0f / 9.0f;
     float nearPlane = 0.1f;
     float farPlane = 1000.0f;
-    bool isActive = true; // current main camera
+    bool isActive = true;  // current main camera
 
     [[nodiscard]] auto getProjectionMatrix() const -> glm::mat4 {
-         return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+        return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+    }
+    [[nodiscard]] auto getViewMatrix(const TransformComponent& transform) const -> glm::mat4 {
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), transform.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                             glm::rotate(glm::mat4(1.0f), transform.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+                             glm::rotate(glm::mat4(1.0f), transform.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 translation = glm::translate(glm::mat4(1.0f), -transform.position);
+        return rotation * translation;
     }
 
     // lua helper functions

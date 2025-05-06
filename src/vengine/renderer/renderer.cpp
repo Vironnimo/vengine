@@ -10,7 +10,6 @@
 #include "vengine/core/event_system.hpp"
 #include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/font.hpp"
-#include "vengine/ecs/systems.hpp"
 
 namespace Vengine {
 
@@ -33,43 +32,51 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // render all viable entities
-    auto renderSystem = ecs->getSystem<RenderSystem>("RenderSystem");
-    if (renderSystem) {
-        renderSystem->update(ecs->getActiveEntities(), deltaTime);
-    } else {
-        spdlog::warn("RenderSystem not found in ECS");
+    if (m_activeCamera == 0) {
+        spdlog::error("RenderSystem: No active camera found.");
+        // TODO: defaults on error?
+        return;
     }
 
-    // TODO: copied here from renderSystem, needs to be gone, just here for the skybox which changes anyway
-    EntityId activeCameraId = 0;
-    auto cameraEntities = ecs->getActiveEntities()->getEntitiesWith<CameraComponent, TransformComponent>();
-    for (auto camId : cameraEntities) {
-        auto camComp = ecs->getActiveEntities()->getEntityComponent<CameraComponent>(camId);
-        if (camComp && camComp->isActive) {
-            activeCameraId = camId;
-            break;
+    // camera stuff
+    auto cameraTransform = ecs->getEntityComponent<TransformComponent>(m_activeCamera);
+    auto cameraComponent = ecs->getEntityComponent<CameraComponent>(m_activeCamera);
+    glm::mat4 viewMatrix = cameraComponent->getViewMatrix(*cameraTransform);
+    glm::mat4 projectionMatrix = cameraComponent->getProjectionMatrix();
+
+    // render viable entities
+    auto list = ecs->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
+    for (auto entity : list) {
+        auto transformComp = ecs->getEntityComponent<TransformComponent>(entity);
+        auto meshComp = ecs->getEntityComponent<MeshComponent>(entity);
+        auto materialComp = ecs->getEntityComponent<MaterialComponent>(entity);
+
+        if (transformComp && meshComp && meshComp->mesh && materialComp && materialComp->material) {
+            materialComp->material->bind();
+
+            auto shader = materialComp->material->getShader();
+            if (!shader) {
+                spdlog::warn("Material has no shader, skipping entity {}", entity);
+                continue;
+            }
+
+            // TODO: should this be in the material as references?
+            shader->setUniformMat4("uView", viewMatrix);
+            shader->setUniformMat4("uProjection", projectionMatrix);
+            shader->setUniformMat4("uTransform", transformComp->transform);
+
+            meshComp->mesh->draw();
+        } else {
+            spdlog::warn("Entity {} is missing required components for rendering", entity);
         }
     }
 
-    if (activeCameraId == 0) {
-        spdlog::error("RenderSystem: No active camera found.");
-        return;  // Or render with default matrices?
-    }
-    auto cameraTransform = ecs->getActiveEntities()->getEntityComponent<TransformComponent>(activeCameraId);
-    auto cameraComponent = ecs->getActiveEntities()->getEntityComponent<CameraComponent>(activeCameraId);
-
-    glm::mat4 camRotationMat = glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
-                               glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                               glm::rotate(glm::mat4(1.0f), cameraTransform->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-    glm::mat4 camTranslationMat = glm::translate(glm::mat4(1.0f), -cameraTransform->position);
-    glm::mat4 viewMatrix = camRotationMat * camTranslationMat;  // Common view matrix calculation
-    glm::mat4 projectionMatrix = cameraComponent->getProjectionMatrix();
-
+    // TODO: handle the skybox some other way, in shader?
     if (m_skyboxEnabled) {
         skybox->render(viewMatrix, projectionMatrix);
     }
 
-    // render text objects
+    // TODO: redo text stuff, should become a component
     for (const auto& textObject : m_textObjects) {
         textObject->font->draw(textObject->text, textObject->x, textObject->y, textObject->scale, textObject->color);
     }

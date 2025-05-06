@@ -95,8 +95,6 @@ Vengine::~Vengine() {
     ecs->registerComponent<ScriptComponent>("Script");
     ecs->registerComponent<CameraComponent>("Camera");
     // register built-in systems
-    auto renderSystem = std::make_shared<RenderSystem>();
-    renderSystem->setEnabled(false);  // because it's not called automatically, it's called manually by the renderer
     auto collisionSystem = std::make_shared<CollisionSystem>();
     auto physicsSystem = std::make_shared<PhysicsSystem>();
     auto transformSystem = std::make_shared<TransformSystem>();
@@ -106,7 +104,6 @@ Vengine::~Vengine() {
     ecs->registerSystem("TransformSystem", std::make_shared<TransformSystem>());
     ecs->registerSystem("CollisionSystem", collisionSystem);
     ecs->registerSystem("PhysicsSystem", physicsSystem);
-    ecs->registerSystem("RenderSystem", renderSystem);
     auto scriptSystem = std::make_shared<ScriptSystem>();
     scriptSystem->registerBindings(ecs);
     ecs->registerSystem("ScriptSystem", scriptSystem);
