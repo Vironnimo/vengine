@@ -8,8 +8,6 @@ namespace Vengine {
 
 void InputSystem::setWindow(GLFWwindow* window) {
     m_window = window;
-
-
 }
 
 void InputSystem::update() {

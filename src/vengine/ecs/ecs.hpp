@@ -13,9 +13,9 @@ namespace Vengine {
 
 using EntityId = uint64_t;
 
-// todo this whole thing needs to be restructured, it's a mess with the circular includes and 
+// TODO this whole thing needs to be restructured, it's a mess with the circular includes and 
 // dependencies and doesn't work with cpp23
-// todo wrapper functions for all the stuff that's inside the ecs, like register components and systems,
+// TODO wrapper functions for all the stuff that's inside the ecs, like register components and systems,
 // create entitites and so on
 class ECS {
    public:
@@ -53,7 +53,7 @@ class ECS {
         m_activeEntities->addComponent<T>(entity, std::forward<Args>(args)...);
     }
 
-    // todo we also need a get component by tag function
+    // TODO we also need a get component by tag function
 
     template <typename T>
     auto getEntityComponent(EntityId entity) -> std::shared_ptr<T> {

@@ -8,18 +8,18 @@ class InputSystem {
 public:
     void update(); 
 
-    auto isKeyDown(int key) const -> bool;
-    auto isKeyPressed(int key) const -> bool;
-    auto isKeyReleased(int key) const -> bool;
+    [[nodiscard]] auto isKeyDown(int key) const -> bool;
+    [[nodiscard]] auto isKeyPressed(int key) const -> bool;
+    [[nodiscard]] auto isKeyReleased(int key) const -> bool;
 
-    auto isMouseButtonDown(int button) const -> bool;
-    auto isMouseButtonPressed(int button) const -> bool;
-    auto isMouseButtonReleased(int button) const -> bool;
+    [[nodiscard]] auto isMouseButtonDown(int button) const -> bool;
+    [[nodiscard]] auto isMouseButtonPressed(int button) const -> bool;
+    [[nodiscard]] auto isMouseButtonReleased(int button) const -> bool;
 
-    auto getMouseX() const -> double;
-    auto getMouseY() const -> double;
-    auto getMouseDeltaX() const -> double { return m_mouseDeltaX; }
-    auto getMouseDeltaY() const -> double { return m_mouseDeltaY; }
+    [[nodiscard]] auto getMouseX() const -> double;
+    [[nodiscard]] auto getMouseY() const -> double;
+    [[nodiscard]] auto getMouseDeltaX() const -> double { return m_mouseDeltaX; }
+    [[nodiscard]] auto getMouseDeltaY() const -> double { return m_mouseDeltaY; }
 
     void setWindow(GLFWwindow* window);
 

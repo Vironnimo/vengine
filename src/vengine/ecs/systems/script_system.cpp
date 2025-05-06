@@ -35,7 +35,7 @@ void ScriptSystem::update(std::shared_ptr<Entities> entities, float deltaTime) {
         }
 
         // load script file
-        // todo don't load it every frame, only when it changes (or just once?)
+        // TODO don't load it every frame, only when it changes (or just once?)
         if (luaL_dofile(m_luaState, scriptComp->path.c_str()) != LUA_OK) {
             spdlog::error("Error loading/running Lua script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
             lua_pop(m_luaState, 1);

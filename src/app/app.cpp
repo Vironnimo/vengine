@@ -50,7 +50,6 @@ App::App() {
     m_vengine->actions->add("quit", "Quit", [this]() { m_vengine->isRunning = false; });
     m_vengine->actions->addKeybinding("quit", {GLFW_KEY_ESCAPE, false, false, false});
 
-    // todo move to the other camera movement stuff in test module
     // lets add actions to move the camera
     auto cam = m_vengine->ecs->getEntityByTag("DefaultCamera");
     auto camComp = m_vengine->ecs->getEntityComponent<Vengine::CameraComponent>(cam.getId());

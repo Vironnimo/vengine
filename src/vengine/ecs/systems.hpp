@@ -98,7 +98,7 @@ class PhysicsSystem : public BaseSystem {
             auto transformComp = entities->getEntityComponent<TransformComponent>(entityId);
             auto rigidbodyComp = entities->getEntityComponent<RigidbodyComponent>(entityId);
 
-            // todo remove the isGrounded check, it should be handled elsewhere
+            // TODO remove the isGrounded check, it should be handled elsewhere
             if (rigidbodyComp->isStatic || rigidbodyComp->isGrounded) {
                 continue;
             }
@@ -160,7 +160,7 @@ class CollisionSystem : public BaseSystem {
                     colliderA->collidingWith = entityBId;
                     colliderB->collidingWith = entityAId;
 
-                    // todo remove this here, should be handled elsewhere and better
+                    // TODO remove this here, should be handled elsewhere and better
                     auto rigidbodyA = entities->getEntityComponent<RigidbodyComponent>(entityAId);
                     auto rigidbodyB = entities->getEntityComponent<RigidbodyComponent>(entityBId);
                     rigidbodyA->isGrounded = true;

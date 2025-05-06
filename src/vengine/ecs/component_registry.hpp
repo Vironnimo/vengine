@@ -29,7 +29,7 @@ class ComponentRegistry {
         ComponentId id = m_nextComponentId++;
         if (id >= MAX_COMPONENTS) {
             spdlog::error("Maximum number of components exceeded");
-            // todo real error handling
+            // TODO real error handling
             return MAX_COMPONENTS;
         }
 

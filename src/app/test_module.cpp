@@ -59,7 +59,7 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
     auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(2);
     if (rigidBody && rigidBody->isGrounded) {
         if (firstClick) {
-            // todo doesn't work when we reload the scene. entities differ. we need a string id on the entitites to find them
+            // TODO doesn't work when we reload the scene. entities differ. we need a string id on the entitites to find them
             // by name
             vengine.resourceManager->get<Vengine::Sound>("click")->play();
             firstClick = false;

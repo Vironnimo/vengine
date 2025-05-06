@@ -17,7 +17,7 @@ class Shader {
     auto unbind() -> void;
     [[nodiscard]] auto getId() const -> GLuint;
 
-    // todo add uniform methods... which do we need, which could we need?
+    // TODO uniform methods... which do we need, which could we need?
     auto setUniformMat4(const std::string& name, const glm::mat4& value) const -> void;
     auto setUniformVec4(const std::string& name, const glm::vec4& value) const -> void;
     auto setUniformInt(const std::string& name, int value) const -> void;

@@ -211,7 +211,7 @@ void Vengine::removeScene(const std::string& name) {
 }
 
 void Vengine::registerGlfwCallbacks() {
-    // todo rethink all of this
+    // TODO rethink all of this
     // user pointer
     glfwSetWindowUserPointer(window->get(), this);
 
@@ -243,7 +243,7 @@ void Vengine::registerGlfwCallbacks() {
     });
 
     // subscribe to camera changed event
-    // todo gotta rethink this, and obviously change some stuff inside
+    // TODO gotta rethink this, and obviously change some stuff inside
     events->subscribe<CameraChangedEvent>([this](const CameraChangedEvent& event) {
         spdlog::info("Camera changed to: {}", event.newCamera);
 
@@ -268,7 +268,7 @@ void Vengine::registerGlfwCallbacks() {
         });
     });
 
-    // todo still need to handle the cursor pos callback, need access to last mouse pos,
+    // TODO still need to handle the cursor pos callback, need access to last mouse pos,
     // is the userpointer in renderer not good?
     // glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double xpos, double ypos) {
     //     g_eventSystem.publish(MouseMovedEvent{static_cast<int>(xpos), static_cast<int>(ypos), 0, 0});

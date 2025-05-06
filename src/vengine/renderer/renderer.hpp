@@ -5,20 +5,13 @@
 
 #include "vengine/core/error.hpp"
 #include "vengine/renderer/materials.hpp"
-#include "vengine/renderer/mesh.hpp"
 #include "vengine/renderer/window.hpp"
 #include "vengine/renderer/shaders.hpp"
-#include "vengine/renderer/material.hpp"
 #include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/skybox.hpp"
 #include "vengine/ecs/ecs.hpp"
 
 namespace Vengine {
-
-struct RenderObject {
-    std::shared_ptr<Mesh> mesh;
-    std::shared_ptr<Material> material;
-};
 
 struct TextObject {
     std::string text;
@@ -28,7 +21,6 @@ struct TextObject {
 };
 
 class Renderer {
-    // TODO we need a scene, probably we'll just give the scene over to the renderer?
    public:
     std::unique_ptr<Materials> materials;
     std::unique_ptr<Shaders> shaders;
@@ -45,7 +37,7 @@ class Renderer {
     auto loadSkybox(const std::vector<std::shared_ptr<Texture>>& faceFiles) -> bool;
     auto unloadSkybox() -> void;
 
-    // todo text should become a component
+    // TODO text should become a component
     auto addTextObject(std::shared_ptr<TextObject> textObject) -> void;
 
     auto setActiveCamera(EntityId camera) -> void;

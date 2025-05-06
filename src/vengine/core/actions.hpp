@@ -10,7 +10,7 @@
 
 namespace Vengine {
 
-// todo add cooldown to hotkeys so we don't have rapid fire
+// TODO add cooldown to hotkeys so we don't have rapid fire
 
 class Actions {
    public:

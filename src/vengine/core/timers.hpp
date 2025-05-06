@@ -11,7 +11,7 @@ class Timers {
     Timers();
     ~Timers();
 
-    // todo timer with end time and callback
+    // TODO timer with end time and callback
 
     auto start(const std::string& timerId) -> void;
     auto getElapsed(const std::string& timerId) -> int64_t;

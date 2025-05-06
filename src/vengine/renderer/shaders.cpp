@@ -46,7 +46,7 @@ auto Shaders::add(std::shared_ptr<Shader> shader) -> void {
 }
 
 auto Shaders::remove(const std::string& name) -> void {
-    // todo still have to clear the shader itself, right?
+    // TODO still have to clear the shader itself, right?
     assert(!name.empty() && "Shader name is empty");
     m_shaders.erase(name);
 }

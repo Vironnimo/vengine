@@ -20,7 +20,7 @@ struct LoadTask {
     std::string type;
 };
 
-// todo split resources map into different types
+// TODO split resources map into different types
 class ResourceManager {
    public:
     ResourceManager(std::shared_ptr<ThreadManager> threadManager);

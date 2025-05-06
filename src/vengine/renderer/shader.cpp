@@ -15,7 +15,7 @@ namespace Vengine {
 Shader::Shader(std::string name, const std::string& vertexFile, const std::string& fragmentFile)
     : m_name(std::move(name)) {
     spdlog::debug("Constructor Shader: {}", m_name);
-    // todo put this into a init() function so we can cut execution on error, right?
+    // TODO put this into a init() function so we can cut execution on error, right?
     assert(!m_name.empty() && "Shader name is empty");
     assert(!vertexFile.empty() && "Vertex shader file is empty");
     assert(!fragmentFile.empty() && "Fragment shader file is empty");

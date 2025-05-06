@@ -175,26 +175,6 @@ auto Renderer::setActiveCamera(EntityId camera) -> void {
 
     spdlog::info("Renderer: Set active camera to {}", camera);
     g_eventSystem.publish(CameraChangedEvent{camera});
-
-    // glfwSetScrollCallback(m_window->get(), [](GLFWwindow* wnd, double, double yoffset) {
-    //     yoffset *= 2.0;  // sens
-    //     auto* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(wnd));
-    //     if (!renderer || renderer->m_activeCamera == 0) {
-    //         return;
-    //     }
-    //     auto cameraTransform = renderer->m_ecs->getEntityComponent<TransformComponent>(renderer->m_activeCamera);
-    //     auto camComp = renderer->m_ecs->getEntityComponent<CameraComponent>(renderer->m_activeCamera);
-    //     if (camComp && cameraTransform) {
-    //         camComp->fov -= static_cast<float>(yoffset);
-    //         // TODO: max fov somewhere else? and not hardcoded...
-    //         if (camComp->fov < 1.0f) {
-    //             camComp->fov = 1.0f;
-    //         }
-    //         if (camComp->fov > 90.0f) {
-    //             camComp->fov = 90.0f;
-    //         }
-    //     }
-    // });
 }
 
 }  // namespace Vengine
