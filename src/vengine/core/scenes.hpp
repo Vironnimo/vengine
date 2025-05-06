@@ -13,11 +13,14 @@ class Scenes {
    public:
     void add(const std::string& name, std::shared_ptr<Scene> scene); 
     // switchTo must be called after add
-    void switchTo(const std::string& name, Vengine& vengine);
+    void load(const std::string& name, Vengine& vengine);
     void remove(std::string name); 
 
     [[nodiscard]] auto getCurrentSceneName() const -> std::string {
         return m_currentScene->getName();
+    }
+    [[nodiscard]] auto getCurrentScene() const -> std::shared_ptr<Scene> {
+        return m_currentScene;
     }
 
    private:

@@ -5,14 +5,20 @@
 
 void TestScene::load(Vengine::Vengine& vengine) {
     spdlog::debug("Constructor TestScene");
-    // cam
-    // Vengine::EntityId mainCameraEntity = vengine.ecs->createEntity();
-    // vengine.ecs->addComponent<Vengine::TagComponent>(mainCameraEntity, "MainCamera");
-    // vengine.ecs->addComponent<Vengine::TransformComponent>(mainCameraEntity);
-    // vengine.ecs->addComponent<Vengine::CameraComponent>(mainCameraEntity);
 
-    // auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mainCameraEntity);
-    // camTransform->position = glm::vec3(0.0f, 0.0f, 5.0f);
+    // cam
+    Vengine::EntityId mainCameraEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(mainCameraEntity, "MainCamera");
+    vengine.ecs->addComponent<Vengine::TransformComponent>(mainCameraEntity);
+    vengine.ecs->addComponent<Vengine::CameraComponent>(mainCameraEntity);
+    vengine.scenes->getCurrentScene()->getCameras()->add(mainCameraEntity);
+    vengine.scenes->getCurrentScene()->getCameras()->setActive(mainCameraEntity);
+
+    auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mainCameraEntity);
+    camTransform->position = glm::vec3(0.0f, 10.0f, 55.0f);
+    // don't forget the aspect ratio
+    auto camComp = vengine.ecs->getEntityComponent<Vengine::CameraComponent>(mainCameraEntity);
+    camComp->aspectRatio = static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
 
     // skybox
     // order matters here! right, left, top, bottom, back, front

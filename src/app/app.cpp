@@ -65,17 +65,17 @@ App::App() {
     auto testScene2 = std::make_shared<TestScene2>("TestScene2");
     m_vengine->addScene("TestScene", testScene);
     m_vengine->addScene("TestScene2", testScene2);
-    m_vengine->switchToScene("TestScene");
+    m_vengine->loadScene("TestScene");
 
     // switch scenes (o and p)
     m_vengine->actions->add("scene.switch.scene1", "Switch Scene", [this]() {
         if (m_vengine->getCurrentSceneName() != "TestScene") {
-            m_vengine->switchToScene("TestScene");
+            m_vengine->loadScene("TestScene");
         }
     });
     m_vengine->actions->add("scene.switch.scene2", "Switch Scene", [this]() {
         if (m_vengine->getCurrentSceneName() != "TestScene2") {
-            m_vengine->switchToScene("TestScene2");
+            m_vengine->loadScene("TestScene2");
         }
     });
     m_vengine->actions->addKeybinding("scene.switch.scene1", {GLFW_KEY_O, false, false, false});

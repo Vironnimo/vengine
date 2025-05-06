@@ -10,6 +10,7 @@
 #include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/skybox.hpp"
 #include "vengine/ecs/ecs.hpp"
+#include "vengine/core/scene.hpp"
 
 namespace Vengine {
 
@@ -29,9 +30,9 @@ class Renderer {
 
     Renderer();
     ~Renderer();
-    [[nodiscard]] auto init(std::shared_ptr<Window> window, std::shared_ptr<ECS> ecs) -> tl::expected<void, Error>;
+    [[nodiscard]] auto init(std::shared_ptr<Window> window) -> tl::expected<void, Error>;
 
-    auto render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void;
+    auto render(const std::shared_ptr<Scene>& scene) -> void;
     auto setVSync(bool enabled) -> void;
 
     auto loadSkybox(const std::vector<std::shared_ptr<Texture>>& faceFiles) -> bool;
@@ -40,17 +41,10 @@ class Renderer {
     // TODO text should become a component
     auto addTextObject(std::shared_ptr<TextObject> textObject) -> void;
 
-    auto setActiveCamera(EntityId camera) -> void;
-    [[nodiscard]] auto getActiveCamera() const -> EntityId {
-        return m_activeCamera;
-    }
-
    private:
-    std::shared_ptr<ECS> m_ecs;
     std::shared_ptr<Window> m_window;
     std::vector<std::shared_ptr<TextObject>> m_textObjects;
     bool m_skyboxEnabled = false;
-    EntityId m_activeCamera;
 };
 
 }  // namespace Vengine

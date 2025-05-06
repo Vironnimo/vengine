@@ -31,15 +31,30 @@ struct KeyPressedEvent : public Event {
 
 struct KeyReleasedEvent : public Event {
     int key;
-    KeyReleasedEvent(int key) : key(key) {}
-    auto getType() const -> std::type_index override { return typeid(KeyReleasedEvent); }
+    KeyReleasedEvent(int key) : key(key) {
+    }
+    auto getType() const -> std::type_index override {
+        return typeid(KeyReleasedEvent);
+    }
+};
+
+struct WindowResizeEvent : public Event {
+    int width, height;
+    WindowResizeEvent(int width, int height) : width(width), height(height) {
+    }
+    auto getType() const -> std::type_index override {
+        return typeid(WindowResizeEvent);
+    }
 };
 
 using EntityId = uint64_t;
 struct CameraChangedEvent : public Event {
     EntityId newCamera;
-    CameraChangedEvent(EntityId cam) : newCamera(cam) {}
-    auto getType() const -> std::type_index override { return typeid(CameraChangedEvent); }
+    CameraChangedEvent(EntityId cam) : newCamera(cam) {
+    }
+    auto getType() const -> std::type_index override {
+        return typeid(CameraChangedEvent);
+    }
 };
 
 }  // namespace Vengine

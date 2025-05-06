@@ -164,11 +164,11 @@ struct CameraComponent : public BaseComponent {
     [[nodiscard]] auto getProjectionMatrix() const -> glm::mat4 {
         return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
     }
-    [[nodiscard]] auto getViewMatrix(const TransformComponent& transform) const -> glm::mat4 {
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), transform.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
-                             glm::rotate(glm::mat4(1.0f), transform.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                             glm::rotate(glm::mat4(1.0f), transform.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-        glm::mat4 translation = glm::translate(glm::mat4(1.0f), -transform.position);
+    [[nodiscard]] auto getViewMatrix(const std::shared_ptr<TransformComponent>& transform) const -> glm::mat4 {
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), transform->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                             glm::rotate(glm::mat4(1.0f), transform->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+                             glm::rotate(glm::mat4(1.0f), transform->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 translation = glm::translate(glm::mat4(1.0f), -transform->position);
         return rotation * translation;
     }
 

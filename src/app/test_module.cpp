@@ -69,7 +69,7 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
     }
 
     // camera movement, here for testing
-    auto cam = vengine.ecs->getEntityByTag("DefaultCamera");
+    auto cam = vengine.ecs->getEntityByTag("MainCamera");
     auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cam.getId());
     const float cameraSpeed = 100.0f;
     const float mouseSensitivity = 0.01f;

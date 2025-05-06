@@ -122,6 +122,7 @@ class Entities {
             (mask.set(m_registry->getComponentId<Ts>()), ...);
 
             std::vector<EntityId> result;
+            result.reserve(m_entities.size()); // bad optimization i guess, at least memory vise
             for (auto& [entityId, components] : m_entityBitsets) {
                 if ((components & mask) == mask) {
                     result.push_back(entityId);

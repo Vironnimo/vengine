@@ -4,15 +4,21 @@
 #include <string>
 #include <spdlog/spdlog.h>
 
+#include "vengine/core/cameras.hpp"
 #include "vengine/ecs/entities.hpp"
 
 namespace Vengine {
 
 class Vengine;  
 
+// TODO: add cameras to the scene, so we can have multiple cameras in a scene and each scene has it's own cameras
+// the renderer probably would then take in the scene, which has the entities and the cameras
+// and the renderer would then render the scene with the active camera of the scene
+
 class Scene {
    public:
     Scene(std::string name) : m_name(std::move(name)) {
+        m_cameras = std::make_unique<Cameras>();
     }
     virtual ~Scene() = default;
 
@@ -27,21 +33,21 @@ class Scene {
         return m_entities;
     }
 
+    [[nodiscard]] auto getCameras() const -> std::shared_ptr<Cameras> {
+        return m_cameras;
+    }
+
     [[nodiscard]] auto getName() const -> const std::string& {
         return m_name;
     }
 
-    auto clearEntities() -> void {
-        if (m_entities) {
-            m_entities->clear();
-        }
-    }
-
    protected:
+    // TODO: change names or what?
     std::string m_name;
+    std::shared_ptr<Cameras> m_cameras;
+    std::shared_ptr<Entities> m_entities;
     
    private:
-    std::shared_ptr<Entities> m_entities;
 };
 
 }  // namespace Vengine

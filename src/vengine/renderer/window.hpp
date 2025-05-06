@@ -27,6 +27,9 @@ class Window {
     [[nodiscard]] auto init() -> tl::expected<void, Error>;
     [[nodiscard]] auto create(WindowParams& params) -> tl::expected<GLFWwindow*, Error>;
 
+    auto getWidth() const -> int;
+    auto getHeight() const -> int;
+
     // get raw GLFWwindow pointer
     [[nodiscard]] auto get() -> GLFWwindow*;
 

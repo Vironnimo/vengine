@@ -3,6 +3,7 @@
 #include <memory>
 #include <tl/expected.hpp>
 
+#include "core/cameras.hpp"
 #include "vengine/core/error.hpp"
 #include "vengine/core/thread_manager.hpp"
 #include "vengine/renderer/mesh_loader.hpp"
@@ -16,6 +17,7 @@
 #include "vengine/ecs/ecs.hpp"
 #include "vengine/core/scenes.hpp"
 #include "vengine/core/input_system.hpp"
+#include "vengine/core/cameras.hpp"
 
 namespace Vengine {
 
@@ -34,7 +36,9 @@ class Vengine {
     std::unique_ptr<Timers> timers;
     std::shared_ptr<ECS> ecs;
     std::shared_ptr<ThreadManager> threadManager;
+    std::shared_ptr<Cameras> cameras;
     EventSystem* events = nullptr;
+    std::unique_ptr<Scenes> scenes;
 
     Vengine();
     ~Vengine();
@@ -47,16 +51,15 @@ class Vengine {
     template <typename T>
     void addScene(const std::string& name);
 
-    void switchToScene(const std::string& name);
+    void loadScene(const std::string& name);
     void removeScene(const std::string& name);
     [[nodiscard]] auto getCurrentSceneName() const -> std::string {
-        return m_scenes->getCurrentSceneName();
+        return scenes->getCurrentSceneName();
     }
 
     auto run() -> void;
 
    private:
-    std::unique_ptr<Scenes> m_scenes;
     std::vector<std::shared_ptr<Module>> m_modules;
 
     void registerGlfwCallbacks();

@@ -91,7 +91,8 @@ void ScriptSystem::registerBindings(const std::shared_ptr<ECS>& ecs) {
         return ecs->getActiveEntities()->getEntityComponent<TransformComponent>(entityId);
     };
     lua["get_camera_component"] = [ecs]() -> std::shared_ptr<CameraComponent> {
-        return ecs->getActiveEntities()->getEntityComponent<CameraComponent>(ecs->getActiveCamera());
+        // TODO need access to the cameras for active camera
+        // return ecs->getActiveEntities()->getEntityComponent<CameraComponent>(ecs->getActiveCamera());
     };
 }
 

@@ -16,6 +16,7 @@ set(SOURCES
         vengine/vengine.cpp
         vengine/core/resource_manager.cpp
         vengine/core/action.cpp
+        vengine/core/cameras.cpp
         vengine/core/uuid.cpp
         vengine/core/input_system.cpp
         vengine/core/actions.cpp

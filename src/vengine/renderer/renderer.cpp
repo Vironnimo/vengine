@@ -11,6 +11,7 @@
 #include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/font.hpp"
 
+
 namespace Vengine {
 
 Renderer::Renderer() {
@@ -21,7 +22,8 @@ Renderer::~Renderer() {
     spdlog::debug("Destructor Renderer");
 }
 
-auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void {
+// auto Renderer::render(const std::shared_ptr<ECS>& ecs, EntityId mainCamera) -> void {
+auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);  // so closer objects obscure objects further away (i've experienced problems with just one
@@ -31,25 +33,24 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // render all viable entities
-    if (m_activeCamera == 0) {
+    if (scene->getCameras()->getActive() == 0) {
         spdlog::error("RenderSystem: No active camera found.");
         // TODO: defaults on error?
         return;
     }
 
     // camera stuff
-    auto cameraTransform = ecs->getEntityComponent<TransformComponent>(m_activeCamera);
-    auto cameraComponent = ecs->getEntityComponent<CameraComponent>(m_activeCamera);
-    glm::mat4 viewMatrix = cameraComponent->getViewMatrix(*cameraTransform);
+    auto cameraTransform = scene->getEntities()->getEntityComponent<TransformComponent>(scene->getCameras()->getActive());
+    auto cameraComponent = scene->getEntities()->getEntityComponent<CameraComponent>(scene->getCameras()->getActive());
+    glm::mat4 viewMatrix = cameraComponent->getViewMatrix(cameraTransform);
     glm::mat4 projectionMatrix = cameraComponent->getProjectionMatrix();
 
     // render viable entities
-    auto list = ecs->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
+    auto list = scene->getEntities()->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
     for (auto entity : list) {
-        auto transformComp = ecs->getEntityComponent<TransformComponent>(entity);
-        auto meshComp = ecs->getEntityComponent<MeshComponent>(entity);
-        auto materialComp = ecs->getEntityComponent<MaterialComponent>(entity);
+        auto transformComp = scene->getEntities()->getEntityComponent<TransformComponent>(entity);
+        auto meshComp = scene->getEntities()->getEntityComponent<MeshComponent>(entity);
+        auto materialComp = scene->getEntities()->getEntityComponent<MaterialComponent>(entity);
 
         if (transformComp && meshComp && meshComp->mesh && materialComp && materialComp->material) {
             materialComp->material->bind();
@@ -85,10 +86,9 @@ auto Renderer::render(const std::shared_ptr<ECS>& ecs, float deltaTime) -> void 
     glfwPollEvents();
 }
 
-[[nodiscard]] auto Renderer::init(std::shared_ptr<Window> window, std::shared_ptr<ECS> ecs) -> tl::expected<void, Error> {
+[[nodiscard]] auto Renderer::init(std::shared_ptr<Window> window) -> tl::expected<void, Error> {
     assert(window->get() != nullptr && "Window is nullptr");
     m_window = std::move(window);
-    m_ecs = std::move(ecs);
 
     // NOTE we need the window already opened before calling this
     // TODO move this somewhere, maybe window class i dont know, or just keep it here?
@@ -156,32 +156,6 @@ auto Renderer::setVSync(bool enabled) -> void {
 
 auto Renderer::addTextObject(std::shared_ptr<TextObject> textObject) -> void {
     m_textObjects.push_back(std::move(textObject));
-}
-
-// TODO: what to do with all the glfw callbacks?
-auto Renderer::setActiveCamera(EntityId camera) -> void {
-    if (m_activeCamera != 0 && m_activeCamera != camera) {
-        auto oldCamComp = m_ecs->getActiveEntities()->getEntityComponent<CameraComponent>(m_activeCamera);
-        if (oldCamComp) {
-            oldCamComp->isActive = false;
-        }
-    }
-
-    auto camComp = m_ecs->getActiveEntities()->getEntityComponent<CameraComponent>(camera);
-    if (!camComp) {
-        // TODO: save old camera id and reset. and what happens if the old camera is already destroyed?
-        spdlog::error("Renderer: Cannot set active camera {}. Missing CameraComponent.", camera);
-        glfwSetScrollCallback(m_window->get(), nullptr);
-        m_activeCamera = 0;
-        return;
-    }
-
-    m_activeCamera = camera;
-    camComp->isActive = true;
-    m_ecs->setActiveCamera(camera);
-
-    spdlog::info("Renderer: Set active camera to {}", camera);
-    g_eventSystem.publish(CameraChangedEvent{camera});
 }
 
 }  // namespace Vengine

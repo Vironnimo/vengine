@@ -12,6 +12,7 @@
 #include "vengine/core/resource_manager.hpp"
 #include "vengine/ecs/systems.hpp"
 #include "vengine/core/input_system.hpp"
+#include "vengine/core/cameras.hpp"
 
 namespace Vengine {
 
@@ -25,7 +26,7 @@ Vengine::Vengine() {
 Vengine::~Vengine() {
     spdlog::debug("Destructor Vengine");
     // making sure resource manager is destroyed last
-    m_scenes.reset();
+    scenes.reset();
     meshLoader.reset();
     actions.reset();
     renderer.reset();
@@ -48,6 +49,7 @@ Vengine::~Vengine() {
 
     signals = std::make_unique<SignalSystem>();
     events = &g_eventSystem;
+    cameras = std::make_shared<Cameras>();
 
     timers->start("vengine.window_creation");
     window = std::make_shared<Window>();
@@ -59,6 +61,9 @@ Vengine::~Vengine() {
         return tl::unexpected(result.error());
     }
     auto windowCreationTime = timers->getElapsed("vengine.window_creation");
+
+    // glfw callbacks
+    registerGlfwCallbacks();
 
     threadManager = std::make_shared<ThreadManager>();
 
@@ -72,13 +77,13 @@ Vengine::~Vengine() {
     actions = std::make_unique<Actions>();
     meshLoader = std::make_unique<MeshLoader>();
 
-    m_scenes = std::make_unique<Scenes>();
+    scenes = std::make_unique<Scenes>();
 
     // ecs
     ecs = std::make_shared<ECS>();
     // renderer
     renderer = std::make_unique<Renderer>();
-    if (auto result = renderer->init(window, ecs); !result) {
+    if (auto result = renderer->init(window); !result) {
         return tl::unexpected(result.error());
     }
 
@@ -109,23 +114,20 @@ Vengine::~Vengine() {
     ecs->registerSystem("ScriptSystem", scriptSystem);
 
     // default cam
-    EntityId defaultCameraEntity = ecs->createEntity();
-    ecs->addComponent<TagComponent>(defaultCameraEntity, "DefaultCamera");
-    ecs->addComponent<PersistentComponent>(defaultCameraEntity);
-    ecs->addComponent<TransformComponent>(defaultCameraEntity);
-    ecs->addComponent<CameraComponent>(defaultCameraEntity);
-    ecs->addComponent<ScriptComponent>(defaultCameraEntity, "resources/scripts/camera.lua");
+    // EntityId defaultCameraEntity = ecs->createEntity();
+    // ecs->addComponent<TagComponent>(defaultCameraEntity, "DefaultCamera");
+    // ecs->addComponent<PersistentComponent>(defaultCameraEntity);
+    // ecs->addComponent<TransformComponent>(defaultCameraEntity);
+    // ecs->addComponent<CameraComponent>(defaultCameraEntity);
+    // ecs->addComponent<ScriptComponent>(defaultCameraEntity, "resources/scripts/camera.lua");
 
-    auto camComp = ecs->getEntityComponent<CameraComponent>(defaultCameraEntity);
-    camComp->aspectRatio = static_cast<float>(params.width) / static_cast<float>(params.height);
+    // auto camComp = ecs->getEntityComponent<CameraComponent>(defaultCameraEntity);
+    // camComp->aspectRatio = static_cast<float>(params.width) / static_cast<float>(params.height);
 
-    auto camTransform = ecs->getEntityComponent<TransformComponent>(defaultCameraEntity);
-    camTransform->position = glm::vec3(0.0f, 50.0f, 185.0f);
-
-    registerGlfwCallbacks();
-
-    // NOTE: gotta set the camera after the glfw callbacks
-    renderer->setActiveCamera(defaultCameraEntity);
+    // auto camTransform = ecs->getEntityComponent<TransformComponent>(defaultCameraEntity);
+    // camTransform->position = glm::vec3(0.0f, 50.0f, 185.0f);
+    // cameras->add(defaultCameraEntity);
+    // cameras->setActive(defaultCameraEntity);
 
     // time logging
     auto vengineStartTime = timers->getElapsed("vengine.start");
@@ -173,7 +175,7 @@ auto Vengine::run() -> void {
         physicsAndCollisionTaskFuture.wait();
 
         ecs->runSystems(timers->deltaTime());
-        renderer->render(ecs, timers->deltaTime());
+        renderer->render(scenes->getCurrentScene());
     }
 }
 
@@ -191,7 +193,7 @@ void Vengine::removeModule(const std::shared_ptr<Module>& module) {
 }
 
 void Vengine::addScene(const std::string& name, std::shared_ptr<Scene> scene) {
-    m_scenes->add(name, std::move(scene));
+    scenes->add(name, std::move(scene));
 }
 
 template <typename T>
@@ -199,12 +201,12 @@ void Vengine::addScene(const std::string& name) {
     auto scene = std::make_shared<T>(name);
 }
 
-void Vengine::switchToScene(const std::string& name) {
-    m_scenes->switchTo(name, *this);
+void Vengine::loadScene(const std::string& name) {
+    scenes->load(name, *this);
 }
 
 void Vengine::removeScene(const std::string& name) {
-    m_scenes->remove(name);
+    scenes->remove(name);
 }
 
 void Vengine::registerGlfwCallbacks() {
@@ -212,20 +214,16 @@ void Vengine::registerGlfwCallbacks() {
     // user pointer
     glfwSetWindowUserPointer(window->get(), this);
 
-    // should just trigger window resize event, right?
+    // should just trigger a window resize event, right?
     glfwSetFramebufferSizeCallback(window->get(), [](GLFWwindow* wnd, int width, int height) {
+        // TODO so where do we handle the resize event?
+        g_eventSystem.publish(WindowResizeEvent{width, height});
         glViewport(0, 0, width, height);
         auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
         if (vengine && vengine->ecs) {
-            auto entities = vengine->ecs->getActiveEntities();
-            auto cameraEntities = entities->getEntitiesWith<CameraComponent>();
-            for (auto camId : cameraEntities) {
-                auto camComp = entities->getEntityComponent<CameraComponent>(camId);
-                if (camComp && camComp->isActive) {
-                    camComp->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-                    break;
-                }
-            }
+            // auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->cameras->getActive());
+            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->scenes->getCurrentScene()->getCameras()->getActive());
+            camComp->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
         }
     });
 
@@ -242,16 +240,16 @@ void Vengine::registerGlfwCallbacks() {
     // subscribe to camera changed event
     // TODO gotta rethink this, and obviously change some stuff inside
     events->subscribe<CameraChangedEvent>([this](const CameraChangedEvent& event) {
-        spdlog::info("Camera changed to: {}", event.newCamera);
+        spdlog::debug("Vengine: Active Camera changed to CameraID: {}", event.newCamera);
 
         glfwSetScrollCallback(window->get(), [](GLFWwindow* wnd, double, double yoffset) {
             yoffset *= 2.0;  // sens
             auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
-            if (!vengine || vengine->ecs->getActiveCamera() == 0) {
+            if (!vengine || vengine->cameras->getActive() == 0) {
                 return;
             }
-            auto cameraTransform = vengine->ecs->getEntityComponent<TransformComponent>(vengine->ecs->getActiveCamera());
-            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->ecs->getActiveCamera());
+            auto cameraTransform = vengine->ecs->getEntityComponent<TransformComponent>(vengine->cameras->getActive());
+            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->cameras->getActive());
             if (camComp && cameraTransform) {
                 camComp->fov -= static_cast<float>(yoffset);
                 // TODO: max fov somewhere else? and not hardcoded...

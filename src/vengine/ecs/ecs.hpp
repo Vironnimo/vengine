@@ -117,21 +117,11 @@ class ECS {
         return nullptr;
     }
 
-    auto setActiveCamera(EntityId camera) -> void {
-        m_activeCameraId = camera;
-    }
-
-    [[nodiscard]] auto getActiveCamera() const -> EntityId {
-        return m_activeCameraId;
-    }
-
    private:
     std::shared_ptr<ComponentRegistry> m_componentRegistry;
     std::shared_ptr<Entities> m_activeEntities;
     std::unordered_map<std::string, std::shared_ptr<Entities>> m_entitySets;
     std::unordered_map<std::string, std::shared_ptr<BaseSystem>> m_systems;
-    // TODO: the active camera is also stored in the renderer, should it be stored here or there?
-    EntityId m_activeCameraId = 0;
 };
 
 }  // namespace Vengine

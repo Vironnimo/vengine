@@ -47,6 +47,18 @@ auto Window::init() -> tl::expected<void, Error> {
     return m_window;
 }
 
+auto Window::getWidth() const -> int {
+    int width = 0;
+    glfwGetWindowSize(m_window, &width, nullptr);
+    return width;
+}
+
+auto Window::getHeight() const -> int {
+    int height = 0;
+    glfwGetWindowSize(m_window, nullptr, &height);
+    return height;
+}
+
 auto Window::get() -> GLFWwindow* {
     return m_window;
 }
