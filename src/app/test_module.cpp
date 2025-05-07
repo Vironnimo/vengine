@@ -115,5 +115,6 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
 }
 
 void TestModule::onDetach(Vengine::Vengine& vengine) {
+    (void)vengine; // haha clang tidy
     m_textObject.reset();
 }

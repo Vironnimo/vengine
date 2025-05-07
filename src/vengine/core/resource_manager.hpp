@@ -84,6 +84,8 @@ class ResourceManager {
 
     auto isLoaded(const std::string& name) -> bool {
         std::lock_guard<std::mutex> lock(m_resourceMutex);
+        
+        // replace with any_of? it's c++20
         for (const auto& [type, resources] : m_resources) {
             if (resources.find(name) != resources.end()) {
                 return true;

@@ -44,12 +44,12 @@ class Vengine {
     void addModule(std::shared_ptr<Module> module);
     void removeModule(const std::shared_ptr<Module>& module);
 
-    void addScene(const std::string& name, std::shared_ptr<Scene> scene);
+    void addScene(const std::string& name, std::shared_ptr<Scene> scene) const;
     template <typename T>
     void addScene(const std::string& name);
 
     void loadScene(const std::string& name);
-    void removeScene(const std::string& name);
+    void removeScene(const std::string& name) const;
     [[nodiscard]] auto getCurrentSceneName() const -> std::string {
         return scenes->getCurrentSceneName();
     }

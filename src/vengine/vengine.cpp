@@ -94,8 +94,6 @@ Vengine::~Vengine() {
     ecs->registerComponent<MaterialComponent>("Material");
     ecs->registerComponent<RigidbodyComponent>("Rigidbody");
     ecs->registerComponent<ColliderComponent>("Collider");
-    // ecs->registerComponent<PositionComponent>("Position");
-    // ecs->registerComponent<VelocityComponent>("Velocity");
     ecs->registerComponent<ScriptComponent>("Script");
     ecs->registerComponent<CameraComponent>("Camera");
     // register built-in systems
@@ -112,28 +110,13 @@ Vengine::~Vengine() {
     scriptSystem->registerBindings(ecs);
     ecs->registerSystem("ScriptSystem", scriptSystem);
 
-    // default cam
-    // EntityId defaultCameraEntity = ecs->createEntity();
-    // ecs->addComponent<TagComponent>(defaultCameraEntity, "DefaultCamera");
-    // ecs->addComponent<PersistentComponent>(defaultCameraEntity);
-    // ecs->addComponent<TransformComponent>(defaultCameraEntity);
-    // ecs->addComponent<CameraComponent>(defaultCameraEntity);
-    // ecs->addComponent<ScriptComponent>(defaultCameraEntity, "resources/scripts/camera.lua");
-
-    // auto camComp = ecs->getEntityComponent<CameraComponent>(defaultCameraEntity);
-    // camComp->aspectRatio = static_cast<float>(params.width) / static_cast<float>(params.height);
-
-    // auto camTransform = ecs->getEntityComponent<TransformComponent>(defaultCameraEntity);
-    // camTransform->position = glm::vec3(0.0f, 50.0f, 185.0f);
-    // cameras->add(defaultCameraEntity);
-    // cameras->setActive(defaultCameraEntity);
-
     // time logging
     auto vengineStartTime = timers->getElapsed("vengine.start");
     auto vengineWithoutWindow = vengineStartTime - windowCreationTime;
     spdlog::info("Vengine: started in {} ms.", vengineStartTime);
     spdlog::info("Vengine: -- {} ms of that are vengine", vengineWithoutWindow);
     spdlog::info("Vengine: -- {} ms of that are window creation", windowCreationTime);
+
     return {};
 }
 
@@ -191,7 +174,7 @@ void Vengine::removeModule(const std::shared_ptr<Module>& module) {
     }
 }
 
-void Vengine::addScene(const std::string& name, std::shared_ptr<Scene> scene) {
+void Vengine::addScene(const std::string& name, std::shared_ptr<Scene> scene) const {
     scenes->add(name, std::move(scene));
 }
 
@@ -204,7 +187,7 @@ void Vengine::loadScene(const std::string& name) {
     scenes->load(name, *this);
 }
 
-void Vengine::removeScene(const std::string& name) {
+void Vengine::removeScene(const std::string& name) const {
     scenes->remove(name);
 }
 

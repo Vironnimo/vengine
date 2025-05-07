@@ -38,7 +38,7 @@ auto uploadInstanceTransforms(const std::shared_ptr<Mesh>& mesh, const std::vect
     // Set up 4 vec4 attributes for mat4 (locations 4,5,6,7)
     for (int i = 0; i < 4; ++i) {
         glEnableVertexAttribArray(4 + i);
-        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * i * 4));
+        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), reinterpret_cast<void*>(sizeof(float) * i * 4));
         glVertexAttribDivisor(4 + i, 1);
     }
 

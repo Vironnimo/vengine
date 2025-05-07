@@ -61,4 +61,5 @@ void TestScene2::load(Vengine::Vengine& vengine) {
 }
 
 void TestScene2::cleanup(Vengine::Vengine& vengine) {
+    (void)vengine;
 }
