@@ -7,12 +7,45 @@
 #include <tl/expected.hpp>
 #include "vengine/core/error.hpp"
 #include <utility>
-#include "vengine/core/event_system.hpp"
 #include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/font.hpp"
 
-
 namespace Vengine {
+
+// test stuff
+struct MeshMaterialKey {
+    std::shared_ptr<Mesh> mesh;
+    std::shared_ptr<Material> material;
+    bool operator<(const MeshMaterialKey& other) const {
+        return std::tie(mesh, material) < std::tie(other.mesh, other.material);
+    }
+};
+
+auto uploadInstanceTransforms(const std::shared_ptr<Mesh>& mesh, const std::vector<glm::mat4>& transforms) -> void {
+    static std::unordered_map<std::shared_ptr<Mesh>, GLuint> instanceVBOs;
+    GLuint instanceVBO = 0;
+    if (instanceVBOs.find(mesh) == instanceVBOs.end()) {
+        glGenBuffers(1, &instanceVBO);
+        instanceVBOs[mesh] = instanceVBO;
+    } else {
+        instanceVBO = instanceVBOs[mesh];
+    }
+
+    glBindVertexArray(mesh->getVertexArray()->getID());
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, transforms.size() * sizeof(glm::mat4), transforms.data(), GL_DYNAMIC_DRAW);
+
+    // Set up 4 vec4 attributes for mat4 (locations 4,5,6,7)
+    for (int i = 0; i < 4; ++i) {
+        glEnableVertexAttribArray(4 + i);
+        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * i * 4));
+        glVertexAttribDivisor(4 + i, 1);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+// end test stuff
 
 Renderer::Renderer() {
     spdlog::debug("Constructor Renderer");
@@ -45,32 +78,81 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     glm::mat4 viewMatrix = cameraComponent->getViewMatrix(cameraTransform);
     glm::mat4 projectionMatrix = cameraComponent->getProjectionMatrix();
 
-    // render viable entities
+    // batch rendering, get all objects with the same mesh and material, just the transform changes
+    std::map<MeshMaterialKey, std::vector<glm::mat4>> batches;
+
     auto list = scene->getEntities()->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
     for (auto entity : list) {
         auto transformComp = scene->getEntities()->getEntityComponent<TransformComponent>(entity);
         auto meshComp = scene->getEntities()->getEntityComponent<MeshComponent>(entity);
         auto materialComp = scene->getEntities()->getEntityComponent<MaterialComponent>(entity);
 
+        // for each object we add the transform to the right batch
         if (transformComp && meshComp && meshComp->mesh && materialComp && materialComp->material) {
-            materialComp->material->bind();
-
-            auto shader = materialComp->material->getShader();
-            if (!shader) {
-                spdlog::warn("Material has no shader, skipping entity {}", entity);
-                continue;
-            }
-
-            // TODO: should this be in the material as references?
-            shader->setUniformMat4("uView", viewMatrix);
-            shader->setUniformMat4("uProjection", projectionMatrix);
-            shader->setUniformMat4("uTransform", transformComp->transform);
-
-            meshComp->mesh->draw();
-        } else {
-            spdlog::warn("Entity {} is missing required components for rendering", entity);
+            MeshMaterialKey key{meshComp->mesh, materialComp->material};
+            batches[key].push_back(transformComp->getTransform());
         }
     }
+
+    // render all batches
+    for (const auto& [key, transforms] : batches) {
+        auto mesh = key.mesh;
+        auto material = key.material;
+        material->bind();
+
+        auto shader = material->getShader();
+        if (!shader) {
+            continue;
+        }
+
+        shader->setUniformMat4("uView", viewMatrix);
+        shader->setUniformMat4("uProjection", projectionMatrix);
+
+        // TODO what todo with this?
+        uploadInstanceTransforms(mesh, transforms);
+
+        mesh->getVertexArray()->bind();
+        if (mesh->useIndices()) {
+            glDrawElementsInstanced(GL_TRIANGLES,
+                                    static_cast<GLsizei>(mesh->getIndexBuffer()->getCount()),
+                                    GL_UNSIGNED_INT,
+                                    nullptr,
+                                    static_cast<GLsizei>(transforms.size()));
+        } else {
+            glDrawArraysInstanced(GL_TRIANGLES,
+                                  0,
+                                  static_cast<GLsizei>(mesh->getVertexCount()),
+                                  static_cast<GLsizei>(transforms.size()));
+        }
+        mesh->getVertexArray()->unbind();
+    }
+
+    // render viable entities
+    // auto list = scene->getEntities()->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
+    // for (auto entity : list) {
+    //     auto transformComp = scene->getEntities()->getEntityComponent<TransformComponent>(entity);
+    //     auto meshComp = scene->getEntities()->getEntityComponent<MeshComponent>(entity);
+    //     auto materialComp = scene->getEntities()->getEntityComponent<MaterialComponent>(entity);
+
+    //     if (transformComp && meshComp && meshComp->mesh && materialComp && materialComp->material) {
+    //         materialComp->material->bind();
+
+    //         auto shader = materialComp->material->getShader();
+    //         if (!shader) {
+    //             spdlog::warn("Material has no shader, skipping entity {}", entity);
+    //             continue;
+    //         }
+
+    //         // TODO: should this be in the material as references?
+    //         shader->setUniformMat4("uView", viewMatrix);
+    //         shader->setUniformMat4("uProjection", projectionMatrix);
+    //         shader->setUniformMat4("uTransform", transformComp->transform);
+
+    //         meshComp->mesh->draw();
+    //     } else {
+    //         spdlog::warn("Entity {} is missing required components for rendering", entity);
+    //     }
+    // }
 
     // TODO: handle the skybox some other way, in shader?
     if (m_skyboxEnabled) {

@@ -15,7 +15,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.scenes->getCurrentScene()->getCameras()->setActive(mainCameraEntity);
 
     auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mainCameraEntity);
-    camTransform->position = glm::vec3(0.0f, 10.0f, 55.0f);
+    camTransform->setPosition(0.0f, 10.0f, 55.0f);
     // don't forget the aspect ratio
     auto camComp = vengine.ecs->getEntityComponent<Vengine::CameraComponent>(mainCameraEntity);
     camComp->aspectRatio = static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
@@ -80,8 +80,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, "resources/scripts/move.lua");
     auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
-    chairTransform->position = glm::vec3(-25.0f, 100.0f, 5.0f);
-    chairTransform->scale = glm::vec3(0.15f, 0.15f, 0.15f);
+    chairTransform->setPosition(-25.0f, 100.0f, 5.0f);
+    chairTransform->setScale(0.15f, 0.15f, 0.15f);
     vengine.ecs->addComponent<Vengine::ColliderComponent>(chairEntity, chairBounds.first, chairBounds.second);
 
     // cube entity
@@ -91,8 +91,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity, cubeMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(cubeEntity);
     auto boxTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cubeEntity);
-    boxTransform->position = glm::vec3(25.0f, 120.0f, 5.0f);
-    boxTransform->scale = glm::vec3(20.0f, 20.0f, 20.0f);
+    boxTransform->setPosition(25.0f, 120.0f, 5.0f);
+    boxTransform->setScale(20.0f, 20.0f, 20.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity, coloredMaterial);
     vengine.ecs->addComponent<Vengine::RigidbodyComponent>(cubeEntity);
     auto boxRigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(cubeEntity);
@@ -106,7 +106,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
         auto comp = testEntity.getComponent<Vengine::MeshComponent>();
         spdlog::debug("Test entity component stuff: {}", comp->mesh->getVertexCount());
         auto transform = testEntity.getComponent<Vengine::TransformComponent>();
-        spdlog::debug("Test entity transform stuff: {} {} {}", transform->position.x, transform->position.y, transform->position.z);
+        spdlog::debug("Test entity transform stuff: {} {} {}", transform->getPositionX(), transform->getPositionY(), transform->getPositionZ());
     }
 }
 

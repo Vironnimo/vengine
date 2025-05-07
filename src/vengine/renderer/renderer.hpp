@@ -9,7 +9,6 @@
 #include "vengine/renderer/shaders.hpp"
 #include "vengine/renderer/fonts.hpp"
 #include "vengine/renderer/skybox.hpp"
-#include "vengine/ecs/ecs.hpp"
 #include "vengine/core/scene.hpp"
 
 namespace Vengine {

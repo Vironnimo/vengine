@@ -51,7 +51,7 @@ App::App() {
     m_vengine->actions->addKeybinding("quit", {GLFW_KEY_ESCAPE, false, false, false});
 
     // lets add actions to move the camera
-    auto cam = m_vengine->ecs->getEntityByTag("DefaultCamera");
+    auto cam = m_vengine->ecs->getEntityByTag("MainCamera");
     auto camComp = m_vengine->ecs->getEntityComponent<Vengine::CameraComponent>(cam.getId());
 
     // zoom in and out with scrollwheel

@@ -29,8 +29,8 @@ void Cameras::setActive(EntityId camera) {
         return;
     }
 
-    g_eventSystem.publish(CameraChangedEvent{camera});
     m_activeCamera = camera;  
+    g_eventSystem.publish(CameraChangedEvent{camera});
 }
 
 auto Cameras::getActive() const -> EntityId {

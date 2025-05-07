@@ -20,17 +20,16 @@ void TestModule::onAttach(Vengine::Vengine& vengine) {
     vengine.renderer->addTextObject(m_textObject);
 
     // subscribe to mouse moved event
-    vengine.events->subscribe<Vengine::MouseMovedEvent>([](const Vengine::MouseMovedEvent& event) {
-        spdlog::info("Mouse: x " + std::to_string(event.x) + ", y " + std::to_string(event.y) + "\n" +
-                     "Last Mouse: " + std::to_string(event.lastX) + ", " + std::to_string(event.lastY));
-    });
+    // vengine.events->subscribe<Vengine::MouseMovedEvent>([](const Vengine::MouseMovedEvent& event) {
+    //     spdlog::info("Mouse: x " + std::to_string(event.x) + ", y " + std::to_string(event.y) + "\n" +
+    //                  "Last Mouse: " + std::to_string(event.lastX) + ", " + std::to_string(event.lastY));
+    // });
     // subscribe to key pressed and released events
-    vengine.events->subscribe<Vengine::KeyPressedEvent>([](const Vengine::KeyPressedEvent& event) {
-        spdlog::info("Key pressed: " + std::to_string(event.key) + ", repeat: " + std::to_string(event.repeat));
-    });
-    vengine.events->subscribe<Vengine::KeyReleasedEvent>([](const Vengine::KeyReleasedEvent& event) {
-        spdlog::info("Key released: " + std::to_string(event.key));
-    });
+    // vengine.events->subscribe<Vengine::KeyPressedEvent>([](const Vengine::KeyPressedEvent& event) {
+    //     spdlog::info("Key pressed: " + std::to_string(event.key) + ", repeat: " + std::to_string(event.repeat));
+    // });
+    // vengine.events->subscribe<Vengine::KeyReleasedEvent>(
+    //     [](const Vengine::KeyReleasedEvent& event) { spdlog::info("Key released: " + std::to_string(event.key)); });
 }
 
 void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
@@ -75,7 +74,7 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
     const float mouseSensitivity = 0.01f;
 
     if (camTransform) {
-        float yaw = camTransform->rotation.y;
+        float yaw = camTransform->getRotationY();
         // float pitch = glm::radians(camTransform->rotation.x);
 
         // yap, something's being done here.
@@ -83,36 +82,38 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
         glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
 
         if (vengine.inputSystem->isKeyDown(GLFW_KEY_E)) {
-            camTransform->position += forward * cameraSpeed * deltaTime;
+            camTransform->setPosition(camTransform->getPosition() + forward * cameraSpeed * deltaTime);
         }
         if (vengine.inputSystem->isKeyDown(GLFW_KEY_D)) {
-            camTransform->position -= forward * cameraSpeed * deltaTime;
+            camTransform->setPosition(camTransform->getPosition() - forward * cameraSpeed * deltaTime);
         }
         if (vengine.inputSystem->isKeyDown(GLFW_KEY_S)) {
-            camTransform->position -= right * cameraSpeed * deltaTime;
+            camTransform->setPosition(camTransform->getPosition() - right * cameraSpeed * deltaTime);
         }
         if (vengine.inputSystem->isKeyDown(GLFW_KEY_F)) {
-            camTransform->position += right * cameraSpeed * deltaTime;
+            camTransform->setPosition(camTransform->getPosition() + right * cameraSpeed * deltaTime);
         }
         if (vengine.inputSystem->isKeyDown(GLFW_KEY_BACKSPACE)) {
-            camTransform->position += glm::vec3(0.0f, cameraSpeed * deltaTime, 0.0f);
+            camTransform->setPosition(camTransform->getPosition() + glm::vec3(0.0f, cameraSpeed * deltaTime, 0.0f));
         }
         if (vengine.inputSystem->isKeyDown(GLFW_KEY_DELETE)) {
-            camTransform->position -= glm::vec3(0.0f, cameraSpeed * deltaTime, 0.0f);
+            camTransform->setPosition(camTransform->getPosition() - glm::vec3(0.0f, cameraSpeed * deltaTime, 0.0f));
         }
 
         if (vengine.inputSystem->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT)) {
             auto deltaX = static_cast<float>(vengine.inputSystem->getMouseDeltaX());
             auto deltaY = static_cast<float>(vengine.inputSystem->getMouseDeltaY());
 
-            camTransform->rotation.x -= -deltaY * mouseSensitivity;
-            camTransform->rotation.y -= -deltaX * mouseSensitivity;
+            glm::vec3 rotation = camTransform->getRotation();
+            rotation.x -= -deltaY * mouseSensitivity;
+            rotation.y -= -deltaX * mouseSensitivity;
             // avoid flipping over the top and bottom
-            camTransform->rotation.x = glm::clamp(camTransform->rotation.x, -89.0f, 89.0f);
-            camTransform->updateMatrix();
+            rotation.x = glm::clamp(rotation.x, -89.0f, 89.0f);
+            camTransform->setRotation(rotation);
         }
     }
 }
 
 void TestModule::onDetach(Vengine::Vengine& vengine) {
+    m_textObject.reset();
 }

@@ -36,7 +36,6 @@ class Vengine {
     std::unique_ptr<Timers> timers;
     std::shared_ptr<ECS> ecs;
     std::shared_ptr<ThreadManager> threadManager;
-    std::shared_ptr<Cameras> cameras;
     EventSystem* events = nullptr;
     std::unique_ptr<Scenes> scenes;
 

@@ -22,6 +22,9 @@ class VertexArray {
     auto addIndexBuffer(std::shared_ptr<IndexBuffer> indexBuffer) -> void;
 
     [[nodiscard]] auto getIndexBuffer() const -> std::shared_ptr<IndexBuffer>;
+    [[nodiscard]] auto getID() const -> GLuint {
+        return m_id;
+    }
    private:
     GLuint m_id = 0;
     std::shared_ptr<IndexBuffer> m_indexBuffer;

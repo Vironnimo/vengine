@@ -51,7 +51,9 @@ void ScriptSystem::update(std::shared_ptr<Entities> entities, float deltaTime) {
 
             // Call the function: 2 arguments, 0 results
             if (lua_pcall(m_luaState, 2, 0, 0) != LUA_OK) {
-                spdlog::error("Error calling Lua function 'update' in script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
+                spdlog::error("Error calling Lua function 'update' in script '{}': {}",
+                              scriptComp->path,
+                              lua_tostring(m_luaState, -1));
                 lua_pop(m_luaState, 1);
             }
         } else {
@@ -72,19 +74,63 @@ void ScriptSystem::registerBindings(const std::shared_ptr<ECS>& ecs) {
     // expose components to lua
     // TransformComponent
     sol::usertype<TransformComponent> transform_type = lua.new_usertype<TransformComponent>(
-        "TransformComponent", sol::no_constructor, "getPositionX", &TransformComponent::getPositionX, "getPositionY",
-        &TransformComponent::getPositionY, "getPositionZ", &TransformComponent::getPositionZ, "getRotationX",
-        &TransformComponent::getRotationX, "getRotationY", &TransformComponent::getRotationY, "getRotationZ",
-        &TransformComponent::getRotationZ, "getScaleX", &TransformComponent::getScaleX, "getScaleY", &TransformComponent::getScaleY,
-        "getScaleZ", &TransformComponent::getScaleZ, "setPosition", &TransformComponent::setPosition, "setRotation",
-        &TransformComponent::setRotation, "setScale", &TransformComponent::setScale, "updateMatrix", &TransformComponent::updateMatrix);
+        "TransformComponent",
+        sol::no_constructor,
+        "getPositionX",
+        &TransformComponent::getPositionX,
+        "getPositionY",
+        &TransformComponent::getPositionY,
+        "getPositionZ",
+        &TransformComponent::getPositionZ,
+        "getRotationX",
+        &TransformComponent::getRotationX,
+        "getRotationY",
+        &TransformComponent::getRotationY,
+        "getRotationZ",
+        &TransformComponent::getRotationZ,
+        "getScaleX",
+        &TransformComponent::getScaleX,
+        "getScaleY",
+        &TransformComponent::getScaleY,
+        "getScaleZ",
+        &TransformComponent::getScaleZ,
+        "setPosition",
+        sol::overload(static_cast<void (TransformComponent::*)(float)>(&TransformComponent::setPosition),
+                      static_cast<void (TransformComponent::*)(float, float, float)>(&TransformComponent::setPosition)),
+        "setRotation",
+        sol::overload(static_cast<void (TransformComponent::*)(float)>(&TransformComponent::setRotation),
+                      static_cast<void (TransformComponent::*)(float, float, float)>(&TransformComponent::setRotation)),
+        "setScale",
+        sol::overload(static_cast<void (TransformComponent::*)(float)>(&TransformComponent::setScale),
+                      static_cast<void (TransformComponent::*)(float, float, float)>(&TransformComponent::setScale)),
+        "updateMatrix",
+        &TransformComponent::updateMatrix);
+
     // CameraComponent
-    sol::usertype<CameraComponent> camera_type = lua.new_usertype<CameraComponent>(
-        "CameraComponent", sol::no_constructor, "getProjectionMatrix", &CameraComponent::getProjectionMatrix, "getFov",
-        &CameraComponent::getFov, "getAspectRatio", &CameraComponent::getAspectRatio, "getNearPlane", &CameraComponent::getNearPlane,
-        "getFarPlane", &CameraComponent::getFarPlane, "setFov", &CameraComponent::setFov, "setAspectRatio",
-        &CameraComponent::setAspectRatio, "setNearPlane", &CameraComponent::setNearPlane, "setFarPlane", &CameraComponent::setFarPlane,
-        "setActive", &CameraComponent::setActive, "isActiveCamera", &CameraComponent::isActiveCamera);
+    sol::usertype<CameraComponent> camera_type = lua.new_usertype<CameraComponent>("CameraComponent",
+                                                                                   sol::no_constructor,
+                                                                                   "getProjectionMatrix",
+                                                                                   &CameraComponent::getProjectionMatrix,
+                                                                                   "getFov",
+                                                                                   &CameraComponent::getFov,
+                                                                                   "getAspectRatio",
+                                                                                   &CameraComponent::getAspectRatio,
+                                                                                   "getNearPlane",
+                                                                                   &CameraComponent::getNearPlane,
+                                                                                   "getFarPlane",
+                                                                                   &CameraComponent::getFarPlane,
+                                                                                   "setFov",
+                                                                                   &CameraComponent::setFov,
+                                                                                   "setAspectRatio",
+                                                                                   &CameraComponent::setAspectRatio,
+                                                                                   "setNearPlane",
+                                                                                   &CameraComponent::setNearPlane,
+                                                                                   "setFarPlane",
+                                                                                   &CameraComponent::setFarPlane,
+                                                                                   "setActive",
+                                                                                   &CameraComponent::setActive,
+                                                                                   "isActiveCamera",
+                                                                                   &CameraComponent::isActiveCamera);
 
     // expose functions to lua, usage in lua: get_transform_component(entityId)
     lua["get_transform_component"] = [ecs](EntityId entityId) -> std::shared_ptr<TransformComponent> {

@@ -11,7 +11,7 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     vengine.scenes->getCurrentScene()->getCameras()->setActive(mainCameraEntity);
 
     auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mainCameraEntity);
-    camTransform->position = glm::vec3(0.0f, 10.0f, 55.0f);
+    camTransform->setPosition(0.0f, 10.0f, 55.0f);
     // don't forget the aspect ratio
     auto camComp = vengine.ecs->getEntityComponent<Vengine::CameraComponent>(mainCameraEntity);
     camComp->aspectRatio = static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
@@ -33,8 +33,8 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     texturedMaterial2->setTexture("uTexture", std::move(texture2));
 
     // a grid of cubes
-    int gridWidth = 30;
-    int gridHeight = 30;
+    int gridWidth = 50;
+    int gridHeight = 50;
     float spacingX = 2.4f;
     float spacingY = 2.4f;
     float startX = -(static_cast<float>(gridWidth) / 2.0f) * spacingX;
@@ -55,8 +55,7 @@ void TestScene2::load(Vengine::Vengine& vengine) {
 
             float currentX = startX + static_cast<float>(col) * spacingX;
             float currentY = startY - static_cast<float>(row) * spacingY;
-            vengine.ecs->getEntityComponent<Vengine::TransformComponent>(entity)->position =
-                glm::vec3(currentX, currentY, 0.0f);
+            vengine.ecs->getEntityComponent<Vengine::TransformComponent>(entity)->setPosition(currentX, currentY, 0.0f);
         }
     }
 }

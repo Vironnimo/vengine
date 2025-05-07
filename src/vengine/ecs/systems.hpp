@@ -16,8 +16,9 @@ class TransformSystem : public BaseSystem {
         auto list = entities->getEntitiesWith<TransformComponent>();
         for (auto entityId : list) {
             auto transform = entities->getEntityComponent<TransformComponent>(entityId);
-            if (transform) {
+            if (transform && transform->dirty) {
                 transform->updateMatrix();
+                transform->dirty = false;
             }
         }
     }
@@ -44,7 +45,8 @@ class PhysicsSystem : public BaseSystem {
             }
 
             // move object
-            transformComp->position += rigidbodyComp->velocity * deltaTime;
+            glm::vec3 newPos = transformComp->getPosition() + rigidbodyComp->velocity * deltaTime;
+            transformComp->setPosition(newPos.x, newPos.y, newPos.z);
         }
     }
 };
@@ -72,7 +74,7 @@ class CollisionSystem : public BaseSystem {
             if (!transformA || !colliderA) {
                 continue;
             }
-            colliderA->updateWorldBounds(transformA->transform);
+            colliderA->updateWorldBounds(transformA->getTransform());
 
             for (size_t j = i + 1; j < collidables.size(); ++j) {
                 EntityId entityBId = collidables[j];
@@ -83,12 +85,15 @@ class CollisionSystem : public BaseSystem {
                     continue;
                 }
 
-                colliderB->updateWorldBounds(transformB->transform);
+                colliderB->updateWorldBounds(transformB->getTransform());
 
                 // AABB
-                bool collisionX = colliderA->worldMax.x >= colliderB->worldMin.x && colliderA->worldMin.x <= colliderB->worldMax.x;
-                bool collisionY = colliderA->worldMax.y >= colliderB->worldMin.y && colliderA->worldMin.y <= colliderB->worldMax.y;
-                bool collisionZ = colliderA->worldMax.z >= colliderB->worldMin.z && colliderA->worldMin.z <= colliderB->worldMax.z;
+                bool collisionX =
+                    colliderA->worldMax.x >= colliderB->worldMin.x && colliderA->worldMin.x <= colliderB->worldMax.x;
+                bool collisionY =
+                    colliderA->worldMax.y >= colliderB->worldMin.y && colliderA->worldMin.y <= colliderB->worldMax.y;
+                bool collisionZ =
+                    colliderA->worldMax.z >= colliderB->worldMin.z && colliderA->worldMin.z <= colliderB->worldMax.z;
 
                 if (collisionX && collisionY && collisionZ) {
                     colliderA->colliding = true;

@@ -49,7 +49,6 @@ Vengine::~Vengine() {
 
     signals = std::make_unique<SignalSystem>();
     events = &g_eventSystem;
-    cameras = std::make_shared<Cameras>();
 
     timers->start("vengine.window_creation");
     window = std::make_shared<Window>();
@@ -245,11 +244,11 @@ void Vengine::registerGlfwCallbacks() {
         glfwSetScrollCallback(window->get(), [](GLFWwindow* wnd, double, double yoffset) {
             yoffset *= 2.0;  // sens
             auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
-            if (!vengine || vengine->cameras->getActive() == 0) {
+            if (!vengine || vengine->scenes->getCurrentScene()->getCameras()->getActive() == 0) {
                 return;
             }
-            auto cameraTransform = vengine->ecs->getEntityComponent<TransformComponent>(vengine->cameras->getActive());
-            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->cameras->getActive());
+            auto cameraTransform = vengine->ecs->getEntityComponent<TransformComponent>(vengine->scenes->getCurrentScene()->getCameras()->getActive());
+            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->scenes->getCurrentScene()->getCameras()->getActive());
             if (camComp && cameraTransform) {
                 camComp->fov -= static_cast<float>(yoffset);
                 // TODO: max fov somewhere else? and not hardcoded...

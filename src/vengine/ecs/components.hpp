@@ -44,10 +44,8 @@ struct PersistentComponent : public BaseComponent {
 };
 
 struct TransformComponent : public BaseComponent {
-    glm::vec3 position = glm::vec3(0.0f);
-    glm::vec3 rotation = glm::vec3(0.0f);
-    glm::vec3 scale = glm::vec3(1.0f);
-    glm::mat4 transform = glm::mat4(1.0f);
+   public:
+    bool dirty = true;
 
     void updateMatrix() {
         transform = glm::mat4(1.0f);
@@ -58,6 +56,9 @@ struct TransformComponent : public BaseComponent {
         transform = glm::scale(transform, scale);
     }
 
+    [[nodiscard]] auto getPosition() const -> glm::vec3 {
+        return position;
+    }
     // lua helper functions
     [[nodiscard]] auto getPositionX() const -> float {
         return position.x;
@@ -68,13 +69,24 @@ struct TransformComponent : public BaseComponent {
     [[nodiscard]] auto getPositionZ() const -> float {
         return position.z;
     }
-
-    void setPosition(float x, float y, float z) {
+    auto setPosition(glm::vec3 position) -> void {
+        this->position = position;
+        dirty = true;
+    }
+    auto setPosition(float position) -> void {
+        this->position = glm::vec3(position, position, position);
+        dirty = true;
+    }
+    auto setPosition(float x, float y, float z) -> void {
         position.x = x;
         position.y = y;
         position.z = z;
+        dirty = true;
     }
 
+    auto getRotation() -> glm::vec3 {
+        return rotation;
+    }
     [[nodiscard]] auto getRotationX() const -> float {
         return rotation.x;
     }
@@ -84,11 +96,19 @@ struct TransformComponent : public BaseComponent {
     [[nodiscard]] auto getRotationZ() const -> float {
         return rotation.z;
     }
-
+    auto setRotation(glm::vec3 rotation) -> void {
+        this->rotation = rotation;
+        dirty = true;
+    }
+    auto setRotation(float rotation) -> void {
+        this->rotation = glm::vec3(rotation, rotation, rotation);
+        dirty = true;
+    }
     void setRotation(float x, float y, float z) {
         rotation.x = x;
         rotation.y = y;
         rotation.z = z;
+        dirty = true;
     }
 
     [[nodiscard]] auto getScaleX() const -> float {
@@ -100,14 +120,29 @@ struct TransformComponent : public BaseComponent {
     [[nodiscard]] auto getScaleZ() const -> float {
         return scale.z;
     }
+    auto setScale(glm::vec3 scale) -> void {
+        this->scale = scale;
+        dirty = true;
+    }
+    auto setScale(float scale) -> void {
+        this->scale = glm::vec3(scale, scale, scale);
+        dirty = true;
+    }
     void setScale(float x, float y, float z) {
         scale.x = x;
         scale.y = y;
         scale.z = z;
+        dirty = true;
     }
     [[nodiscard]] auto getTransform() const -> glm::mat4 {
         return transform;
     }
+
+   private:
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 rotation = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+    glm::mat4 transform = glm::mat4(1.0f);
 };
 
 struct RigidbodyComponent : public BaseComponent {
@@ -165,10 +200,10 @@ struct CameraComponent : public BaseComponent {
         return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
     }
     [[nodiscard]] auto getViewMatrix(const std::shared_ptr<TransformComponent>& transform) const -> glm::mat4 {
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), transform->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
-                             glm::rotate(glm::mat4(1.0f), transform->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                             glm::rotate(glm::mat4(1.0f), transform->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-        glm::mat4 translation = glm::translate(glm::mat4(1.0f), -transform->position);
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), transform->getRotationX(), glm::vec3(1.0f, 0.0f, 0.0f)) *
+                             glm::rotate(glm::mat4(1.0f), transform->getRotationY(), glm::vec3(0.0f, 1.0f, 0.0f)) *
+                             glm::rotate(glm::mat4(1.0f), transform->getRotationZ(), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 translation = glm::translate(glm::mat4(1.0f), -transform->getPosition());
         return rotation * translation;
     }
 
