@@ -220,7 +220,6 @@ void Vengine::registerGlfwCallbacks() {
         glViewport(0, 0, width, height);
         auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
         if (vengine && vengine->ecs) {
-            // auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->cameras->getActive());
             auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->scenes->getCurrentScene()->getCameras()->getActive());
             camComp->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
         }

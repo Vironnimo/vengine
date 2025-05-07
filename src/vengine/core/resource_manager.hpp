@@ -8,6 +8,7 @@
 #include "vengine/core/thread_manager.hpp"
 
 #include "resources.hpp"
+#include <typeindex>
 #include <unordered_map>
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
@@ -30,11 +31,14 @@ class ResourceManager {
     template <typename T>
     auto load(const std::string& name, const std::string& fileName) -> bool {
         auto resource = std::make_shared<T>();
+
         if constexpr (std::is_same_v<T, Sound>) {
             resource->setEngine(&m_audioEngine);
         }
+
         if (resource->load(fileName)) {
-            m_resources[name] = resource;
+            std::lock_guard<std::mutex> lock(m_resourceMutex);
+            m_resources[std::type_index(typeid(T))][name] = resource;
             return true;
         }
 
@@ -52,13 +56,11 @@ class ResourceManager {
                 }
 
                 if (resource->load(fileName)) {
-                    // spdlog::info("Successfully loaded {} resource: {}", typeid(T).name(), name);
                     {
                         std::lock_guard<std::mutex> lock(m_resourceMutex);
-                        m_resources[name] = resource;
+                        m_resources[std::type_index(typeid(T))][name] = resource;
                     }
 
-                    // add task to main thread queue, cause for opengl it needs to be done on the main thread
                     if constexpr (std::is_same_v<T, Texture>) {
                         auto texture = std::static_pointer_cast<Texture>(resource);
                         if (texture->needsGpuInit()) {
@@ -82,27 +84,37 @@ class ResourceManager {
 
     auto isLoaded(const std::string& name) -> bool {
         std::lock_guard<std::mutex> lock(m_resourceMutex);
-        return m_resources.find(name) != m_resources.end();
+        for (const auto& [type, resources] : m_resources) {
+            if (resources.find(name) != resources.end()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     template <typename T>
     auto get(const std::string& name) -> std::shared_ptr<T> {
         std::lock_guard<std::mutex> lock(m_resourceMutex);
-        auto it = m_resources.find(name);
-        if (it != m_resources.end()) {
-            return std::static_pointer_cast<T>(it->second);
+        auto typeIt = m_resources.find(std::type_index(typeid(T)));
+        if (typeIt != m_resources.end()) {
+            auto& innerMap = typeIt->second;
+            auto it = innerMap.find(name);
+            if (it != innerMap.end()) {
+                return std::static_pointer_cast<T>(it->second);
+            }
         }
-
         return nullptr;
     }
 
    private:
     std::filesystem::path m_resourceRoot;
-    std::unordered_map<std::string, std::shared_ptr<void>> m_resources;
-    ma_engine m_audioEngine;
+    std::unordered_map<std::type_index, std::unordered_map<std::string, std::shared_ptr<void>>> m_resources;
 
     std::shared_ptr<ThreadManager> m_threadManager;
     std::mutex m_resourceMutex;
+
+    ma_engine m_audioEngine;
 };
 
 }  // namespace Vengine

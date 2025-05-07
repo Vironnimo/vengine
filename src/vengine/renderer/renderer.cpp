@@ -59,6 +59,7 @@ Renderer::~Renderer() {
 auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glEnable(GL_DEPTH_TEST);  // so closer objects obscure objects further away (i've experienced problems with just one
                               // object)
 

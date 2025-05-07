@@ -38,10 +38,12 @@ auto ResourceManager::init() -> tl::expected<void, Error> {
 ResourceManager::~ResourceManager() {
     spdlog::debug("Destructor ResourceManager");
 
-    for (const auto& [id, resource] : m_resources) {
-        auto* res = static_cast<IResource*>(resource.get());
-        if (res != nullptr) {
-            res->unload();
+    for (const auto& [type, resources] : m_resources) {
+        for (const auto& [name, resource] : resources) {
+            auto* res = static_cast<IResource*>(resource.get());
+            if (res != nullptr) {
+                res->unload();
+            }
         }
     }
 

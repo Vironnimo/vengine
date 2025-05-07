@@ -3,7 +3,6 @@
 #include <memory>
 #include <tl/expected.hpp>
 
-#include "core/cameras.hpp"
 #include "vengine/core/error.hpp"
 #include "vengine/core/thread_manager.hpp"
 #include "vengine/renderer/mesh_loader.hpp"
@@ -17,7 +16,6 @@
 #include "vengine/ecs/ecs.hpp"
 #include "vengine/core/scenes.hpp"
 #include "vengine/core/input_system.hpp"
-#include "vengine/core/cameras.hpp"
 
 namespace Vengine {
 
