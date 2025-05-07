@@ -20,7 +20,9 @@ class Scene {
     Scene(std::string name) : m_name(std::move(name)) {
         m_cameras = std::make_unique<Cameras>();
     }
-    virtual ~Scene() = default;
+    virtual ~Scene() {
+        spdlog::debug("Destructor Scene: {}", m_name);
+    }
 
     virtual void load(Vengine& vengine) = 0;
     virtual void cleanup(Vengine& vengine) = 0;

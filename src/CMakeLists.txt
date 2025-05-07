@@ -21,6 +21,8 @@ set(SOURCES
         vengine/core/input_system.cpp
         vengine/core/actions.cpp
         vengine/core/timers.cpp
+        vengine/core/mesh.cpp
+        vengine/core/mesh_loader.cpp
         vengine/core/signal_system.cpp
         vengine/core/event_system.cpp
         vengine/core/scenes.cpp
@@ -29,8 +31,6 @@ set(SOURCES
         vengine/renderer/renderer.cpp
         vengine/renderer/material.cpp
         vengine/renderer/materials.cpp
-        vengine/renderer/mesh.cpp
-        vengine/renderer/mesh_loader.cpp
         vengine/renderer/index_buffer.cpp
         vengine/renderer/vertex_array.cpp
         vengine/renderer/vertex_buffer.cpp

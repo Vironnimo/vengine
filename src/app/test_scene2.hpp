@@ -10,5 +10,4 @@ class TestScene2 : public Vengine::Scene {
     void cleanup(Vengine::Vengine& vengine) override;
 
    private:
-    std::shared_ptr<Vengine::TextObject> m_textObject;
 };

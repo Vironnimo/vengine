@@ -18,6 +18,7 @@ namespace Vengine {
 
 ResourceManager::ResourceManager(std::shared_ptr<ThreadManager> threadManager) : m_threadManager(std::move(threadManager)) {
     spdlog::debug("Constructor ResourceManager");
+    m_meshLoader = std::make_unique<MeshLoader>();
 }
 
 auto ResourceManager::init() -> tl::expected<void, Error> {
@@ -38,14 +39,14 @@ auto ResourceManager::init() -> tl::expected<void, Error> {
 ResourceManager::~ResourceManager() {
     spdlog::debug("Destructor ResourceManager");
 
-    for (const auto& [type, resources] : m_resources) {
-        for (const auto& [name, resource] : resources) {
-            auto* res = static_cast<IResource*>(resource.get());
-            if (res != nullptr) {
-                res->unload();
-            }
+    for (auto& [type, resources] : m_resources) {
+        for (auto& [name, resource] : resources) {
+            resource->unload();
+            resource.reset();
         }
+        resources.clear();
     }
+    m_resources.clear();
 
     ma_engine_uninit(&m_audioEngine);
 }

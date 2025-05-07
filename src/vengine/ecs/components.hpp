@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "vengine/renderer/material.hpp"
-#include "vengine/renderer/mesh.hpp"
+#include "vengine/core/mesh.hpp"
 
 namespace Vengine {
 

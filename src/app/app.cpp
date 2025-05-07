@@ -5,6 +5,7 @@
 
 #include "app/test_scene.hpp"
 #include "app/test_scene2.hpp"
+#include "app/test_module.hpp"
 #include "vengine/vengine.hpp"
 
 App::App() {
@@ -20,6 +21,8 @@ App::App() {
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_bottom", "skybox/cube_down.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_back", "skybox/cube_back.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_front", "skybox/cube_front.png");
+    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("cube", "box.obj");
+    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("chair", "chair.obj");
 
     // load sounds
     m_vengine->resourceManager->loadAsync<Vengine::Sound>("click", "click.wav");
@@ -42,7 +45,8 @@ App::App() {
     // sleep until skybox textures are loaded
     while (!m_vengine->resourceManager->isLoaded("skybox_back") || !m_vengine->resourceManager->isLoaded("skybox_front") ||
            !m_vengine->resourceManager->isLoaded("skybox_left") || !m_vengine->resourceManager->isLoaded("skybox_right") ||
-           !m_vengine->resourceManager->isLoaded("skybox_top") || !m_vengine->resourceManager->isLoaded("skybox_bottom")) {
+           !m_vengine->resourceManager->isLoaded("skybox_top") || !m_vengine->resourceManager->isLoaded("skybox_bottom") ||
+           !m_vengine->resourceManager->isLoaded("cube") || !m_vengine->resourceManager->isLoaded("chair")) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -82,8 +86,8 @@ App::App() {
     m_vengine->actions->addKeybinding("scene.switch.scene2", {GLFW_KEY_P, false, false, false});
 
     // add modules
-    m_testModule = std::make_shared<TestModule>();
-    m_vengine->addModule(m_testModule);
+    auto testModule = std::make_shared<TestModule>();
+    m_vengine->addModule(testModule);
 
     auto end = m_vengine->timers->stop("app_constructor");
     spdlog::info("App constructor took {} ms", end);

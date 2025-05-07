@@ -16,7 +16,7 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     auto camComp = vengine.ecs->getEntityComponent<Vengine::CameraComponent>(mainCameraEntity);
     camComp->aspectRatio = static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
 
-    auto cubeMesh = vengine.meshLoader->loadFromObj("box.obj");
+    auto cubeMesh = vengine.resourceManager->get<Vengine::Mesh>("cube");
 
     auto texture = vengine.resourceManager->get<Vengine::Texture>("test_texture");
     auto texture2 = vengine.resourceManager->get<Vengine::Texture>("test_texture2");

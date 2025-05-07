@@ -7,6 +7,7 @@
 #include "vengine/core/error.hpp"
 #include "vengine/core/thread_manager.hpp"
 
+#include "vengine/core/mesh_loader.hpp"
 #include "resources.hpp"
 #include <typeindex>
 #include <unordered_map>
@@ -30,6 +31,21 @@ class ResourceManager {
 
     template <typename T>
     auto load(const std::string& name, const std::string& fileName) -> bool {
+        if constexpr (std::is_same_v<T, Mesh>) {
+            // auto mesh = m_meshLoader->loadFromObj(fileName);
+            // if (!mesh) {
+            //     spdlog::error("Failed to load mesh: {}", fileName);
+            //     return false;
+            // }
+
+            // if (mesh->load(fileName)) {
+            //     std::lock_guard<std::mutex> lock(m_resourceMutex);
+            //     m_resources[std::type_index(typeid(T))][name] = mesh;
+
+            //     return true;
+            // }
+        }
+
         auto resource = std::make_shared<T>();
 
         if constexpr (std::is_same_v<T, Sound>) {
@@ -49,7 +65,16 @@ class ResourceManager {
     auto loadAsync(const std::string& name, const std::string& fileName) -> void {
         m_threadManager->enqueueTask(
             [this, name, fileName]() {
+                spdlog::debug("Loading resource: {} from file: {}", name, fileName);
                 auto resource = std::make_shared<T>();
+
+                if constexpr (std::is_same_v<T, Mesh>) {
+                    resource = m_meshLoader->loadFromObj(fileName);
+                    if (!resource) {
+                        spdlog::error("Failed to load mesh: {}", fileName);
+                        return;
+                    }
+                } 
 
                 if constexpr (std::is_same_v<T, Sound>) {
                     resource->setEngine(&m_audioEngine);
@@ -74,6 +99,19 @@ class ResourceManager {
                                 },
                                 "Finalize texture: " + name);
                         }
+                    } else if constexpr (std::is_same_v<T, Mesh>) {
+                        auto mesh = std::static_pointer_cast<Mesh>(resource);
+                        if (mesh->needsGpuInit()) {
+                            m_threadManager->enqueueMainThreadTask(
+                                [mesh, name]() {
+                                    if (mesh->finalizeOnGpu()) {
+                                        // spdlog::info("Finalized mesh on GPU: {}", name);
+                                    } else {
+                                        spdlog::error("Failed to finalize mesh on GPU: {}", name);
+                                    }
+                                },
+                                "Finalize mesh: " + name);
+                        }
                     }
                 } else {
                     spdlog::error("Failed to load {} resource: {}", typeid(T).name(), name);
@@ -84,7 +122,7 @@ class ResourceManager {
 
     auto isLoaded(const std::string& name) -> bool {
         std::lock_guard<std::mutex> lock(m_resourceMutex);
-        
+
         // replace with any_of? it's c++20
         for (const auto& [type, resources] : m_resources) {
             if (resources.find(name) != resources.end()) {
@@ -111,10 +149,12 @@ class ResourceManager {
 
    private:
     std::filesystem::path m_resourceRoot;
-    std::unordered_map<std::type_index, std::unordered_map<std::string, std::shared_ptr<void>>> m_resources;
+    std::unordered_map<std::type_index, std::unordered_map<std::string, std::shared_ptr<IResource>>> m_resources;
 
     std::shared_ptr<ThreadManager> m_threadManager;
     std::mutex m_resourceMutex;
+
+    std::unique_ptr<MeshLoader> m_meshLoader;
 
     ma_engine m_audioEngine;
 };

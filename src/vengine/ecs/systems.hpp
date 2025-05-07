@@ -3,7 +3,6 @@
 #include <spdlog/spdlog.h>
 #include "entities.hpp"
 
-#include "ecs.hpp"
 #include "components.hpp"
 #include "base_system.hpp"
 #include "systems/script_system.hpp"

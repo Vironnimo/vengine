@@ -3,19 +3,25 @@
 #include <memory>
 #include <glm/glm.hpp>
 // #include "vertex_array.hpp"
-#include "vertex_buffer.hpp"
-#include "index_buffer.hpp"
+#include "vengine/core/i_resource.hpp"
+#include "vengine/renderer/vertex_buffer.hpp"
+#include "vengine/renderer/index_buffer.hpp"
 #include "vengine/renderer/vertex_layout.hpp"
 
 namespace Vengine {
 
 class VertexArray;
 
-class Mesh {
+class Mesh : public IResource {
    public:
+    Mesh() = default;
     Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, VertexLayout layout);
-    ~Mesh();
-    
+    ~Mesh() override;
+
+    auto load(const std::string& fileName) -> bool override;
+    auto unload() -> bool override;
+    auto finalizeOnGpu() -> bool;
+
     auto draw() const -> void;
 
     [[nodiscard]] auto getBounds() const -> std::pair<glm::vec3, glm::vec3>;
@@ -34,8 +40,12 @@ class Mesh {
     [[nodiscard]] auto getVertexCount() const -> size_t;
     [[nodiscard]] auto getFloatsPerVertex() const -> int;
 
-    [[nodiscard]] auto getVertexLayout() const -> const VertexLayout& { 
+    [[nodiscard]] auto getVertexLayout() const -> const VertexLayout& {
         return m_layout;
+    }
+
+    [[nodiscard]] auto needsGpuInit() const -> bool {
+        return m_needsGpuInit;
     }
 
    private:
@@ -46,6 +56,8 @@ class Mesh {
     std::shared_ptr<IndexBuffer> m_indexBuffer;
     bool m_useIndices = false;
     VertexLayout m_layout;
+
+    bool m_needsGpuInit = false;  
 };
 
 }  // namespace Vengine

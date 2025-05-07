@@ -4,7 +4,7 @@
 #include <memory>
 #include <filesystem>
 
-#include "vengine/renderer/mesh.hpp"
+#include "vengine/core/mesh.hpp"
 
 namespace Vengine {
 

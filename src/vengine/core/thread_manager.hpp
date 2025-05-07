@@ -39,6 +39,7 @@ class ThreadManager {
     }
 
     ~ThreadManager() {
+        spdlog::debug("Destructor ThreadManager");
         shutdown();
     }
 
@@ -86,7 +87,7 @@ class ThreadManager {
             Task& task = tasks.front();
 
             try {
-                // spdlog::debug("Main thread executing task: {}", task.name);
+                spdlog::debug("Main thread executing task: {}", task.name);
                 task.function();
             } catch (const std::exception& e) {
                 spdlog::error("Exception in main thread task '{}': {}", task.name, e.what());

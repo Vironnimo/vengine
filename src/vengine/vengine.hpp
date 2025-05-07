@@ -5,7 +5,6 @@
 
 #include "vengine/core/error.hpp"
 #include "vengine/core/thread_manager.hpp"
-#include "vengine/renderer/mesh_loader.hpp"
 #include "vengine/renderer/renderer.hpp"
 #include "vengine/core/resource_manager.hpp"
 #include "vengine/core/actions.hpp"
@@ -27,7 +26,6 @@ class Vengine {
     std::unique_ptr<Renderer> renderer;
     std::shared_ptr<Window> window;
     std::unique_ptr<ResourceManager> resourceManager;
-    std::unique_ptr<MeshLoader> meshLoader;
     std::unique_ptr<InputSystem> inputSystem;
     std::unique_ptr<Actions> actions;
     std::unique_ptr<SignalSystem> signals;

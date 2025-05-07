@@ -26,16 +26,22 @@ Vengine::Vengine() {
 Vengine::~Vengine() {
     spdlog::debug("Destructor Vengine");
     // making sure resource manager is destroyed last
+    threadManager->waitForCompletion();
+
+    threadManager.reset();
     scenes.reset();
-    meshLoader.reset();
+    m_modules.clear();
     actions.reset();
     renderer.reset();
     signals.reset();
     timers.reset();
+    spdlog::debug("ECS use count before reset: {}", ecs.use_count());
     ecs.reset();
-    m_modules.clear();
+    spdlog::debug("ECS use count after reset: {}", ecs.use_count());
+    inputSystem.reset();
     window.reset();
     resourceManager.reset();
+    // spdlog::debug("ECS use count before reset: {}", ecs.use_count());
 }
 
 [[nodiscard]] auto Vengine::init() -> tl::expected<void, Error> {
@@ -74,7 +80,6 @@ Vengine::~Vengine() {
     inputSystem = std::make_unique<InputSystem>();
     inputSystem->setWindow(window->get());
     actions = std::make_unique<Actions>();
-    meshLoader = std::make_unique<MeshLoader>();
 
     scenes = std::make_unique<Scenes>();
 
@@ -131,13 +136,13 @@ auto Vengine::run() -> void {
         }
 
         timers->update();
-        threadManager->processMainThreadTasks();
         inputSystem->update();
 
         for (auto& module : m_modules) {
             module->onUpdate(*this, timers->deltaTime());
         }
         actions->handleInput(window->get());
+        threadManager->processMainThreadTasks();
 
         auto transformSystem = ecs->getSystem<TransformSystem>("TransformSystem");
         transformSystem->update(ecs->getActiveEntities(), timers->deltaTime());

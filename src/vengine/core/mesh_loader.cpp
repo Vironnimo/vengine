@@ -4,7 +4,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 #include <spdlog/spdlog.h>
-#include "vertex_layout.hpp"
+#include "vengine/renderer/vertex_layout.hpp"
 
 namespace Vengine {
 

@@ -24,6 +24,12 @@ class ECS {
         m_componentRegistry = std::make_shared<ComponentRegistry>();
         m_activeEntities = std::make_shared<Entities>(m_componentRegistry);
     }
+    
+    ~ECS() {
+        spdlog::debug("Destructor ECS");
+        m_activeEntities.reset();
+        m_componentRegistry.reset();
+    }
 
     template <typename T>
     auto registerComponent(const std::string& name = "") -> ComponentId {

@@ -11,7 +11,6 @@ ScriptSystem::ScriptSystem() {
     }
     // load standard lua libs
     luaL_openlibs(m_luaState);
-    spdlog::debug("ScriptSystem initialized Lua state.");
 }
 
 ScriptSystem::~ScriptSystem() {

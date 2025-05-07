@@ -1,8 +1,18 @@
 #include "scenes.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include "vengine/vengine.hpp"
 
 namespace Vengine {
+
+Scenes::Scenes() {
+    spdlog::debug("Constructor Scenes");
+}
+
+Scenes::~Scenes() {
+    spdlog::debug("Destructor Scenes");
+}
 
 void Scenes::add(const std::string& name, std::shared_ptr<Scene> scene) {
     m_scenes[name] = std::move(scene);
@@ -39,7 +49,8 @@ void Scenes::load(const std::string& name, Vengine& vengine) {
             m_currentScene->getCameras()->setActive(camera);
 
             auto camComp = vengine.ecs->getEntityComponent<CameraComponent>(camera);
-            camComp->aspectRatio = static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
+            camComp->aspectRatio =
+                static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
         } else {
             // set the active camera to the first one in the list
             // m_currentScene->getCameras()->setActive(m_currentScene->getCameras());

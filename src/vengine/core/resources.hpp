@@ -9,22 +9,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <miniaudio.h>
 #include <stb_image.h>
+#include "i_resource.hpp"
+// #include "mesh.hpp" // creates circular includes..
 
 namespace Vengine {
-
-class IResource {
-   public:
-    virtual ~IResource() = default;
-    virtual auto load(const std::string& fileName) -> bool = 0;
-    virtual auto unload() -> bool = 0;
-
-    [[nodiscard]] auto isLoaded() const -> bool {
-        return m_isLoaded;
-    }
-
-   protected:
-    bool m_isLoaded = false;
-};
 
 class Texture : public IResource {
    public:
@@ -86,7 +74,6 @@ class Texture : public IResource {
         // m_rawData.reset();
 
         m_needsGpuInit = false;
-        // spdlog::info("Texture finalized on GPU, ID: {}", m_id);
         return true;
     }
 

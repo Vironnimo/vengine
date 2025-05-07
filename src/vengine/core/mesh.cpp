@@ -4,18 +4,37 @@
 #include <spdlog/spdlog.h>
 #include <cstddef>
 
-#include "vertex_array.hpp"
+#include "vengine/renderer/vertex_array.hpp"
 
 namespace Vengine {
 
 Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, VertexLayout layout)
     : m_vertices(vertices), m_indices(indices), m_useIndices(!indices.empty()), m_layout(layout) {
+}
+
+auto Mesh::load(const std::string& fileName) -> bool {
     int floatsPerVertex = getFloatsPerVertex();
-    spdlog::debug("Constructor Mesh. Indices: {}, Vertices: {}, Layout: (Pos:{}, Tex:{}, Norm:{}), FloatsPerVertex: {}", m_indices.size(),
-                  m_vertices.size() / static_cast<size_t>(floatsPerVertex), m_layout.hasPosition, m_layout.hasTexCoords, m_layout.hasNormals, floatsPerVertex);
+    spdlog::debug("Constructor Mesh. Indices: {}, Vertices: {}, Layout: (Pos:{}, Tex:{}, Norm:{}), FloatsPerVertex: {}",
+                  m_indices.size(),
+                  m_vertices.size() / static_cast<size_t>(floatsPerVertex),
+                  m_layout.hasPosition,
+                  m_layout.hasTexCoords,
+                  m_layout.hasNormals,
+                  floatsPerVertex);
 
     if (m_vertices.empty() || (m_vertices.size() % static_cast<size_t>(floatsPerVertex) != 0)) {
-        spdlog::error("Mesh vertex data size ({}) is not a multiple of floatsPerVertex ({})", m_vertices.size(), floatsPerVertex);
+        spdlog::error("Mesh vertex data size ({}) is not a multiple of floatsPerVertex ({})",
+                      m_vertices.size(),
+                      floatsPerVertex);
+    }
+
+    m_needsGpuInit = true;
+    return true;
+}
+
+auto Mesh::finalizeOnGpu() -> bool {
+    if (!m_needsGpuInit) {
+        return false;
     }
 
     m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float));
@@ -28,7 +47,18 @@ Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indi
         m_vertexArray->addIndexBuffer(m_indexBuffer);
     } else {
         spdlog::warn("Mesh created without indices.");
-    }
+    }  
+
+    m_needsGpuInit = false;
+    return true;
+}
+
+auto Mesh::unload() -> bool {
+    m_vertexArray.reset();
+    m_vertexBuffer.reset();
+    m_indexBuffer.reset();
+
+    return true;
 }
 
 Mesh::~Mesh() {

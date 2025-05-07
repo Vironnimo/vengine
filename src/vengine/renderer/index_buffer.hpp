@@ -13,6 +13,9 @@ public:
     auto unbind() const -> void;
     
     [[nodiscard]] auto getCount() const -> uint32_t; 
+    [[nodiscard]] auto getId() const -> GLuint {
+        return m_id;
+    }
 
 private:
     GLuint m_id = 0;
