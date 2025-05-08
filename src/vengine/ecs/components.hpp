@@ -19,6 +19,18 @@ struct TagComponent : public BaseComponent {
     std::string tag;
 };
 
+struct TextComponent : public BaseComponent {
+    std::string text;
+    std::string fontId; // store id or a ref to the font?
+    float x = 0.0f;
+    float y = 0.0f;
+    float scale = 1.0f;
+    glm::vec4 color = glm::vec4(1.0f);
+
+    TextComponent(std::string text, std::string fontId, float x, float y, float scale, glm::vec4 color)
+        : text(std::move(text)), fontId(std::move(fontId)), x(x), y(y), scale(scale), color(color) {}
+};
+
 struct ScriptComponent : public BaseComponent {
     ScriptComponent(std::string scriptPath) : path(std::move(scriptPath)) {
     }

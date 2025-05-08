@@ -93,6 +93,7 @@ Vengine::~Vengine() {
 
     // register built-in components
     ecs->registerComponent<TagComponent>("Tag");
+    ecs->registerComponent<TextComponent>("Text");
     ecs->registerComponent<PersistentComponent>("Persistent");
     ecs->registerComponent<TransformComponent>("Transform");
     ecs->registerComponent<MeshComponent>("Mesh");

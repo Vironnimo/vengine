@@ -160,9 +160,20 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         skybox->render(viewMatrix, projectionMatrix);
     }
 
-    // TODO: redo text stuff, should become a component
-    for (const auto& textObject : m_textObjects) {
-        textObject->font->draw(textObject->text, textObject->x, textObject->y, textObject->scale, textObject->color);
+    // render each component with a text object
+    auto textList = scene->getEntities()->getEntitiesWith<TextComponent>();
+    for (auto entity : textList) {
+        auto textComp = scene->getEntities()->getEntityComponent<TextComponent>(entity);
+        if (textComp) {
+            auto font = fonts->get(textComp->fontId);
+            if (font) {
+                font.value()->draw(textComp->text, textComp->x, textComp->y, textComp->scale, textComp->color);
+            } else {
+                spdlog::warn("Font not found: {}", textComp->fontId);
+            }
+        } else {
+            spdlog::warn("Text component not found for entity {}", entity);
+        }
     }
 
     glfwSwapBuffers(m_window->get());
@@ -235,10 +246,6 @@ auto Renderer::setVSync(bool enabled) -> void {
     } else {
         glfwSwapInterval(0);
     }
-}
-
-auto Renderer::addTextObject(std::shared_ptr<TextObject> textObject) -> void {
-    m_textObjects.push_back(std::move(textObject));
 }
 
 }  // namespace Vengine

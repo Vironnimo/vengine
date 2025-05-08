@@ -33,8 +33,8 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     texturedMaterial2->setTexture("uTexture", std::move(texture2));
 
     // a grid of cubes
-    int gridWidth = 50;
-    int gridHeight = 50;
+    int gridWidth = 75;
+    int gridHeight = 75;
     float spacingX = 2.4f;
     float spacingY = 2.4f;
     float startX = -(static_cast<float>(gridWidth) / 2.0f) * spacingX;

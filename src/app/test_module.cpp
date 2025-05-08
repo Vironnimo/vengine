@@ -4,20 +4,22 @@
 #include <string>
 
 #include "vengine/core/uuid.hpp"
+#include "vengine/ecs/components.hpp"
 #include "vengine/vengine.hpp"
 
 void TestModule::onAttach(Vengine::Vengine& vengine) {
     spdlog::debug("Constructor TestModule");
     // little debug overlay
-    m_textObject = std::make_shared<Vengine::TextObject>();
-    m_textObject->text = "FPS: 0";
-    m_textObject->font = vengine.renderer->fonts->get("default").value();
-    m_textObject->x = 25.0f;
-    m_textObject->y = 425.0f;
-    m_textObject->scale = 1.0f;
-    m_textObject->color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-    vengine.renderer->addTextObject(m_textObject);
+    auto textEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(textEntity, "TextEntity");
+    vengine.ecs->addComponent<Vengine::PersistentComponent>(textEntity);
+    vengine.ecs->addComponent<Vengine::TextComponent>(textEntity,
+                                                      "Test Text",
+                                                      "default",
+                                                      5.0f,
+                                                      625.0f,
+                                                      1.0f,
+                                                      glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
     // subscribe to mouse moved event
     // vengine.events->subscribe<Vengine::MouseMovedEvent>([](const Vengine::MouseMovedEvent& event) {
@@ -48,10 +50,16 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
     if (m_fpsUpdateTimer >= 0.1f) {
         m_fpsUpdateTimer = 0.0f;
         int fps = static_cast<int>(1.0f / deltaTime);
-        m_textObject->text = "Scene: " + vengine.getCurrentSceneName() + "\nDeltaTime: " + std::to_string(deltaTime) +
+        auto text = "Scene: " + vengine.getCurrentSceneName() + "\nDeltaTime: " + std::to_string(deltaTime) +
                              "\nDeltaTime FPS: " + std::to_string(fps) + "\n" + "Counter FPS: " + std::to_string(m_testFps) +
                              "\n" + "Entity count: " + std::to_string(vengine.ecs->getEntityCount()) + "\n" +
                              Vengine::UUID::toString();
+
+        auto textEntity = vengine.ecs->getEntityByTag("TextEntity");
+        auto textComp = vengine.ecs->getEntityComponent<Vengine::TextComponent>(textEntity.getId());
+        if (textComp) {
+            textComp->text = text;
+        }
     }
 
     static bool firstClick = true;
@@ -115,6 +123,5 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
 }
 
 void TestModule::onDetach(Vengine::Vengine& vengine) {
-    (void)vengine; // haha clang tidy
-    m_textObject.reset();
+    (void)vengine;  // haha clang tidy
 }
