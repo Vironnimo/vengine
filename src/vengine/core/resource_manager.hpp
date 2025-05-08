@@ -69,12 +69,18 @@ class ResourceManager {
                 auto resource = std::make_shared<T>();
 
                 if constexpr (std::is_same_v<T, Mesh>) {
-                    resource = m_meshLoader->loadFromObj(fileName);
+                    if (fileName == "buildin.plane") {
+                        // TODO where do i we get the dimensions from?
+                        // also really weird with the strings i think, just an enum for build ins?
+                        resource = m_meshLoader->createPlane();
+                    } else {
+                        resource = m_meshLoader->loadFromObj(fileName);
+                    }
                     if (!resource) {
                         spdlog::error("Failed to load mesh: {}", fileName);
                         return;
                     }
-                } 
+                }
 
                 if constexpr (std::is_same_v<T, Sound>) {
                     resource->setEngine(&m_audioEngine);

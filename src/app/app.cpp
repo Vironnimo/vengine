@@ -13,6 +13,9 @@ App::App() {
     m_vengine->timers->start("app_constructor");
 
     // load resources async at the beginning
+    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("plane", "buildin.plane");
+    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("cube", "box.obj");
+    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("chair", "chair.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("test_texture", "test.jpg");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("test_texture2", "test2.jpg");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_right", "skybox/cube_right.png");
@@ -21,8 +24,6 @@ App::App() {
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_bottom", "skybox/cube_down.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_back", "skybox/cube_back.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_front", "skybox/cube_front.png");
-    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("cube", "box.obj");
-    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("chair", "chair.obj");
 
     // load sounds
     m_vengine->resourceManager->loadAsync<Vengine::Sound>("click", "click.wav");
@@ -34,8 +35,9 @@ App::App() {
     }
 
     // load shaders
-    m_vengine->renderer->shaders->add(
-        std::make_shared<Vengine::Shader>("default", "resources/shaders/default_new.vert", "resources/shaders/default_new.frag"));
+    m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("default",
+                                                                        "resources/shaders/default_new.vert",
+                                                                        "resources/shaders/default_new.frag"));
     auto defaultShader = m_vengine->renderer->shaders->get("default");
     if (!defaultShader) {
         spdlog::error(defaultShader.error().message);

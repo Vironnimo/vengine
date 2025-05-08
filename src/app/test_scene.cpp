@@ -56,18 +56,19 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // load objects into meshes
     auto cubeMesh = vengine.resourceManager->get<Vengine::Mesh>("cube");
     auto chairMesh = vengine.resourceManager->get<Vengine::Mesh>("chair");
+    auto groundMesh = vengine.resourceManager->get<Vengine::Mesh>("plane");
 
     // ecs stuff
     // ground entity
-    // auto groundEntity = vengine.ecs->createEntity();
-    // vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity, groundMesh);
-    // vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity);
-    // vengine.ecs->addComponent<Vengine::RigidbodyComponent>(groundEntity);
-    // auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(groundEntity);
-    // rigidBody->isStatic = true;
-    // vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, texturedMaterial);
-    // auto planeBounds = groundMesh->getBounds();
-    // vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first, planeBounds.second);
+    auto groundEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity, groundMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity);
+    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(groundEntity);
+    auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(groundEntity);
+    rigidBody->isStatic = true;
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, texturedMaterial);
+    auto planeBounds = groundMesh->getBounds();
+    vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first, planeBounds.second);
 
     // chair entity
     auto chairBounds = chairMesh->getBounds();
