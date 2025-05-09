@@ -1,4 +1,5 @@
 #include "test_scene2.hpp"
+#include "vengine/ecs/components.hpp"
 
 TestScene2::~TestScene2() {
     spdlog::debug("Destructor TestScene2");
@@ -11,6 +12,7 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::TagComponent>(mainCameraEntity, "MainCamera");
     vengine.ecs->addComponent<Vengine::TransformComponent>(mainCameraEntity);
     vengine.ecs->addComponent<Vengine::CameraComponent>(mainCameraEntity);
+    vengine.ecs->addComponent<Vengine::ScriptComponent>(mainCameraEntity, "resources/scripts/camera.lua");
     vengine.scenes->getCurrentScene()->getCameras()->add(mainCameraEntity);
     vengine.scenes->getCurrentScene()->getCameras()->setActive(mainCameraEntity);
 

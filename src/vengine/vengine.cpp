@@ -28,6 +28,7 @@ Vengine::~Vengine() {
     spdlog::debug("Destructor Vengine");
 
     // so what would be the best order to destroy things?
+    g_eventSystem.clear();
     threadManager.reset();
     resourceManager.reset();
     scenes.reset();
@@ -110,7 +111,7 @@ Vengine::~Vengine() {
     ecs->registerSystem("CollisionSystem", collisionSystem);
     ecs->registerSystem("PhysicsSystem", physicsSystem);
     auto scriptSystem = std::make_shared<ScriptSystem>();
-    scriptSystem->registerBindings(ecs.get());
+    scriptSystem->registerBindings(this);
     ecs->registerSystem("ScriptSystem", scriptSystem);
 
     // time logging

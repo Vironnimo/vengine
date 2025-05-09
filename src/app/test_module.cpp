@@ -79,55 +79,8 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
             m_soundFirstClick = false;
         }
     }
-
-    // camera movement, here for testing
-    auto cam = vengine.ecs->getEntityByTag("MainCamera");
-    auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cam.getId());
-    const float cameraSpeed = 100.0f;
-    const float mouseSensitivity = 0.01f;
-
-    if (camTransform) {
-        float yaw = camTransform->getRotationY();
-        // float pitch = glm::radians(camTransform->rotation.x);
-
-        // yap, something's being done here.
-        glm::vec3 forward = glm::normalize(glm::vec3(std::sin(yaw), 0.0f, -std::cos(yaw)));
-        glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
-
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_E)) {
-            camTransform->setPosition(camTransform->getPosition() + forward * cameraSpeed * deltaTime);
-        }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_D)) {
-            camTransform->setPosition(camTransform->getPosition() - forward * cameraSpeed * deltaTime);
-        }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_S)) {
-            camTransform->setPosition(camTransform->getPosition() - right * cameraSpeed * deltaTime);
-        }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_F)) {
-            camTransform->setPosition(camTransform->getPosition() + right * cameraSpeed * deltaTime);
-        }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_BACKSPACE)) {
-            camTransform->setPosition(camTransform->getPosition() + glm::vec3(0.0f, cameraSpeed * deltaTime, 0.0f));
-        }
-        if (vengine.inputSystem->isKeyDown(GLFW_KEY_DELETE)) {
-            camTransform->setPosition(camTransform->getPosition() - glm::vec3(0.0f, cameraSpeed * deltaTime, 0.0f));
-        }
-
-        if (vengine.inputSystem->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT)) {
-            auto deltaX = static_cast<float>(vengine.inputSystem->getMouseDeltaX());
-            auto deltaY = static_cast<float>(vengine.inputSystem->getMouseDeltaY());
-
-            glm::vec3 rotation = camTransform->getRotation();
-            rotation.x -= -deltaY * mouseSensitivity;
-            rotation.y -= -deltaX * mouseSensitivity;
-            // avoid flipping over the top and bottom
-            rotation.x = glm::clamp(rotation.x, -89.0f, 89.0f);
-            camTransform->setRotation(rotation);
-        }
-    }
 }
 
 void TestModule::onDetach(Vengine::Vengine& vengine) {
-    m_soundFirstClick = true;
     (void)vengine;  // haha clang tidy
 }

@@ -1,8 +1,12 @@
 #include "script_system.hpp"
 
+#include "vengine/core/events.hpp"
 #include "vengine/ecs/components.hpp"
+#include "vengine/vengine.hpp"
+#include "vengine/core/event_system.hpp"
 
 namespace Vengine {
+
 ScriptSystem::ScriptSystem() {
     m_luaState = luaL_newstate();
     if (!m_luaState) {
@@ -66,10 +70,31 @@ void ScriptSystem::update(std::shared_ptr<Entities> entities, float deltaTime) {
     }
 }
 
-void ScriptSystem::registerBindings(ECS* ecs) {
+void ScriptSystem::registerBindings(Vengine* vengine) {
     sol::state_view lua(m_luaState);
 
     // expose components to lua
+    // GLFW key constants
+    lua["GLFW_KEY_A"] = GLFW_KEY_A;
+    lua["GLFW_KEY_D"] = GLFW_KEY_D;
+    lua["GLFW_KEY_S"] = GLFW_KEY_S;
+    lua["GLFW_KEY_W"] = GLFW_KEY_W;
+    lua["GLFW_KEY_Q"] = GLFW_KEY_Q;
+    lua["GLFW_KEY_E"] = GLFW_KEY_E;
+    lua["GLFW_KEY_F"] = GLFW_KEY_F;
+    lua["GLFW_KEY_R"] = GLFW_KEY_R;
+    lua["GLFW_KEY_UP"] = GLFW_KEY_UP;
+    lua["GLFW_KEY_DOWN"] = GLFW_KEY_DOWN;
+    lua["GLFW_KEY_LEFT"] = GLFW_KEY_LEFT;
+    lua["GLFW_KEY_RIGHT"] = GLFW_KEY_RIGHT;
+    lua["GLFW_KEY_SPACE"] = GLFW_KEY_SPACE;
+    lua["GLFW_KEY_ESCAPE"] = GLFW_KEY_ESCAPE;
+    lua["GLFW_KEY_ENTER"] = GLFW_KEY_ENTER;
+    lua["GLFW_KEY_BACKSPACE"] = GLFW_KEY_BACKSPACE;
+    lua["GLFW_KEY_DELETE"] = GLFW_KEY_DELETE;
+    // mouse
+    lua["GLFW_MOUSE_BUTTON_LEFT"] = GLFW_MOUSE_BUTTON_LEFT;
+    lua["GLFW_MOUSE_BUTTON_RIGHT"] = GLFW_MOUSE_BUTTON_RIGHT;
     // TransformComponent
     sol::usertype<TransformComponent> transform_type = lua.new_usertype<TransformComponent>(
         "TransformComponent",
@@ -130,14 +155,52 @@ void ScriptSystem::registerBindings(ECS* ecs) {
                                                                                    "isActiveCamera",
                                                                                    &CameraComponent::isActiveCamera);
 
+    // Expose InputSystem methods to Lua
+    lua.new_usertype<InputSystem>("InputSystem",
+                                  "isKeyDown",
+                                  &InputSystem::isKeyDown,
+                                  "isKeyPressed",
+                                  &InputSystem::isKeyPressed,
+                                  "isKeyReleased",
+                                  &InputSystem::isKeyReleased,
+                                  "isMouseButtonDown",
+                                  &InputSystem::isMouseButtonDown,
+                                  "isMouseButtonPressed",
+                                  &InputSystem::isMouseButtonPressed,
+                                  "isMouseButtonReleased",
+                                  &InputSystem::isMouseButtonReleased,
+                                  "getMouseX",
+                                  &InputSystem::getMouseX,
+                                  "getMouseY",
+                                  &InputSystem::getMouseY,
+                                  "getMouseDeltaX",
+                                  &InputSystem::getMouseDeltaX,
+                                  "getMouseDeltaY",
+                                  &InputSystem::getMouseDeltaY);
+
+    // Expose the input system instance as 'input'
+    lua["input"] = vengine->inputSystem.get();
+
     // expose functions to lua, usage in lua: get_transform_component(entityId)
-    lua["get_transform_component"] = [ecs](EntityId entityId) -> std::shared_ptr<TransformComponent> {
-        return ecs->getActiveEntities()->getEntityComponent<TransformComponent>(entityId);
+    lua["get_transform_component"] = [vengine](EntityId entityId) -> std::shared_ptr<TransformComponent> {
+        return vengine->ecs->getActiveEntities()->getEntityComponent<TransformComponent>(entityId);
     };
-    lua["get_camera_component"] = [ecs]() -> std::shared_ptr<CameraComponent> {
-        // TODO need access to the cameras for active camera
-        // return ecs->getActiveEntities()->getEntityComponent<CameraComponent>(ecs->getActiveCamera());
+    lua["get_camera_component"] = [vengine]() -> std::shared_ptr<CameraComponent> {
+        return vengine->ecs->getActiveEntities()->getEntityComponent<CameraComponent>(
+            vengine->scenes->getCurrentScene()->getCameras()->getActive());
     };
+
+    lua.set_function("subscribe_event", [](sol::function lua_callback) {
+        // Example: subscribe to KeyPressedEvent
+        g_eventSystem.subscribe<KeyPressedEvent>(
+            [lua_callback](const KeyPressedEvent& event) { lua_callback(event.key, event.repeat); });
+    });
+
+    lua.set_function("subscribe_mouse_event", [](sol::function lua_callback) {
+        // Example: subscribe to KeyPressedEvent
+        g_eventSystem.subscribe<MouseMovedEvent>(
+            [lua_callback](const MouseMovedEvent& event) { lua_callback(event.x, event.y, event.lastX, event.lastY); });
+    });
 }
 
 }  // namespace Vengine
