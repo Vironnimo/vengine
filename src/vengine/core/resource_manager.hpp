@@ -10,6 +10,7 @@
 #include "vengine/core/mesh_loader.hpp"
 #include "resources.hpp"
 #include <typeindex>
+#include <tuple>
 #include <unordered_map>
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
@@ -61,18 +62,22 @@ class ResourceManager {
         return false;
     }
 
-    template <typename T>
-    auto loadAsync(const std::string& name, const std::string& fileName) -> void {
+    template <typename T, typename... Args>
+    auto loadAsync(const std::string& name, const std::string& fileName, Args&&... load_args) -> void {
+        auto args_size = sizeof...(load_args);
         m_threadManager->enqueueTask(
-            [this, name, fileName]() {
+            [this, name, fileName, args_size, load_args = std::make_tuple(std::forward<Args>(load_args)...)]() {
                 spdlog::debug("Loading resource: {} from file: {}", name, fileName);
-                auto resource = std::make_shared<T>();
+                std::shared_ptr<T> resource;
 
                 if constexpr (std::is_same_v<T, Mesh>) {
                     if (fileName == "buildin.plane") {
-                        // TODO where do i we get the dimensions from?
-                        // also really weird with the strings i think, just an enum for build ins?
-                        resource = m_meshLoader->createPlane();
+                        // TODO what if we have more than 4 args?
+                        resource = std::apply(
+                            [this](auto&&... args) {
+                                return m_meshLoader->createPlane(std::forward<decltype(args)>(args)...);
+                            },
+                            load_args);
                     } else {
                         resource = m_meshLoader->loadFromObj(fileName);
                     }
@@ -80,6 +85,10 @@ class ResourceManager {
                         spdlog::error("Failed to load mesh: {}", fileName);
                         return;
                     }
+                }
+
+                if (!resource) {
+                    resource = std::make_shared<T>();
                 }
 
                 if constexpr (std::is_same_v<T, Sound>) {
@@ -92,6 +101,7 @@ class ResourceManager {
                         m_resources[std::type_index(typeid(T))][name] = resource;
                     }
 
+                    // TODO add needsgpuinit to resource base class, so we just check that not the type of the resource..
                     if constexpr (std::is_same_v<T, Texture>) {
                         auto texture = std::static_pointer_cast<Texture>(resource);
                         if (texture->needsGpuInit()) {

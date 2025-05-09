@@ -10,6 +10,14 @@ void InputSystem::setWindow(GLFWwindow* window) {
     m_window = window;
 }
 
+InputSystem::InputSystem() {
+    spdlog::debug("Constructor InputSystem");
+}
+
+InputSystem::~InputSystem() {
+    spdlog::debug("Destructor InputSystem");
+}
+
 void InputSystem::update() {
     m_keysPressed.clear();
     m_keysReleased.clear();

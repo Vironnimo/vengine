@@ -6,6 +6,7 @@
 #include <memory>
 #include <tl/expected.hpp>
 
+#include "vengine/core/event_system.hpp"
 #include "vengine/core/thread_manager.hpp"
 #include "vengine/ecs/components.hpp"
 #include "vengine/renderer/renderer.hpp"
@@ -25,23 +26,19 @@ Vengine::Vengine() {
 
 Vengine::~Vengine() {
     spdlog::debug("Destructor Vengine");
-    // making sure resource manager is destroyed last
-    threadManager->waitForCompletion();
 
+    // so what would be the best order to destroy things?
     threadManager.reset();
+    resourceManager.reset();
     scenes.reset();
     m_modules.clear();
     actions.reset();
     renderer.reset();
     signals.reset();
     timers.reset();
-    spdlog::debug("ECS use count before reset: {}", ecs.use_count());
-    ecs.reset();
-    spdlog::debug("ECS use count after reset: {}", ecs.use_count());
     inputSystem.reset();
     window.reset();
-    resourceManager.reset();
-    // spdlog::debug("ECS use count before reset: {}", ecs.use_count());
+    ecs.reset();
 }
 
 [[nodiscard]] auto Vengine::init() -> tl::expected<void, Error> {
@@ -113,7 +110,7 @@ Vengine::~Vengine() {
     ecs->registerSystem("CollisionSystem", collisionSystem);
     ecs->registerSystem("PhysicsSystem", physicsSystem);
     auto scriptSystem = std::make_shared<ScriptSystem>();
-    scriptSystem->registerBindings(ecs);
+    scriptSystem->registerBindings(ecs.get());
     ecs->registerSystem("ScriptSystem", scriptSystem);
 
     // time logging
@@ -209,7 +206,8 @@ void Vengine::registerGlfwCallbacks() {
         glViewport(0, 0, width, height);
         auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
         if (vengine && vengine->ecs) {
-            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->scenes->getCurrentScene()->getCameras()->getActive());
+            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(
+                vengine->scenes->getCurrentScene()->getCameras()->getActive());
             camComp->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
         }
     });
@@ -235,8 +233,10 @@ void Vengine::registerGlfwCallbacks() {
             if (!vengine || vengine->scenes->getCurrentScene()->getCameras()->getActive() == 0) {
                 return;
             }
-            auto cameraTransform = vengine->ecs->getEntityComponent<TransformComponent>(vengine->scenes->getCurrentScene()->getCameras()->getActive());
-            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(vengine->scenes->getCurrentScene()->getCameras()->getActive());
+            auto cameraTransform = vengine->ecs->getEntityComponent<TransformComponent>(
+                vengine->scenes->getCurrentScene()->getCameras()->getActive());
+            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(
+                vengine->scenes->getCurrentScene()->getCameras()->getActive());
             if (camComp && cameraTransform) {
                 camComp->fov -= static_cast<float>(yoffset);
                 // TODO: max fov somewhere else? and not hardcoded...

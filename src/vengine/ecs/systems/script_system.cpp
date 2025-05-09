@@ -16,7 +16,6 @@ ScriptSystem::ScriptSystem() {
 ScriptSystem::~ScriptSystem() {
     if (m_luaState) {
         lua_close(m_luaState);
-        spdlog::debug("ScriptSystem closed Lua state.");
     }
 }
 
@@ -67,7 +66,7 @@ void ScriptSystem::update(std::shared_ptr<Entities> entities, float deltaTime) {
     }
 }
 
-void ScriptSystem::registerBindings(const std::shared_ptr<ECS>& ecs) {
+void ScriptSystem::registerBindings(ECS* ecs) {
     sol::state_view lua(m_luaState);
 
     // expose components to lua

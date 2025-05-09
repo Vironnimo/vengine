@@ -5,11 +5,11 @@
 namespace Vengine {
 
 SignalSystem::SignalSystem() {
-    spdlog::debug("Constructor EventSystem");
+    spdlog::debug("Constructor SignalSystem");
 }
 
 SignalSystem::~SignalSystem() {
-    spdlog::debug("Destructor EventSystem");
+    spdlog::debug("Destructor SignalSystem");
 }
 
 void SignalSystem::subscribe(const std::string& eventName, std::function<void(void*)> callback) {

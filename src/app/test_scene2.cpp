@@ -1,5 +1,9 @@
 #include "test_scene2.hpp"
 
+TestScene2::~TestScene2() {
+    spdlog::debug("Destructor TestScene2");
+}
+
 void TestScene2::load(Vengine::Vengine& vengine) {
     spdlog::debug("Constructor TestScene2");
     // cam

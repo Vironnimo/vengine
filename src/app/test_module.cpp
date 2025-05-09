@@ -7,6 +7,14 @@
 #include "vengine/ecs/components.hpp"
 #include "vengine/vengine.hpp"
 
+TestModule::TestModule() {
+    spdlog::debug("Constructor TestModule");
+}
+
+TestModule::~TestModule() {
+    spdlog::debug("Destructor TestModule");
+}
+
 void TestModule::onAttach(Vengine::Vengine& vengine) {
     spdlog::debug("Constructor TestModule");
     // little debug overlay
@@ -51,9 +59,8 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
         m_fpsUpdateTimer = 0.0f;
         int fps = static_cast<int>(1.0f / deltaTime);
         auto text = "Scene: " + vengine.getCurrentSceneName() + "\nDeltaTime: " + std::to_string(deltaTime) +
-                             "\nDeltaTime FPS: " + std::to_string(fps) + "\n" + "Counter FPS: " + std::to_string(m_testFps) +
-                             "\n" + "Entity count: " + std::to_string(vengine.ecs->getEntityCount()) + "\n" +
-                             Vengine::UUID::toString();
+                    "\nDeltaTime FPS: " + std::to_string(fps) + "\n" + "Counter FPS: " + std::to_string(m_testFps) + "\n" +
+                    "Entity count: " + std::to_string(vengine.ecs->getEntityCount()) + "\n" + Vengine::UUID::toString();
 
         auto textEntity = vengine.ecs->getEntityByTag("TextEntity");
         auto textComp = vengine.ecs->getEntityComponent<Vengine::TextComponent>(textEntity.getId());
@@ -62,17 +69,15 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
         }
     }
 
-    static bool firstClick = true;
-    auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(2);
+    // play sound on hitting the ground. this is only working once, as long as we do it inside a module
+    auto rigidBody = vengine.ecs->getComponentByEntityTag<Vengine::RigidbodyComponent>("chair");
     if (rigidBody && rigidBody->isGrounded) {
-        if (firstClick) {
+        if (m_soundFirstClick) {
             // TODO doesn't work when we reload the scene. entities differ. we need a string id on the entitites to find them
             // by name
             vengine.resourceManager->get<Vengine::Sound>("click")->play();
-            firstClick = false;
+            m_soundFirstClick = false;
         }
-    } else {
-        firstClick = true;
     }
 
     // camera movement, here for testing
@@ -123,5 +128,6 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
 }
 
 void TestModule::onDetach(Vengine::Vengine& vengine) {
+    m_soundFirstClick = true;
     (void)vengine;  // haha clang tidy
 }

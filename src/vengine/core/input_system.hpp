@@ -6,6 +6,10 @@ namespace Vengine {
 
 class InputSystem {
 public:
+    InputSystem();
+    ~InputSystem();
+
+
     void update(); 
 
     [[nodiscard]] auto isKeyDown(int key) const -> bool;

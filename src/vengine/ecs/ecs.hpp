@@ -66,6 +66,11 @@ class ECS {
         return m_activeEntities->getEntityComponent<T>(entity);
     }
 
+    template <typename T>
+    auto getComponentByEntityTag(const std::string& tag) -> std::shared_ptr<T> {
+        return m_activeEntities->getComponentByEntityTag<T>(tag);
+    }
+
     // get entities with multiple components
     template <typename... Components>
     [[nodiscard]] auto getEntitiesWith() const -> std::vector<EntityId> {

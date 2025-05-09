@@ -4,12 +4,21 @@
 #include <unordered_map>
 #include <vector>
 #include <typeindex>
+#include <spdlog/spdlog.h>
 #include "events.hpp"
 
 namespace Vengine {
 
 class EventSystem {
    public:
+    EventSystem() {
+        spdlog::debug("Constructor EventSystem");
+
+    }
+    ~EventSystem() {
+        spdlog::debug("Destructor EventSystem");
+    }
+
     template <typename EventType>
     using Handler = std::function<void(const EventType&)>;
 

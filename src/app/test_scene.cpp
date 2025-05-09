@@ -3,9 +3,11 @@
 #include "vengine/ecs/components.hpp"
 #include "vengine/vengine.hpp"
 
-void TestScene::load(Vengine::Vengine& vengine) {
-    spdlog::debug("Constructor TestScene");
+TestScene::~TestScene() {
+    spdlog::debug("Destructor TestScene");
+}
 
+void TestScene::load(Vengine::Vengine& vengine) {
     // cam
     Vengine::EntityId mainCameraEntity = vengine.ecs->createEntity();
     vengine.ecs->addComponent<Vengine::TagComponent>(mainCameraEntity, "MainCamera");
@@ -29,8 +31,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     auto skyboxBack = vengine.resourceManager->get<Vengine::Texture>("skybox_back");
     auto skyboxFront = vengine.resourceManager->get<Vengine::Texture>("skybox_front");
 
-    std::vector<std::shared_ptr<Vengine::Texture>> skyboxTextures = {skyboxRight,  skyboxLeft, skyboxTop,
-                                                                     skyboxBottom, skyboxBack, skyboxFront};
+    std::vector<std::shared_ptr<Vengine::Texture>> skyboxTextures =
+        {skyboxRight, skyboxLeft, skyboxTop, skyboxBottom, skyboxBack, skyboxFront};
     vengine.renderer->loadSkybox(skyboxTextures);
 
     // create materials (textures + shaders or just shaders)
@@ -106,7 +108,10 @@ void TestScene::load(Vengine::Vengine& vengine) {
         auto comp = testEntity.getComponent<Vengine::MeshComponent>();
         spdlog::debug("Test entity component stuff: {}", comp->mesh->getVertexCount());
         auto transform = testEntity.getComponent<Vengine::TransformComponent>();
-        spdlog::debug("Test entity transform stuff: {} {} {}", transform->getPositionX(), transform->getPositionY(), transform->getPositionZ());
+        spdlog::debug("Test entity transform stuff: {} {} {}",
+                      transform->getPositionX(),
+                      transform->getPositionY(),
+                      transform->getPositionZ());
     }
 }
 

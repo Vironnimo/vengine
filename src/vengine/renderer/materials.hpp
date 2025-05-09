@@ -12,6 +12,8 @@ namespace Vengine {
 
 class Materials {
    public:
+    Materials();
+    ~Materials();
     [[nodiscard]] auto init() -> tl::expected<void, Error>;
     [[nodiscard]] auto get(const std::string& name) -> std::shared_ptr<Material>;
     auto add(const std::string& name, std::shared_ptr<Material> material) -> void;

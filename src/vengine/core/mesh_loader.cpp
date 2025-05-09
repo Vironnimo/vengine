@@ -8,6 +8,14 @@
 
 namespace Vengine {
 
+MeshLoader::MeshLoader() {
+    spdlog::debug("Constructor MeshLoader");
+}
+
+MeshLoader::~MeshLoader() {
+    spdlog::debug("Destructor MeshLoader");
+}
+
 auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mesh> {
     auto modelPath = getModelPath(filename);
 
@@ -39,7 +47,8 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
     if (hasNormals) {
         floatsPerVertex += 3;
     }
-    // spdlog::debug("Loading OBJ: '{}'. Has TexCoords: {}, Has Normals: {}, FloatsPerVertex: {}", filename, hasTexCoords, hasNormals,
+    // spdlog::debug("Loading OBJ: '{}'. Has TexCoords: {}, Has Normals: {}, FloatsPerVertex: {}", filename, hasTexCoords,
+    // hasNormals,
     //               floatsPerVertex);
 
     // helper thingy to make sure we don't have duplicate vertices
@@ -109,7 +118,7 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
                         } else {
                             // again dummy data, probably a mistake
                             vertices.push_back(0.0f);
-                            vertices.push_back(1.0f);  
+                            vertices.push_back(1.0f);
                             vertices.push_back(0.0f);
                             spdlog::warn("Vertex missing normal index in OBJ, using default normal.");
                         }
@@ -127,7 +136,8 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
     layout.hasNormals = hasNormals;
 
     auto mesh = std::make_shared<Mesh>(vertices, indices, layout);
-    // spdlog::info("Loaded mesh '{}': {} vertices, {} indices", filename, vertices.size() / static_cast<size_t>(floatsPerVertex), indices.size());
+    // spdlog::info("Loaded mesh '{}': {} vertices, {} indices", filename, vertices.size() /
+    // static_cast<size_t>(floatsPerVertex), indices.size());
     return mesh;
 }
 

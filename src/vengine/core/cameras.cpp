@@ -3,9 +3,11 @@
 
 namespace Vengine {
 Cameras::Cameras() {
+    spdlog::debug("Constructor Cameras");
 }
 
 Cameras::~Cameras() {
+    spdlog::debug("Destructor Cameras");
 }
 
 void Cameras::add(EntityId camera) {

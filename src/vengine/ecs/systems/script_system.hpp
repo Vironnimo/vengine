@@ -13,7 +13,7 @@ class ScriptSystem : public BaseSystem {
     ScriptSystem();
     ~ScriptSystem() override; 
 
-    void registerBindings(const std::shared_ptr<ECS>& ecs);
+    void registerBindings(ECS* ecs);
     void update(std::shared_ptr<Entities> entities, float deltaTime) override; 
 
    private:

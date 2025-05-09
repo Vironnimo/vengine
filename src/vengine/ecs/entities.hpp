@@ -20,6 +20,12 @@ using ComponentBitset = std::bitset<32>;
 class Entities {
    public:
     Entities(std::shared_ptr<ComponentRegistry> registry) : m_registry(std::move(registry)) {
+        spdlog::debug("Constructor Entities");
+    }
+
+    ~Entities() {
+        spdlog::debug("Destructor Entities");
+        clear();
     }
 
     auto createEntity() -> EntityId {
@@ -86,6 +92,20 @@ class Entities {
         }
 
         return std::static_pointer_cast<T>(entityIt->second);
+    }
+
+    template <typename T>
+    auto getComponentByEntityTag(const std::string& tag) -> std::shared_ptr<T> {
+        auto taggedEntities = getEntitiesWith<TagComponent>();
+
+        for (auto entityId : taggedEntities) {
+            auto tagComponent = getEntityComponent<TagComponent>(entityId);
+            if (tagComponent && tagComponent->tag == tag) {
+                return getEntityComponent<T>(entityId);
+            }
+        }
+
+        return nullptr;
     }
 
     template <typename T>

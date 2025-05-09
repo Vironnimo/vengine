@@ -10,10 +10,11 @@
 
 App::App() {
     m_vengine = std::make_shared<Vengine::Vengine>();
+    spdlog::debug("Constructor App");
     m_vengine->timers->start("app_constructor");
 
     // load resources async at the beginning
-    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("plane", "buildin.plane");
+    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("plane", "buildin.plane", 500.0f, 500.0f);
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("cube", "box.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("chair", "chair.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("test_texture", "test.jpg");
@@ -93,6 +94,10 @@ App::App() {
 
     auto end = m_vengine->timers->stop("app_constructor");
     spdlog::info("App constructor took {} ms", end);
+}
+
+App::~App() {
+    spdlog::debug("Destructor App");
 }
 
 void App::run() {

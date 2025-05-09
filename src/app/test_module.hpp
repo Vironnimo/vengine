@@ -7,6 +7,9 @@
 
 class TestModule : public Vengine::Module {
    public:
+    TestModule();
+    ~TestModule() override;
+    
     void onAttach(Vengine::Vengine& vengine) override;
     void onUpdate(Vengine::Vengine& vengine, float deltaTime) override;
     void onDetach(Vengine::Vengine& vengine) override;
@@ -17,4 +20,6 @@ class TestModule : public Vengine::Module {
     float m_testFpsTimer = 0.0f;
 
     float m_fpsUpdateTimer = 0.0f;
+
+    bool m_soundFirstClick = true;
 };
