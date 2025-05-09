@@ -12,7 +12,8 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::TagComponent>(mainCameraEntity, "MainCamera");
     vengine.ecs->addComponent<Vengine::TransformComponent>(mainCameraEntity);
     vengine.ecs->addComponent<Vengine::CameraComponent>(mainCameraEntity);
-    vengine.ecs->addComponent<Vengine::ScriptComponent>(mainCameraEntity, "resources/scripts/camera.lua");
+    auto script = vengine.resourceManager->get<Vengine::Script>("camera");
+    vengine.ecs->addComponent<Vengine::ScriptComponent>(mainCameraEntity, script);
     vengine.scenes->getCurrentScene()->getCameras()->add(mainCameraEntity);
     vengine.scenes->getCurrentScene()->getCameras()->setActive(mainCameraEntity);
 

@@ -19,6 +19,7 @@ class ScriptSystem : public BaseSystem {
 
    private:
     lua_State* m_luaState = nullptr;
+    std::unordered_map<EntityId, int> m_scriptEnvs; // entityId -> Lua ref
 };
 
 }  // namespace Vengine

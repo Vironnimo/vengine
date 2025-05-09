@@ -30,43 +30,155 @@ void ScriptSystem::update(std::shared_ptr<Entities> entities, float deltaTime) {
     }
 
     auto list = entities->getEntitiesWith<ScriptComponent>();
+    // NOTE: we clear the script environments if the entity count has changed
+    // we could have the same amount of entities with the script component, then it might crash,
+    // and it's bad performance wise, cause we load all scripts again, but we don't care about that for now
+    // if (list.size() != m_scriptEnvs.size()) {
+    //     // clear all script environments
+    //     for (auto& [entityId, ref] : m_scriptEnvs) {
+    //         luaL_unref(m_luaState, LUA_REGISTRYINDEX, ref);
+    //     }
+    //     m_scriptEnvs.clear();
+    //     spdlog::debug("ScriptSystem: Cleared all script environments due to entity count mismatch.");
+    // }
+
+    // spdlog::info("ScriptSystem: Updating {} scripts.", list.size());
+    // NOTE: what is actually going on here?! we might not need everything here
     for (auto entityId : list) {
         auto scriptComp = entities->getEntityComponent<ScriptComponent>(entityId);
-        if (!scriptComp || scriptComp->path.empty()) {
+        if (!scriptComp) {
             continue;
         }
 
-        // load script file
-        // TODO don't load it every frame, only when it changes (or just once?)
-        if (luaL_dofile(m_luaState, scriptComp->path.c_str()) != LUA_OK) {
-            spdlog::error("Error loading/running Lua script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
-            lua_pop(m_luaState, 1);
-            continue;
+        // load only if dirty or not loaded yet
+        if (scriptComp->isDirty || m_scriptEnvs.find(entityId) == m_scriptEnvs.end()) {
+            // remove old env if exists
+            if (m_scriptEnvs.count(entityId)) {
+                luaL_unref(m_luaState, LUA_REGISTRYINDEX, m_scriptEnvs[entityId]);
+                m_scriptEnvs.erase(entityId);
+            }
+
+            // new env table
+            lua_newtable(m_luaState);  
+            int envIdx = lua_gettop(m_luaState);
+
+            lua_pushvalue(m_luaState, envIdx);
+            lua_setfield(m_luaState, envIdx, "_G"); // _G what?
+
+            // set up metatable
+            lua_newtable(m_luaState);  
+            lua_getglobal(m_luaState, "_G"); // ya, hmm
+            lua_setfield(m_luaState, -2, "__index");
+            lua_setmetatable(m_luaState, envIdx);
+
+            if (luaL_loadstring(m_luaState, scriptComp->script->getSource().c_str()) != LUA_OK) {
+                spdlog::error("Error loading Lua script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
+                lua_pop(m_luaState, 2);  // pop error 
+                continue;
+            }
+            lua_pushvalue(m_luaState, envIdx);  // push env
+            lua_setupvalue(m_luaState, -2, 1);  // more hmm
+
+            if (lua_pcall(m_luaState, 0, 0, 0) != LUA_OK) {
+                spdlog::error("Error running Lua script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
+                lua_pop(m_luaState, 1);  
+                continue;
+            }
+
+            // store env as ref
+            int envRef = luaL_ref(m_luaState, LUA_REGISTRYINDEX);
+            m_scriptEnvs[entityId] = envRef;
+            scriptComp->isDirty = false;
         }
 
-        // call update function in script
-        lua_getglobal(m_luaState, "update");
+        // get env for this entity
+        auto it = m_scriptEnvs.find(entityId);
+        if (it == m_scriptEnvs.end()) {
+            continue;
+        }
+        lua_rawgeti(m_luaState, LUA_REGISTRYINDEX, it->second);  // 
+
+        lua_getfield(m_luaState, -1, "update");
         if (lua_isfunction(m_luaState, -1)) {
-            // arguments: entityId and deltaTime for now?
             lua_pushinteger(m_luaState, static_cast<lua_Integer>(entityId));
             lua_pushnumber(m_luaState, static_cast<lua_Number>(deltaTime));
-
-            // Call the function: 2 arguments, 0 results
             if (lua_pcall(m_luaState, 2, 0, 0) != LUA_OK) {
                 spdlog::error("Error calling Lua function 'update' in script '{}': {}",
                               scriptComp->path,
                               lua_tostring(m_luaState, -1));
-                lua_pop(m_luaState, 1);
+                lua_pop(m_luaState, 1);  // pop error
             }
         } else {
-            // Pop the non-function value if it's not nil
-            if (!lua_isnil(m_luaState, -1)) {
-                spdlog::trace("Script '{}' does not have an 'update' function.", scriptComp->path);
-                lua_pop(m_luaState, 1);
-            }
+            spdlog::trace("Script '{}' does not have an 'update' function.", scriptComp->path);
+            lua_pop(m_luaState, 1);  // pop non-function
         }
-        // Clean up stack potentially left by dofile if it returned values
+        lua_pop(m_luaState, 1);  // pop env
         lua_settop(m_luaState, 0);
+
+        // load script file
+        // if (luaL_dofile(m_luaState, scriptComp->path.c_str()) != LUA_OK) {
+        //     spdlog::error("Error loading/running Lua script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
+        //     lua_pop(m_luaState, 1);
+        //     continue;
+        // }
+
+        // if (scriptComp->isDirty) {
+        //     if (luaL_loadstring(m_luaState, scriptComp->script->getSource().c_str()) != LUA_OK) {
+        //         spdlog::error("Error loading Lua script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
+        //         lua_pop(m_luaState, 1);
+        //         continue;
+        //     }
+
+        //     if (lua_pcall(m_luaState, 0, 0, 0) != LUA_OK) {
+        //         spdlog::error("Error running Lua script '{}': {}", scriptComp->path, lua_tostring(m_luaState, -1));
+        //         lua_pop(m_luaState, 1);
+        //         continue;
+        //     }
+        //     scriptComp->isDirty = false;
+        // }
+
+        // call update function in script
+        // lua_getglobal(m_luaState, "update");
+        // if (lua_isfunction(m_luaState, -1)) {
+        //     lua_pushinteger(m_luaState, static_cast<lua_Integer>(entityId));
+        //     lua_pushnumber(m_luaState, static_cast<lua_Number>(deltaTime));
+        //     if (lua_pcall(m_luaState, 2, 0, 0) != LUA_OK) {
+        //         spdlog::error("Error calling Lua function 'update' in script '{}': {}",
+        //                       scriptComp->path,
+        //                       lua_tostring(m_luaState, -1));
+        //         lua_pop(m_luaState, 1);
+        //     }
+        // } else {
+        //     if (!lua_isnil(m_luaState, -1)) {
+        //         spdlog::trace("Script '{}' does not have an 'update' function.", scriptComp->path);
+        //         lua_pop(m_luaState, 1);
+        //     }
+        // }
+        // lua_settop(m_luaState, 0);
+
+        // call update function in script
+        // lua_getglobal(m_luaState, "update");
+        // if (lua_isfunction(m_luaState, -1)) {
+        //     // arguments: entityId and deltaTime for now?
+        //     lua_pushinteger(m_luaState, static_cast<lua_Integer>(entityId));
+        //     lua_pushnumber(m_luaState, static_cast<lua_Number>(deltaTime));
+
+        //     // Call the function: 2 arguments, 0 results
+        //     if (lua_pcall(m_luaState, 2, 0, 0) != LUA_OK) {
+        //         spdlog::error("Error calling Lua function 'update' in script '{}': {}",
+        //                       scriptComp->path,
+        //                       lua_tostring(m_luaState, -1));
+        //         lua_pop(m_luaState, 1);
+        //     }
+        // } else {
+        //     // Pop the non-function value if it's not nil
+        //     if (!lua_isnil(m_luaState, -1)) {
+        //         spdlog::trace("Script '{}' does not have an 'update' function.", scriptComp->path);
+        //         lua_pop(m_luaState, 1);
+        //     }
+        // }
+        // // Clean up stack potentially left by dofile if it returned values
+        // lua_settop(m_luaState, 0);
     }
 }
 

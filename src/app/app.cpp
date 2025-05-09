@@ -25,7 +25,9 @@ App::App() {
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_bottom", "skybox/cube_down.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_back", "skybox/cube_back.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("skybox_front", "skybox/cube_front.png");
-
+    // lua scripts
+    m_vengine->resourceManager->loadAsync<Vengine::Script>("camera", "camera.lua");
+    m_vengine->resourceManager->loadAsync<Vengine::Script>("move", "move.lua");
     // load sounds
     m_vengine->resourceManager->loadAsync<Vengine::Sound>("click", "click.wav");
 

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <filesystem>
+#include <fstream>
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -221,6 +222,38 @@ class Sound : public IResource {
    private:
     ma_sound m_sound{};
     ma_engine* m_engine{};
+};
+
+class Script : public IResource {
+public:
+    Script() = default;
+
+    auto load(const std::string& fileName) -> bool override {
+        auto folder = std::filesystem::path("resources/scripts");
+        auto fullPath = folder / fileName;
+        std::ifstream file(fullPath);
+        if (!file.is_open()) {
+            spdlog::error("Failed to load script: {}", fullPath.string());
+            return false;
+        }
+        m_source.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        m_isLoaded = true;
+        m_path = fullPath.string();
+        return true;
+    }
+
+    auto unload() -> bool override {
+        m_source.clear();
+        m_isLoaded = false;
+        return true;
+    }
+
+    [[nodiscard]] auto getSource() const -> const std::string& { return m_source; }
+    [[nodiscard]] auto getPath() const -> const std::string& { return m_path; }
+
+private:
+    std::string m_source;
+    std::string m_path;
 };
 
 }  // namespace Vengine

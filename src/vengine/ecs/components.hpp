@@ -34,6 +34,11 @@ struct TextComponent : public BaseComponent {
 struct ScriptComponent : public BaseComponent {
     ScriptComponent(std::string scriptPath) : path(std::move(scriptPath)) {
     }
+    ScriptComponent(std::shared_ptr<Script> script) : script(std::move(script)) {
+    }
+    std::shared_ptr<Script> script;
+    bool isDirty = true;
+
     std::string path;
 };
 

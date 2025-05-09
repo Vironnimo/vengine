@@ -13,7 +13,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::TagComponent>(mainCameraEntity, "MainCamera");
     vengine.ecs->addComponent<Vengine::TransformComponent>(mainCameraEntity);
     vengine.ecs->addComponent<Vengine::CameraComponent>(mainCameraEntity);
-    vengine.ecs->addComponent<Vengine::ScriptComponent>(mainCameraEntity, "resources/scripts/camera.lua");
+    auto script = vengine.resourceManager->get<Vengine::Script>("camera");
+    vengine.ecs->addComponent<Vengine::ScriptComponent>(mainCameraEntity, script);
     vengine.scenes->getCurrentScene()->getCameras()->add(mainCameraEntity);
     vengine.scenes->getCurrentScene()->getCameras()->setActive(mainCameraEntity);
 
@@ -81,7 +82,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
     vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity);
-    vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, "resources/scripts/move.lua");
+    auto moveScript = vengine.resourceManager->get<Vengine::Script>("move");
+    vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, moveScript);
     auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
     chairTransform->setPosition(-25.0f, 100.0f, 5.0f);
     chairTransform->setScale(0.15f, 0.15f, 0.15f);
