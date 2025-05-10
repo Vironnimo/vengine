@@ -301,6 +301,13 @@ void ScriptSystem::registerBindings(Vengine* vengine) {
         return vengine->ecs->getActiveEntities()->getEntityComponent<CameraComponent>(
             vengine->scenes->getCurrentScene()->getCameras()->getActive());
     };
+    lua["set_velocity"] = [vengine](EntityId entityId, float x, float y, float z) {
+        auto velocityComp = vengine->ecs->getActiveEntities()->getEntityComponent<VelocityComponent>(entityId);
+        if (velocityComp) {
+            glm::vec3 velocity(x, y, z);
+            velocityComp->velocity = velocity;
+        }
+    };
 
     lua.set_function("subscribe_event", [](sol::function lua_callback) {
         // Example: subscribe to KeyPressedEvent

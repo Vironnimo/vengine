@@ -44,6 +44,13 @@ class Mesh : public IResource {
         return m_layout;
     }
 
+    [[nodiscard]] auto getVerticesRaw() const -> const std::vector<float>& {
+        return m_vertices;
+    }
+    [[nodiscard]] auto getIndicesRaw() const -> const std::vector<uint32_t>& {
+        return m_indices;
+    }
+
     [[nodiscard]] auto needsGpuInit() const -> bool {
         return m_needsGpuInit;
     }

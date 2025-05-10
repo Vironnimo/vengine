@@ -70,15 +70,15 @@ void TestModule::onUpdate(Vengine::Vengine& vengine, float deltaTime) {
     }
 
     // play sound on hitting the ground. this is only working once, as long as we do it inside a module
-    auto rigidBody = vengine.ecs->getComponentByEntityTag<Vengine::RigidbodyComponent>("chair");
-    if (rigidBody && rigidBody->isGrounded) {
-        if (m_soundFirstClick) {
-            // TODO doesn't work when we reload the scene. entities differ. we need a string id on the entitites to find them
-            // by name
-            vengine.resourceManager->get<Vengine::Sound>("click")->play();
-            m_soundFirstClick = false;
-        }
-    }
+    // auto rigidBody = vengine.ecs->getComponentByEntityTag<Vengine::RigidbodyComponent>("chair");
+    // if (rigidBody && rigidBody->isGrounded) {
+    //     if (m_soundFirstClick) {
+    //         // TODO doesn't work when we reload the scene. entities differ. we need a string id on the entitites to find them
+    //         // by name
+    //         vengine.resourceManager->get<Vengine::Sound>("click")->play();
+    //         m_soundFirstClick = false;
+    //     }
+    // }
 }
 
 void TestModule::onDetach(Vengine::Vengine& vengine) {

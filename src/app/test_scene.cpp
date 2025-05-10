@@ -19,7 +19,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.scenes->getCurrentScene()->getCameras()->setActive(mainCameraEntity);
 
     auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mainCameraEntity);
-    camTransform->setPosition(0.0f, 10.0f, 55.0f);
+    camTransform->setPosition(0.0f, 100.0f, 300.0f);
     // don't forget the aspect ratio
     auto camComp = vengine.ecs->getEntityComponent<Vengine::CameraComponent>(mainCameraEntity);
     camComp->aspectRatio = static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
@@ -64,30 +64,32 @@ void TestScene::load(Vengine::Vengine& vengine) {
 
     // ecs stuff
     // ground entity
-    auto groundEntity = vengine.ecs->createEntity();
-    vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity, groundMesh);
-    vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity);
-    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(groundEntity);
-    auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(groundEntity);
-    rigidBody->isStatic = true;
-    vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, texturedMaterial);
-    auto planeBounds = groundMesh->getBounds();
-    vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first, planeBounds.second);
+    // auto groundEntity = vengine.ecs->createEntity();
+    // vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity, groundMesh);
+    // vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity);
+    // vengine.ecs->addComponent<Vengine::RigidbodyComponent>(groundEntity);
+    // auto rigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(groundEntity);
+    // rigidBody->isStatic = true;
+    // vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, texturedMaterial);
+    // auto planeBounds = groundMesh->getBounds();
+    // vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first, planeBounds.second);
 
     // chair entity
     auto chairBounds = chairMesh->getBounds();
     auto chairEntity = vengine.ecs->createEntity();
     vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
     vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
+    vengine.ecs->addComponent<Vengine::VelocityComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
-    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity);
+    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(chairEntity);
+    // vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity);
     auto moveScript = vengine.resourceManager->get<Vengine::Script>("move");
     vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, moveScript);
     auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
     chairTransform->setPosition(-25.0f, 100.0f, 5.0f);
     chairTransform->setScale(0.15f, 0.15f, 0.15f);
-    vengine.ecs->addComponent<Vengine::ColliderComponent>(chairEntity, chairBounds.first, chairBounds.second);
+    // vengine.ecs->addComponent<Vengine::ColliderComponent>(chairEntity, chairBounds.first, chairBounds.second);
 
     // cube entity
     auto cubeBounds = cubeMesh->getBounds();
@@ -99,23 +101,51 @@ void TestScene::load(Vengine::Vengine& vengine) {
     boxTransform->setPosition(25.0f, 120.0f, 5.0f);
     boxTransform->setScale(20.0f, 20.0f, 20.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity, coloredMaterial);
-    vengine.ecs->addComponent<Vengine::RigidbodyComponent>(cubeEntity);
-    auto boxRigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(cubeEntity);
+    // vengine.ecs->addComponent<Vengine::RigidbodyComponent>(cubeEntity);
+    // auto boxRigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(cubeEntity);
     // boxRigidBody->isStatic = true;
-    vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity, cubeBounds.first, cubeBounds.second);
+    // vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity, cubeBounds.first, cubeBounds.second);
+
+    // cube entity2
+    auto cubeBounds2 = cubeMesh->getBounds();
+    auto cubeEntity2 = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(cubeEntity2, "cube2");
+    vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity2, cubeMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(cubeEntity2);
+    auto boxTransform2 = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cubeEntity2);
+    boxTransform2->setPosition(0.0f, 220.0f, -45.0f);
+    boxTransform2->setScale(20.0f, 20.0f, 20.0f);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity2, coloredMaterial);
+    // vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity2, cubeBounds2.first, cubeBounds2.second);
+    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(cubeEntity2);
+
+    // some other ground test
+    // ground2 entity
+    // auto groundBounds = cubeMesh->getBounds();
+    auto groundEntity2 = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(groundEntity2, "cube3");
+    vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity2, cubeMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity2);
+    auto boxTransform3 = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(groundEntity2);
+    boxTransform3->setPosition(0.0f, 10.0f, 0.0f);
+    boxTransform3->setScale(500.0f, 1.0f, 500.0f);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity2, texturedMaterial);
+    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
+    auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
+    jolt->isStatic = true;
 
     // test entity class
-    auto testEntity = vengine.ecs->getEntityByTag("chair");
-    if (testEntity.getId() != 0) {
-        spdlog::debug("Test entity ID: {}", testEntity.getId());
-        auto comp = testEntity.getComponent<Vengine::MeshComponent>();
-        spdlog::debug("Test entity component stuff: {}", comp->mesh->getVertexCount());
-        auto transform = testEntity.getComponent<Vengine::TransformComponent>();
-        spdlog::debug("Test entity transform stuff: {} {} {}",
-                      transform->getPositionX(),
-                      transform->getPositionY(),
-                      transform->getPositionZ());
-    }
+    // auto testEntity = vengine.ecs->getEntityByTag("chair");
+    // if (testEntity.getId() != 0) {
+    //     spdlog::debug("Test entity ID: {}", testEntity.getId());
+    //     auto comp = testEntity.getComponent<Vengine::MeshComponent>();
+    //     spdlog::debug("Test entity component stuff: {}", comp->mesh->getVertexCount());
+    //     auto transform = testEntity.getComponent<Vengine::TransformComponent>();
+    //     spdlog::debug("Test entity transform stuff: {} {} {}",
+    //                   transform->getPositionX(),
+    //                   transform->getPositionY(),
+    //                   transform->getPositionZ());
+    // }
 }
 
 void TestScene::cleanup(Vengine::Vengine& vengine) {

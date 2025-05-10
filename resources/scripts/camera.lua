@@ -86,9 +86,9 @@ end
 
 -- an event
 -- subscribe_event(function(key, is_repeat)
--- prints in lua are SLOW
--- if key == GLFW_KEY_E then
--- print("Key E is pressed in Lua")
--- end
--- print("Key pressed in Lua:", key, is_repeat)
+--     -- prints in lua are SLOW
+--     if key == GLFW_KEY_E then
+--         print("Key E is pressed in Lua")
+--     end
+--     -- print("Key pressed in Lua:", key, is_repeat)
 -- end)

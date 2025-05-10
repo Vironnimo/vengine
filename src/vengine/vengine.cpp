@@ -6,6 +6,9 @@
 #include <memory>
 #include <tl/expected.hpp>
 
+#include <jolt/Jolt.h>
+#include <jolt/RegisterTypes.h>
+
 #include "vengine/core/event_system.hpp"
 #include "vengine/core/thread_manager.hpp"
 #include "vengine/ecs/components.hpp"
@@ -94,23 +97,21 @@ Vengine::~Vengine() {
     ecs->registerComponent<TextComponent>("Text");
     ecs->registerComponent<PersistentComponent>("Persistent");
     ecs->registerComponent<TransformComponent>("Transform");
+    ecs->registerComponent<VelocityComponent>("Velocity");
     ecs->registerComponent<MeshComponent>("Mesh");
     ecs->registerComponent<MaterialComponent>("Material");
-    ecs->registerComponent<RigidbodyComponent>("Rigidbody");
-    ecs->registerComponent<ColliderComponent>("Collider");
     ecs->registerComponent<ScriptComponent>("Script");
     ecs->registerComponent<CameraComponent>("Camera");
+    ecs->registerComponent<JoltPhysicsComponent>("JoltPhysics");
     // register built-in systems
-    auto collisionSystem = std::make_shared<CollisionSystem>();
-    auto physicsSystem = std::make_shared<PhysicsSystem>();
     auto transformSystem = std::make_shared<TransformSystem>();
     transformSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
-    collisionSystem->setEnabled(false);  // these two run on an extra thread
-    physicsSystem->setEnabled(false);
+    auto joltPhysicsSystem = std::make_shared<JoltPhysicsSystem>();
+    joltPhysicsSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
     ecs->registerSystem("TransformSystem", std::make_shared<TransformSystem>());
-    ecs->registerSystem("CollisionSystem", collisionSystem);
-    ecs->registerSystem("PhysicsSystem", physicsSystem);
+    ecs->registerSystem("JoltPhysicsSystem", joltPhysicsSystem);
     auto scriptSystem = std::make_shared<ScriptSystem>();
+    scriptSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
     scriptSystem->registerBindings(this);
     ecs->registerSystem("ScriptSystem", scriptSystem);
 
@@ -143,19 +144,26 @@ auto Vengine::run() -> void {
         actions->handleInput(window->get());
         threadManager->processMainThreadTasks();
 
+        // script system before everything else?
+        auto scriptSystem = ecs->getSystem<ScriptSystem>("ScriptSystem");
+        scriptSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+
         auto transformSystem = ecs->getSystem<TransformSystem>("TransformSystem");
         transformSystem->update(ecs->getActiveEntities(), timers->deltaTime());
 
         auto physicsAndCollisionTaskFuture = threadManager->enqueueTask(
             [this]() {
-                auto collisionSystem = ecs->getSystem<CollisionSystem>("CollisionSystem");
-                auto physicsSystem = ecs->getSystem<PhysicsSystem>("PhysicsSystem");
-                if (collisionSystem) {
-                    collisionSystem->update(ecs->getActiveEntities(), timers->deltaTime());
-                }
-                if (physicsSystem) {
-                    physicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
-                }
+                auto joltPhysicsSystem = ecs->getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");
+                joltPhysicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+
+                // auto collisionSystem = ecs->getSystem<CollisionSystem>("CollisionSystem");
+                // auto physicsSystem = ecs->getSystem<PhysicsSystem>("PhysicsSystem");
+                // if (collisionSystem) {
+                //     collisionSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+                // }
+                // if (physicsSystem) {
+                //     physicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+                // }
             },
             "Physics and Collision System");
         physicsAndCollisionTaskFuture.wait();

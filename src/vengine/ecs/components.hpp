@@ -4,6 +4,9 @@
 #include <memory>
 #include <utility>
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/BodyID.h>
+
 #include "vengine/renderer/material.hpp"
 #include "vengine/core/mesh.hpp"
 
@@ -40,6 +43,10 @@ struct ScriptComponent : public BaseComponent {
     bool isDirty = true;
 
     std::string path;
+};
+
+struct VelocityComponent : public BaseComponent {
+    glm::vec3 velocity{0.0f, 0.0f, 0.0f};
 };
 
 struct MeshComponent : public BaseComponent {
@@ -128,6 +135,9 @@ struct TransformComponent : public BaseComponent {
         dirty = true;
     }
 
+    auto getScale() -> glm::vec3 {
+        return scale;
+    }
     [[nodiscard]] auto getScaleX() const -> float {
         return scale.x;
     }
@@ -160,50 +170,6 @@ struct TransformComponent : public BaseComponent {
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
     glm::mat4 transform = glm::mat4(1.0f);
-};
-
-struct RigidbodyComponent : public BaseComponent {
-    glm::vec3 velocity = glm::vec3(0.0f);
-    float mass = 1.0f;
-    bool useGravity = true;
-    bool isGrounded = false;
-    bool isStatic = false;
-};
-
-struct ColliderComponent : public BaseComponent {
-    using EntityId = uint64_t;
-
-    glm::vec3 min = glm::vec3(-0.5f);
-    glm::vec3 max = glm::vec3(0.5f);
-
-    glm::vec3 worldMin;
-    glm::vec3 worldMax;
-
-    bool colliding = false;
-    EntityId collidingWith = 0;
-
-    ColliderComponent(const glm::vec3& minBounds, const glm::vec3& maxBounds) : min(minBounds), max(maxBounds) {
-    }
-    ColliderComponent() = default;
-
-    // update world bounds for collision detection
-    void updateWorldBounds(const glm::mat4& transform) {
-        glm::vec4 corners[8] = {transform * glm::vec4(min.x, min.y, min.z, 1.0f),
-                                transform * glm::vec4(max.x, min.y, min.z, 1.0f),
-                                transform * glm::vec4(min.x, max.y, min.z, 1.0f),
-                                transform * glm::vec4(min.x, min.y, max.z, 1.0f),
-                                transform * glm::vec4(max.x, max.y, min.z, 1.0f),
-                                transform * glm::vec4(min.x, max.y, max.z, 1.0f),
-                                transform * glm::vec4(max.x, min.y, max.z, 1.0f),
-                                transform * glm::vec4(max.x, max.y, max.z, 1.0f)};
-
-        worldMin = glm::vec3(corners[0]);
-        worldMax = glm::vec3(corners[0]);
-        for (int i = 1; i < 8; ++i) {
-            worldMin = glm::min(worldMin, glm::vec3(corners[i]));
-            worldMax = glm::max(worldMax, glm::vec3(corners[i]));
-        }
-    }
 };
 
 struct CameraComponent : public BaseComponent {
@@ -255,6 +221,12 @@ struct CameraComponent : public BaseComponent {
     [[nodiscard]] auto isActiveCamera() const -> bool {
         return isActive;
     }
+};
+
+struct JoltPhysicsComponent : public BaseComponent {
+    JPH::BodyID bodyId;
+    bool initialized = false;
+    bool isStatic = false;
 };
 
 }  // namespace Vengine

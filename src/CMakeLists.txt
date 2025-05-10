@@ -7,6 +7,7 @@ find_package(tl-expected CONFIG REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(Lua REQUIRED)
 find_package(sol2 CONFIG REQUIRED)
+find_package(Jolt CONFIG REQUIRED)
 
 set(SOURCES
         app/app.cpp
@@ -27,6 +28,7 @@ set(SOURCES
         vengine/core/event_system.cpp
         vengine/core/scenes.cpp
         vengine/ecs/entity.cpp
+        vengine/ecs/systems/jolt_physics_system.cpp
         vengine/ecs/systems/script_system.cpp
         vengine/renderer/renderer.cpp
         vengine/renderer/material.cpp
@@ -56,6 +58,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         glad::glad
         ${LUA_LIBRARIES}
         sol2
+        Jolt::Jolt
 )
 
 find_path(MINIAUDIO_INCLUDE_DIRS "miniaudio.h")

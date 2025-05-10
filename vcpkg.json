@@ -10,6 +10,7 @@
     "tl-expected",
     "miniaudio",
     "lua",
-    "sol2"
+    "sol2",
+    "joltphysics"
   ]
 }
