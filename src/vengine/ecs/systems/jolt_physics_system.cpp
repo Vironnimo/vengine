@@ -50,13 +50,12 @@ class ObjectLayerPairFilterImpl final : public JPH::ObjectLayerPairFilter {
 }  // anonymous namespace
 
 JoltPhysicsSystem::JoltPhysicsSystem() {
-    spdlog::debug("Constructor JoltPhysicsSystem");
-
+    // spdlog::debug("Constructor JoltPhysicsSystem");
     initializeJolt();
 }
 
 JoltPhysicsSystem::~JoltPhysicsSystem() {
-    spdlog::debug("Destructor JoltPhysicsSystem");
+    // spdlog::debug("Destructor JoltPhysicsSystem");
     delete m_tempAllocator;
     delete m_jobSystem;
 }
@@ -67,7 +66,9 @@ void JoltPhysicsSystem::initializeJolt() {
     }
 
     JPH::RegisterDefaultAllocator();
-    JPH::Factory::sInstance = new JPH::Factory();
+    if (JPH::Factory::sInstance == nullptr) {
+        JPH::Factory::sInstance = new JPH::Factory();
+    }
     JPH::RegisterTypes();
 
     m_tempAllocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
@@ -77,13 +78,16 @@ void JoltPhysicsSystem::initializeJolt() {
     static ObjectVsBroadPhaseLayerFilterImpl objectVsBroadPhaseLayerFilter;
     static ObjectLayerPairFilterImpl objectLayerPairFilter;
 
-    m_physicsSystem.Init(1024,  // max bodies
-                         0,     // num body mutexes
-                         1024,  // max body pairs
-                         1024,  // max contact constraints
+    m_physicsSystem.Init(10240,  // max bodies
+                         1024,     // num body mutexes
+                         10240,  // max body pairs
+                         10240,  // max contact constraints
                          broadPhaseLayerInterface,
                          objectVsBroadPhaseLayerFilter,
                          objectLayerPairFilter);
+
+    m_physicsSystem.SetGravity(JPH::Vec3(0, -9.81f, 0));
+
     m_initialized = true;
 }
 

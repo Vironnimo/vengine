@@ -12,13 +12,13 @@
 namespace Vengine {
 
 class JoltPhysicsSystem : public BaseSystem {
-public:
+   public:
     JoltPhysicsSystem();
     ~JoltPhysicsSystem() override;
 
     void update(std::shared_ptr<Entities> entities, float deltaTime) override;
 
-private:
+   private:
     JPH::PhysicsSystem m_physicsSystem;
     JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
     JPH::JobSystemThreadPool* m_jobSystem = nullptr;
@@ -28,4 +28,4 @@ private:
     void createBodyForEntity(EntityId entityId, const std::shared_ptr<Entities>& entities);
 };
 
-} // namespace Vengine
+}  // namespace Vengine

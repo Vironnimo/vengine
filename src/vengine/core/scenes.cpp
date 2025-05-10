@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "vengine/vengine.hpp"
+#include "vengine/ecs/systems.hpp"
 
 namespace Vengine {
 
@@ -32,6 +33,12 @@ void Scenes::load(const std::string& name, Vengine& vengine) {
             // clear all entitites except persistent ones (maybe player or something)
             m_currentScene->getEntities()->removeNonPersistentEntities();
             it->second->setEntities(m_currentScene->getEntities());
+
+            auto joltSystem = vengine.ecs->getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");
+            if (joltSystem) {
+                spdlog::info("Cleaning up JoltPhysicsSystem");
+                vengine.ecs->resetPhysicsSystem();
+            }
         } else {
             it->second->setEntities(vengine.ecs->getActiveEntities());
         }
@@ -51,9 +58,6 @@ void Scenes::load(const std::string& name, Vengine& vengine) {
             auto camComp = vengine.ecs->getEntityComponent<CameraComponent>(camera);
             camComp->aspectRatio =
                 static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
-        } else {
-            // set the active camera to the first one in the list
-            // m_currentScene->getCameras()->setActive(m_currentScene->getCameras());
         }
     } else {
         spdlog::error("Scene '{}' not found", name);

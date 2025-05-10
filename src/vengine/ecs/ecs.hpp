@@ -8,12 +8,13 @@
 #include "base_system.hpp"
 #include "vengine/ecs/entities.hpp"
 #include "vengine/ecs/entity.hpp"
+#include "vengine/ecs/systems/jolt_physics_system.hpp"
 
 namespace Vengine {
 
 using EntityId = uint64_t;
 
-// TODO this whole thing needs to be restructured, it's a mess with the circular includes and 
+// TODO this whole thing needs to be restructured, it's a mess with the circular includes and
 // dependencies and doesn't work with cpp23
 // TODO wrapper functions for all the stuff that's inside the ecs, like register components and systems,
 // create entitites and so on
@@ -24,7 +25,7 @@ class ECS {
         m_componentRegistry = std::make_shared<ComponentRegistry>();
         m_activeEntities = std::make_shared<Entities>(m_componentRegistry);
     }
-    
+
     ~ECS() {
         spdlog::debug("Destructor ECS");
         m_activeEntities.reset();
@@ -126,6 +127,14 @@ class ECS {
             return it->second;
         }
         return nullptr;
+    }
+
+// TODO: yeah this is a weird one, gotta rethink this
+    void resetPhysicsSystem() {
+        auto joltSystem = std::make_shared<JoltPhysicsSystem>();
+        joltSystem->setEnabled(false);
+
+        m_systems["JoltPhysicsSystem"] = joltSystem;
     }
 
    private:
