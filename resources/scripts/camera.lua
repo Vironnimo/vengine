@@ -27,10 +27,10 @@ function update(entityId, dt)
         moveRight = moveRight - 1
     end
     if input:isKeyDown(GLFW_KEY_BACKSPACE) then
-        transform:setPosition(transform:getPositionX(), transform:getPositionY() + speed * dt, transform:getPositionZ())
+        transform:setPosition(transform:getPositionX(), transform:getPositionY() + speed * dt * 0.4, transform:getPositionZ())
     end
     if input:isKeyDown(GLFW_KEY_DELETE) then
-        transform:setPosition(transform:getPositionX(), transform:getPositionY() - speed * dt, transform:getPositionZ())
+        transform:setPosition(transform:getPositionX(), transform:getPositionY() - speed * dt * 0.4, transform:getPositionZ())
     end
 
     if moveForward ~= 0 or moveRight ~= 0 then
@@ -71,24 +71,9 @@ function update(entityId, dt)
     end
 end
 
--- subscribe_mouse_event(function(x, y, dx, dy)
---     local camera = get_camera_component()
---     if not camera then return end
-
---     local transform = get_transform_component(camera:getEntityId())
---     if not transform then return end
-
---     local yaw = transform:getRotationY()
---     local sensitivity = 0.1
---     yaw = yaw - dx * sensitivity
---     transform:setRotationY(yaw)
--- end)
-
--- an event
--- subscribe_event(function(key, is_repeat)
---     -- prints in lua are SLOW
---     if key == GLFW_KEY_E then
---         print("Key E is pressed in Lua")
---     end
---     -- print("Key pressed in Lua:", key, is_repeat)
--- end)
+-- for mwheel up and down for zooming in and out
+subscribe_mouse_scroll_event(function(x, y)
+    local camera = get_camera_component()
+    if not camera then return end
+    camera:setFov(camera:getFov() - y)
+end)

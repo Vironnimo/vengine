@@ -19,6 +19,15 @@ struct MouseMovedEvent : public Event {
     }
 };
 
+struct MouseScrollEvent : public Event {
+    int xOffset, yOffset;
+    MouseScrollEvent(int xOffset, int yOffset) : xOffset(xOffset), yOffset(yOffset) {
+    }
+    auto getType() const -> std::type_index override {
+        return typeid(MouseScrollEvent);
+    }
+};
+
 struct KeyPressedEvent : public Event {
     int key;
     bool repeat;

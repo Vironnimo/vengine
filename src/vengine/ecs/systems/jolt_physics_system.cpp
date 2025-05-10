@@ -78,8 +78,9 @@ void JoltPhysicsSystem::initializeJolt() {
     static ObjectVsBroadPhaseLayerFilterImpl objectVsBroadPhaseLayerFilter;
     static ObjectLayerPairFilterImpl objectLayerPairFilter;
 
-    m_physicsSystem.Init(10240,  // max bodies
-                         1024,     // num body mutexes
+    // high numbers for now
+    m_physicsSystem.Init(30240,  // max bodies
+                         2024,   // num body mutexes
                          10240,  // max body pairs
                          10240,  // max contact constraints
                          broadPhaseLayerInterface,
@@ -183,6 +184,17 @@ void JoltPhysicsSystem::update(std::shared_ptr<Entities> entities, float deltaTi
                                    static_cast<float>(pos.GetZ()));
             // TODO: i guess rotation aswell?
         }
+    }
+}
+
+void JoltPhysicsSystem::removeBody(EntityId entityId, const std::shared_ptr<Entities>& entities) {
+    auto joltComp = entities->getEntityComponent<JoltPhysicsComponent>(entityId);
+    if (joltComp && joltComp->initialized) {
+        auto& bodyInterface = m_physicsSystem.GetBodyInterface();
+        bodyInterface.RemoveBody(joltComp->bodyId);
+        bodyInterface.DestroyBody(joltComp->bodyId);
+        joltComp->initialized = false;
+        // spdlog::info("Jolt: Removed body for entity {}", entityId);
     }
 }
 

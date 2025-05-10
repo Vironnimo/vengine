@@ -151,22 +151,15 @@ auto Vengine::run() -> void {
         auto transformSystem = ecs->getSystem<TransformSystem>("TransformSystem");
         transformSystem->update(ecs->getActiveEntities(), timers->deltaTime());
 
-        auto physicsAndCollisionTaskFuture = threadManager->enqueueTask(
-            [this]() {
-                auto joltPhysicsSystem = ecs->getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");
-                joltPhysicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
-
-                // auto collisionSystem = ecs->getSystem<CollisionSystem>("CollisionSystem");
-                // auto physicsSystem = ecs->getSystem<PhysicsSystem>("PhysicsSystem");
-                // if (collisionSystem) {
-                //     collisionSystem->update(ecs->getActiveEntities(), timers->deltaTime());
-                // }
-                // if (physicsSystem) {
-                //     physicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
-                // }
-            },
-            "Physics and Collision System");
-        physicsAndCollisionTaskFuture.wait();
+        auto joltPhysicsSystem = ecs->getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");
+        joltPhysicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+        // auto physicsAndCollisionTaskFuture = threadManager->enqueueTask(
+        //     [this]() {
+        //         auto joltPhysicsSystem = ecs->getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");
+        //         joltPhysicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+        //     },
+        //     "Physics and Collision System");
+        // physicsAndCollisionTaskFuture.wait();
 
         ecs->runSystems(timers->deltaTime());
         renderer->render(scenes->getCurrentScene());
@@ -221,7 +214,7 @@ void Vengine::registerGlfwCallbacks() {
         }
     });
 
-    glfwSetKeyCallback(window->get(), [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+    glfwSetKeyCallback(window->get(), [](GLFWwindow*, int key, int scancode, int action, int mods) {
         if (action == GLFW_PRESS) {
             g_eventSystem.publish(KeyPressedEvent{key, false});
         } else if (action == GLFW_REPEAT) {
@@ -233,29 +226,12 @@ void Vengine::registerGlfwCallbacks() {
 
     // subscribe to camera changed event
     // TODO gotta rethink this, and obviously change some stuff inside
+    // do i even need the camera changed event here? or can i now just set the scroll callback
     events->subscribe<CameraChangedEvent>([this](const CameraChangedEvent& event) {
         spdlog::debug("Vengine: Active Camera changed to CameraID: {}", event.newCamera);
 
-        glfwSetScrollCallback(window->get(), [](GLFWwindow* wnd, double, double yoffset) {
-            yoffset *= 2.0;  // sens
-            auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
-            if (!vengine || vengine->scenes->getCurrentScene()->getCameras()->getActive() == 0) {
-                return;
-            }
-            auto cameraTransform = vengine->ecs->getEntityComponent<TransformComponent>(
-                vengine->scenes->getCurrentScene()->getCameras()->getActive());
-            auto camComp = vengine->ecs->getEntityComponent<CameraComponent>(
-                vengine->scenes->getCurrentScene()->getCameras()->getActive());
-            if (camComp && cameraTransform) {
-                camComp->fov -= static_cast<float>(yoffset);
-                // TODO: max fov somewhere else? and not hardcoded...
-                if (camComp->fov < 1.0f) {
-                    camComp->fov = 1.0f;
-                }
-                if (camComp->fov > 90.0f) {
-                    camComp->fov = 90.0f;
-                }
-            }
+        glfwSetScrollCallback(window->get(), [](GLFWwindow*, double xoffset, double yoffset) {
+            g_eventSystem.publish(MouseScrollEvent{static_cast<int>(xoffset), static_cast<int>(yoffset)});
         });
     });
 

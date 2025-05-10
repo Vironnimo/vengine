@@ -43,7 +43,13 @@ class ECS {
         return m_activeEntities->createEntity();
     }
 
-    auto destroyEntity(EntityId entity) const -> void {
+    auto destroyEntity(EntityId entity) -> void {
+        // TODO gotta check first if the entity has a jolt component
+        auto joltSystem = getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");
+        if (joltSystem) {
+            joltSystem->removeBody(entity, m_activeEntities);
+        }
+
         m_activeEntities->destroyEntity(entity);
     }
 

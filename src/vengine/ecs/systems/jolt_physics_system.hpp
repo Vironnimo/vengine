@@ -17,6 +17,7 @@ class JoltPhysicsSystem : public BaseSystem {
     ~JoltPhysicsSystem() override;
 
     void update(std::shared_ptr<Entities> entities, float deltaTime) override;
+    void removeBody(EntityId entityId, const std::shared_ptr<Entities>& entities);
 
    private:
     JPH::PhysicsSystem m_physicsSystem;

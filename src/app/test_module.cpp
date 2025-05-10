@@ -27,7 +27,7 @@ void TestModule::onAttach(Vengine::Vengine& vengine) {
                                                       5.0f,
                                                       625.0f,
                                                       1.0f,
-                                                      glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+                                                      glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
     // subscribe to mouse moved event
     // vengine.events->subscribe<Vengine::MouseMovedEvent>([](const Vengine::MouseMovedEvent& event) {
