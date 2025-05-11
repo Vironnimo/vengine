@@ -10,10 +10,10 @@ find_package(sol2 CONFIG REQUIRED)
 find_package(Jolt CONFIG REQUIRED)
 
 set(SOURCES
-        app/app.cpp
-        app/test_module.cpp
-        app/test_scene.cpp
-        app/test_scene2.cpp
+        # app/app.cpp
+        # app/test_module.cpp
+        # app/test_scene.cpp
+        # app/test_scene2.cpp
         vengine/vengine.cpp
         vengine/core/resource_manager.cpp
         vengine/core/action.cpp
@@ -45,11 +45,11 @@ set(SOURCES
         vengine/renderer/window.cpp
 )
 
-add_executable(${PROJECT_NAME} 
+add_library(${PROJECT_NAME} STATIC
         ${SOURCES}
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE 
+target_link_libraries(${PROJECT_NAME} PUBLIC 
         spdlog::spdlog
         OpenGL::GL
         glfw

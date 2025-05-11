@@ -3,10 +3,11 @@
 
 #include <memory>
 
-#include "app/test_scene.hpp"
-#include "app/test_scene2.hpp"
-#include "app/test_module.hpp"
+#include "test_scene.hpp"
+#include "test_scene2.hpp"
+#include "test_module.hpp"
 #include "vengine/vengine.hpp"
+
 
 App::App() {
     m_vengine = std::make_shared<Vengine::Vengine>();
