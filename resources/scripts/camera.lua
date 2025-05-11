@@ -27,10 +27,12 @@ function update(entityId, dt)
         moveRight = moveRight - 1
     end
     if input:isKeyDown(GLFW_KEY_BACKSPACE) then
-        transform:setPosition(transform:getPositionX(), transform:getPositionY() + speed * dt * 0.4, transform:getPositionZ())
+        transform:setPosition(transform:getPositionX(), transform:getPositionY() + speed * dt * 0.4,
+            transform:getPositionZ())
     end
     if input:isKeyDown(GLFW_KEY_DELETE) then
-        transform:setPosition(transform:getPositionX(), transform:getPositionY() - speed * dt * 0.4, transform:getPositionZ())
+        transform:setPosition(transform:getPositionX(), transform:getPositionY() - speed * dt * 0.4,
+            transform:getPositionZ())
     end
 
     if moveForward ~= 0 or moveRight ~= 0 then
@@ -74,6 +76,8 @@ end
 -- for mwheel up and down for zooming in and out
 subscribe_mouse_scroll_event(function(x, y)
     local camera = get_camera_component()
-    if not camera then return end
+    if not camera then
+        return
+    end
     camera:setFov(camera:getFov() - y)
 end)

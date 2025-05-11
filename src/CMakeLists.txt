@@ -27,6 +27,7 @@ set(SOURCES
         vengine/core/signal_system.cpp
         vengine/core/event_system.cpp
         vengine/core/scenes.cpp
+        vengine/utils/utils.cpp
         vengine/ecs/entity.cpp
         vengine/ecs/systems/jolt_physics_system.cpp
         vengine/ecs/systems/script_system.cpp

@@ -3,18 +3,15 @@
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 
-
 #include "vengine/core/error.hpp"
 
 namespace Vengine {
 
-[[nodiscard]] Window::Window()
-{
+[[nodiscard]] Window::Window() {
     spdlog::debug("Constructor Window");
 }
 
-Window::~Window()
-{
+Window::~Window() {
     spdlog::debug("Destructor Window");
     if (m_window != nullptr) {
         glfwDestroyWindow(m_window);
@@ -36,6 +33,9 @@ auto Window::init() -> tl::expected<void, Error> {
 }
 
 [[nodiscard]] auto Window::create(WindowParams& params) -> tl::expected<GLFWwindow*, Error> {
+    // TODO: should be elsewhere
+    glfwWindowHint(GLFW_SAMPLES, 4);  // msaa
+
     m_window = glfwCreateWindow(params.width, params.height, params.title.c_str(), nullptr, nullptr);
     if (m_window == nullptr) {
         glfwTerminate();

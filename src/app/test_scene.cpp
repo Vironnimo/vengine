@@ -75,7 +75,6 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first, planeBounds.second);
 
     // chair entity
-    auto chairBounds = chairMesh->getBounds();
     auto chairEntity = vengine.ecs->createEntity();
     vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
     vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
@@ -83,16 +82,13 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
     vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(chairEntity);
-    // vengine.ecs->addComponent<Vengine::RigidbodyComponent>(chairEntity);
     auto moveScript = vengine.resourceManager->get<Vengine::Script>("move");
     vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, moveScript);
     auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
     chairTransform->setPosition(-25.0f, 100.0f, 5.0f);
     chairTransform->setScale(0.15f, 0.15f, 0.15f);
-    // vengine.ecs->addComponent<Vengine::ColliderComponent>(chairEntity, chairBounds.first, chairBounds.second);
 
     // cube entity
-    auto cubeBounds = cubeMesh->getBounds();
     auto cubeEntity = vengine.ecs->createEntity();
     vengine.ecs->addComponent<Vengine::TagComponent>(cubeEntity, "cube");
     vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity, cubeMesh);
@@ -101,13 +97,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     boxTransform->setPosition(25.0f, 120.0f, 5.0f);
     boxTransform->setScale(20.0f, 20.0f, 20.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity, coloredMaterial);
-    // vengine.ecs->addComponent<Vengine::RigidbodyComponent>(cubeEntity);
-    // auto boxRigidBody = vengine.ecs->getEntityComponent<Vengine::RigidbodyComponent>(cubeEntity);
-    // boxRigidBody->isStatic = true;
-    // vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity, cubeBounds.first, cubeBounds.second);
 
     // cube entity2
-    auto cubeBounds2 = cubeMesh->getBounds();
     auto cubeEntity2 = vengine.ecs->createEntity();
     vengine.ecs->addComponent<Vengine::TagComponent>(cubeEntity2, "cube2");
     vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity2, cubeMesh);
@@ -116,12 +107,10 @@ void TestScene::load(Vengine::Vengine& vengine) {
     boxTransform2->setPosition(0.0f, 220.0f, -45.0f);
     boxTransform2->setScale(20.0f, 20.0f, 20.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity2, coloredMaterial);
-    // vengine.ecs->addComponent<Vengine::ColliderComponent>(cubeEntity2, cubeBounds2.first, cubeBounds2.second);
     vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(cubeEntity2);
 
     // some other ground test
     // ground2 entity
-    // auto groundBounds = cubeMesh->getBounds();
     auto groundEntity2 = vengine.ecs->createEntity();
     vengine.ecs->addComponent<Vengine::TagComponent>(groundEntity2, "cube3");
     vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity2, cubeMesh);
@@ -149,7 +138,6 @@ void TestScene::load(Vengine::Vengine& vengine) {
 }
 
 void TestScene::cleanup(Vengine::Vengine& vengine) {
-    spdlog::info("Cleaning up TestScene: {}", m_name);
-
+    // spdlog::info("Cleaning up TestScene: {}", m_name);
     vengine.renderer->unloadSkybox();
 }

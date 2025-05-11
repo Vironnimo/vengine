@@ -26,7 +26,7 @@ class Renderer {
 
     auto render(const std::shared_ptr<Scene>& scene) -> void;
     auto setVSync(bool enabled) -> void;
-
+    auto setMSAA(bool enabled) -> void;
     auto loadSkybox(const std::vector<std::shared_ptr<Texture>>& faceFiles) -> bool;
     auto unloadSkybox() -> void;
 

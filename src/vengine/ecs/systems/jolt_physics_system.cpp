@@ -22,10 +22,10 @@ class BroadPhaseLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface 
     auto GetNumBroadPhaseLayers() const -> uint32_t override {
         return 1;
     }
-    auto GetBroadPhaseLayer(JPH::ObjectLayer) const -> JPH::BroadPhaseLayer override {
+    auto GetBroadPhaseLayer(JPH::ObjectLayer layer) const -> JPH::BroadPhaseLayer override {
         return JPH::BroadPhaseLayer(0);
     }
-    auto GetBroadPhaseLayerName(JPH::BroadPhaseLayer) const -> const char* {
+    auto GetBroadPhaseLayerName(JPH::BroadPhaseLayer layer) const -> const char* {
         return "Default";
     }
 
@@ -35,14 +35,14 @@ class BroadPhaseLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface 
 
 class ObjectVsBroadPhaseLayerFilterImpl final : public JPH::ObjectVsBroadPhaseLayerFilter {
    public:
-    auto ShouldCollide(JPH::ObjectLayer, JPH::BroadPhaseLayer) const -> bool override {
+    auto ShouldCollide(JPH::ObjectLayer layer, JPH::BroadPhaseLayer broadPhaseLayer) const -> bool override {
         return true;
     }
 };
 
 class ObjectLayerPairFilterImpl final : public JPH::ObjectLayerPairFilter {
    public:
-    auto ShouldCollide(JPH::ObjectLayer, JPH::ObjectLayer) const -> bool override {
+    auto ShouldCollide(JPH::ObjectLayer layer1, JPH::ObjectLayer layer2) const -> bool override {
         return true;
     }
 };
@@ -72,7 +72,7 @@ void JoltPhysicsSystem::initializeJolt() {
     JPH::RegisterTypes();
 
     m_tempAllocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
-    m_jobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, 4);
+    m_jobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, 8); // 8 threads for now
 
     static BroadPhaseLayerInterfaceImpl broadPhaseLayerInterface;
     static ObjectVsBroadPhaseLayerFilterImpl objectVsBroadPhaseLayerFilter;

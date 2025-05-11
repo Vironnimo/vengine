@@ -26,7 +26,6 @@ class EventSystem {
     void subscribe(Handler<EventType> handler) {
         auto wrapper = [handler](const Event& e) { handler(static_cast<const EventType&>(e)); };
         m_handlers[typeid(EventType)].push_back(wrapper);
-        spdlog::info("Handler count: {}", m_handlers.size());
     }
 
     void publish(const Event& event) {

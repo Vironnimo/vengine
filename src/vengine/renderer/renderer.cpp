@@ -212,6 +212,7 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
 
     // should also be somewhere else
     setVSync(false);
+    setMSAA(true);
 
     return {};
 }
@@ -244,6 +245,14 @@ auto Renderer::setVSync(bool enabled) -> void {
         glfwSwapInterval(1);
     } else {
         glfwSwapInterval(0);
+    }
+}
+
+auto Renderer::setMSAA(bool enabled) -> void {
+    if (enabled) {
+        glEnable(GL_MULTISAMPLE);
+    } else {
+        glDisable(GL_MULTISAMPLE);
     }
 }
 

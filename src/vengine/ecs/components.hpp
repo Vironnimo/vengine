@@ -176,7 +176,7 @@ struct CameraComponent : public BaseComponent {
     float fov = 70.0f;
     float aspectRatio = 16.0f / 9.0f;
     float nearPlane = 0.1f;
-    float farPlane = 1000.0f;
+    float farPlane = 10000.0f;
     bool isActive = true;  // current main camera
 
     [[nodiscard]] auto getProjectionMatrix() const -> glm::mat4 {

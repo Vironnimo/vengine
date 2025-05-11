@@ -1,5 +1,7 @@
 #include "test_scene2.hpp"
+
 #include "vengine/ecs/components.hpp"
+#include "vengine/utils/utils.hpp"
 
 TestScene2::~TestScene2() {
     spdlog::debug("Destructor TestScene2");
@@ -56,8 +58,8 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     // a grid of cubes
     int gridWidth = 50;
     int gridHeight = 50;
-    float spacingX = 2.4f;
-    float spacingY = 2.4f;
+    float spacingX = 2.8f;
+    float spacingY = 2.8f;
     float startX = -(static_cast<float>(gridWidth) / 2.0f) * spacingX;
     float startY = (static_cast<float>(gridHeight) / 2.0f) * spacingY;
 
@@ -66,6 +68,8 @@ void TestScene2::load(Vengine::Vengine& vengine) {
             auto entity = vengine.ecs->createEntity();
             vengine.ecs->addComponent<Vengine::MeshComponent>(entity, cubeMesh);
             vengine.ecs->addComponent<Vengine::TransformComponent>(entity);
+            auto meshTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(entity);
+            meshTransform->setScale(Vengine::Utils::getRandomFloat(0.7f, 1.3f));
 
             int overallIndex = row * gridWidth + col;
             if (overallIndex % 2 == 0) {
