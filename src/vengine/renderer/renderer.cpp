@@ -21,7 +21,7 @@ struct MeshMaterialKey {
     }
 };
 
-auto uploadInstanceTransforms(const std::shared_ptr<Mesh>& mesh, const std::vector<glm::mat4>& transforms) -> void {
+static auto uploadInstanceTransforms(const std::shared_ptr<Mesh>& mesh, const std::vector<glm::mat4>& transforms) -> void {
     static std::unordered_map<std::shared_ptr<Mesh>, GLuint> instanceVBOs;
     GLuint instanceVBO = 0;
     if (instanceVBOs.find(mesh) == instanceVBOs.end()) {
@@ -38,7 +38,12 @@ auto uploadInstanceTransforms(const std::shared_ptr<Mesh>& mesh, const std::vect
     // Set up 4 vec4 attributes for mat4 (locations 4,5,6,7)
     for (int i = 0; i < 4; ++i) {
         glEnableVertexAttribArray(4 + i);
-        glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), reinterpret_cast<void*>(sizeof(float) * i * 4));
+        glVertexAttribPointer(4 + i,
+                              4,
+                              GL_FLOAT,
+                              GL_FALSE,
+                              sizeof(glm::mat4),
+                              reinterpret_cast<void*>(sizeof(float) * static_cast<size_t>(i) * 4));
         glVertexAttribDivisor(4 + i, 1);
     }
 
@@ -59,8 +64,7 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     glClearColor(0.4f, 0.6f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glEnable(GL_DEPTH_TEST);  // so closer objects obscure objects further away (i've experienced problems with just one
-                              // object)
+    glEnable(GL_DEPTH_TEST);
 
     // blend is needed for transparency
     glEnable(GL_BLEND);

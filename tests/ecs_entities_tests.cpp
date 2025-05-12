@@ -1,38 +1,37 @@
-// #include <doctest.h>
-// #include <iostream>
+#include <doctest.h>
+#include <iostream>
 
-// #include "vengine/ecs/entities.hpp"
-// #include "vengine/ecs/components.hpp"
+#include "vengine/ecs/entities.hpp"
+#include "vengine/ecs/components.hpp"
 
-// using namespace Vengine;
+using namespace Vengine;
 
-// // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-// TEST_CASE("Entity Creation and Destruction") {
-//     Entities entities;
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+TEST_CASE("Entity Creation and Destruction") {
+    Entities entities(std::make_shared<ComponentRegistry>());
     
-//     SUBCASE("Entity creation") {
-//         auto entity = entities.createEntity();
-//         CHECK(entities.getEntityCount() == 1);
-//     }
+    SUBCASE("Entity creation") {
+        auto entity = entities.createEntity();
+        CHECK(entities.getEntityCount() == 1);
+    }
     
-//     SUBCASE("Entity destruction") {
-//         auto entity = entities.createEntity();
-//         entities.destroyEntity(entity);
-//         CHECK(entities.getEntityCount() == 0);
-//     }
+    SUBCASE("Entity destruction") {
+        auto entity = entities.createEntity();
+        entities.destroyEntity(entity);
+        CHECK(entities.getEntityCount() == 0);
+    }
     
-//     SUBCASE("Multiple entities") {
-//         auto entity1 = entities.createEntity();
-//         auto entity2 = entities.createEntity();
-//         auto entity3 = entities.createEntity();
-//         CHECK(entities.getEntityCount() == 3);
+    SUBCASE("Multiple entities") {
+        auto entity1 = entities.createEntity();
+        auto entity2 = entities.createEntity();
+        auto entity3 = entities.createEntity();
+        CHECK(entities.getEntityCount() == 3);
         
-//         entities.destroyEntity(entity2);
-//         CHECK(entities.getEntityCount() == 2);
-//     }
-// }
+        entities.destroyEntity(entity2);
+        CHECK(entities.getEntityCount() == 2);
+    }
+}
 
-// // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 // TEST_CASE("Component Management") {
 //     Entities entities;
     
@@ -69,7 +68,6 @@
 //     }
 // }
 
-// // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 // TEST_CASE("Entity Queries") {
 //     Entities entities;
         

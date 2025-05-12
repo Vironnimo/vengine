@@ -106,6 +106,7 @@ void JoltPhysicsSystem::createBodyForEntity(EntityId entityId, const std::shared
     glm::vec3 halfExtent = ((meshMax - meshMin) * 0.5f) * scale;
 
     JPH::BoxShapeSettings shapeSettings(JPH::Vec3(halfExtent.x, halfExtent.y, halfExtent.z));
+    // shapeSettings.mConvexRadius = 0.0f; 
     auto shapeResult = shapeSettings.Create();
     if (shapeResult.HasError()) {
         spdlog::error("Jolt: Failed to create shape: {}", shapeResult.GetError().c_str());
@@ -116,6 +117,7 @@ void JoltPhysicsSystem::createBodyForEntity(EntityId entityId, const std::shared
     glm::vec3 pos = transform->getPosition();
     glm::vec3 meshCenter = (meshMin + meshMax) * 0.5f;
     JPH::RVec3 joltPos(pos.x + meshCenter.x * scale.x, pos.y + meshCenter.y * scale.y, pos.z + meshCenter.z * scale.z);
+    // JPH::RVec3 joltPos(pos.x, pos.y, pos.z);
 
     JPH::BodyCreationSettings bodySettings(shape,
                                            joltPos,
@@ -124,10 +126,8 @@ void JoltPhysicsSystem::createBodyForEntity(EntityId entityId, const std::shared
                                            0  // object layer
     );
 
-    // for bounciness, 0.0 to 1.0
-    bodySettings.mRestitution = 0.8f;
-    // also helps with bounciness
-    bodySettings.mFriction = 0.2f;
+    bodySettings.mRestitution = joltComp->restitution;
+    bodySettings.mFriction = joltComp->friction;
 
     JPH::Body* body = m_physicsSystem.GetBodyInterface().CreateBody(bodySettings);
     m_physicsSystem.GetBodyInterface().AddBody(body->GetID(), JPH::EActivation::Activate);

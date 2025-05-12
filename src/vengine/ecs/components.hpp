@@ -227,6 +227,11 @@ struct JoltPhysicsComponent : public BaseComponent {
     JPH::BodyID bodyId;
     bool initialized = false;
     bool isStatic = false;
+
+    // for bounciness, 0.0 to 1.0
+    float restitution = 0.0f;
+    // also helps with bounciness
+    float friction = 0.0f;
 };
 
 }  // namespace Vengine

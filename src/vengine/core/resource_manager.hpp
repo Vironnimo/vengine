@@ -63,10 +63,10 @@ class ResourceManager {
     }
 
     template <typename T, typename... Args>
-    auto loadAsync(const std::string& name, const std::string& fileName, Args&&... load_args) -> void {
-        auto args_size = sizeof...(load_args);
+    auto loadAsync(const std::string& name, const std::string& fileName, Args&&... loadArgs) -> void {
+        auto argsSize = sizeof...(loadArgs);
         m_threadManager->enqueueTask(
-            [this, name, fileName, args_size, load_args = std::make_tuple(std::forward<Args>(load_args)...)]() {
+            [this, name, fileName, argsSize, loadArgsTuple = std::make_tuple(std::forward<Args>(loadArgs)...)]() {
                 spdlog::debug("Loading resource: {} from file: {}", name, fileName);
                 std::shared_ptr<T> resource;
 
@@ -77,7 +77,7 @@ class ResourceManager {
                             [this](auto&&... args) {
                                 return m_meshLoader->createPlane(std::forward<decltype(args)>(args)...);
                             },
-                            load_args);
+                            loadArgsTuple);
                     } else {
                         resource = m_meshLoader->loadFromObj(fileName);
                     }
@@ -139,14 +139,13 @@ class ResourceManager {
     auto isLoaded(const std::string& name) -> bool {
         std::lock_guard<std::mutex> lock(m_resourceMutex);
 
-        // replace with any_of? it's c++20
-        for (const auto& [type, resources] : m_resources) {
-            if (resources.find(name) != resources.end()) {
-                return true;
+        return std::any_of(
+            m_resources.begin(), m_resources.end(),
+            [&name](const auto& pair) {
+                const auto& resources = pair.second;
+                return resources.find(name) != resources.end();
             }
-        }
-
-        return false;
+        );
     }
 
     template <typename T>

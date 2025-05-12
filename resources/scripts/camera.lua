@@ -10,7 +10,7 @@ function update(entityId, dt)
     end
 
     local sensitivity = 0.01
-    local speed = 100.0
+    local speed = 20.0
     local moveForward, moveRight = 0, 0
 
     -- e s d f movement instead of wasd, backspace and delete for up and down, right click to rotate
@@ -27,11 +27,11 @@ function update(entityId, dt)
         moveRight = moveRight - 1
     end
     if input:isKeyDown(GLFW_KEY_BACKSPACE) then
-        transform:setPosition(transform:getPositionX(), transform:getPositionY() + speed * dt * 0.4,
+        transform:setPosition(transform:getPositionX(), transform:getPositionY() + speed * dt,
             transform:getPositionZ())
     end
     if input:isKeyDown(GLFW_KEY_DELETE) then
-        transform:setPosition(transform:getPositionX(), transform:getPositionY() - speed * dt * 0.4,
+        transform:setPosition(transform:getPositionX(), transform:getPositionY() - speed * dt,
             transform:getPositionZ())
     end
 

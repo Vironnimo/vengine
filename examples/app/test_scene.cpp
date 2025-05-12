@@ -19,7 +19,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.scenes->getCurrentScene()->getCameras()->setActive(mainCameraEntity);
 
     auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mainCameraEntity);
-    camTransform->setPosition(0.0f, 100.0f, 300.0f);
+    camTransform->setPosition(0.0f, 5.0f, 20.0f);
     // don't forget the aspect ratio
     auto camComp = vengine.ecs->getEntityComponent<Vengine::CameraComponent>(mainCameraEntity);
     camComp->aspectRatio = static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
@@ -40,12 +40,24 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // create materials (textures + shaders or just shaders)
     auto texture = vengine.resourceManager->get<Vengine::Texture>("test_texture");
     auto texture2 = vengine.resourceManager->get<Vengine::Texture>("test_texture2");
+    auto aquariumTexture = vengine.resourceManager->get<Vengine::Texture>("aquariumTexture");
+    auto flowerTexture = vengine.resourceManager->get<Vengine::Texture>("flowerTexture");
     auto defaultShader = vengine.renderer->shaders->get("default");
 
     vengine.renderer->materials->add("colored", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto coloredMaterial = vengine.renderer->materials->get("colored");
     coloredMaterial->setBool("uUseTexture", false);
-    coloredMaterial->setVec4("uColor", glm::vec4(1.0f, 0.5f, 1.0f, 1.0f));
+    coloredMaterial->setVec4("uColor", glm::vec4(0.8f, 0.5f, 0.2f, 1.0f));
+
+    vengine.renderer->materials->add("flower", std::make_shared<Vengine::Material>(defaultShader.value()));
+    auto flowerMaterial = vengine.renderer->materials->get("flower");
+    flowerMaterial->setBool("uUseTexture", true);
+    flowerMaterial->setTexture("uTexture", std::move(flowerTexture));
+
+    vengine.renderer->materials->add("aquarium", std::make_shared<Vengine::Material>(defaultShader.value()));
+    auto aquariumMaterial = vengine.renderer->materials->get("aquarium");
+    aquariumMaterial->setBool("uUseTexture", true);
+    aquariumMaterial->setTexture("uTexture", std::move(aquariumTexture));
 
     vengine.renderer->materials->add("default", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto texturedMaterial = vengine.renderer->materials->get("default");
@@ -61,6 +73,9 @@ void TestScene::load(Vengine::Vengine& vengine) {
     auto cubeMesh = vengine.resourceManager->get<Vengine::Mesh>("cube");
     auto chairMesh = vengine.resourceManager->get<Vengine::Mesh>("chair");
     auto groundMesh = vengine.resourceManager->get<Vengine::Mesh>("plane");
+    auto antMesh = vengine.resourceManager->get<Vengine::Mesh>("ant");
+    auto aquariumMesh = vengine.resourceManager->get<Vengine::Mesh>("aquarium");
+    auto flowerMesh = vengine.resourceManager->get<Vengine::Mesh>("flower");
 
     // ecs stuff
     // ground entity
@@ -74,6 +89,41 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // auto planeBounds = groundMesh->getBounds();
     // vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first, planeBounds.second);
 
+    // flower entity
+    auto flowerEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(flowerEntity, "flower");
+    vengine.ecs->addComponent<Vengine::MeshComponent>(flowerEntity, flowerMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(flowerEntity);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(flowerEntity, flowerMaterial);
+    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(flowerEntity);
+    auto flowerTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(flowerEntity);
+    flowerTransform->setPosition(2.0f, 3.2f, 0.0f);
+    // flowerTransform->setScale(100.15f, 100.15f, 100.15f);
+    // flowerTransform->setRotation(0.0f, 0.55f, 0.0f);
+
+    // ant entity
+    auto ant = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(ant, "ant");
+    vengine.ecs->addComponent<Vengine::MeshComponent>(ant, antMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(ant);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(ant, coloredMaterial);
+    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(ant);
+    auto antTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(ant);
+    antTransform->setRotation(0.0f, 0.55f, 0.0f);
+    antTransform->setPosition(-2.0f, 5.0f, 0.0f);
+    // antTransform->setScale(100.15f, 100.15f, 100.15f);
+
+    // aquarium entity
+    auto aquarium = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(aquarium, "aquarium");
+    vengine.ecs->addComponent<Vengine::MeshComponent>(aquarium, aquariumMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(aquarium);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(aquarium, aquariumMaterial);
+    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(aquarium);
+    auto aquariumTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(aquarium);
+    aquariumTransform->setPosition(0.0f, 5.0f, 0.0f);
+    // aquariumTransform->setScale(100.15f, 100.15f, 100.15f);
+
     // chair entity
     auto chairEntity = vengine.ecs->createEntity();
     vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
@@ -82,11 +132,11 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
     vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(chairEntity);
-    auto moveScript = vengine.resourceManager->get<Vengine::Script>("move");
-    vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, moveScript);
+    // auto moveScript = vengine.resourceManager->get<Vengine::Script>("move");
+    // vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, moveScript);
     auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
     chairTransform->setPosition(-25.0f, 100.0f, 5.0f);
-    chairTransform->setScale(0.15f, 0.15f, 0.15f);
+    chairTransform->setScale(0.01f, 0.01f, 0.01f);
 
     // cube entity
     auto cubeEntity = vengine.ecs->createEntity();
@@ -94,8 +144,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity, cubeMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(cubeEntity);
     auto boxTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cubeEntity);
-    boxTransform->setPosition(25.0f, 120.0f, 5.0f);
-    boxTransform->setScale(20.0f, 20.0f, 20.0f);
+    boxTransform->setPosition(5.0f, 10.0f, 2.0f);
+    // boxTransform->setScale(20.0f, 20.0f, 20.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity, coloredMaterial);
 
     // cube entity2
@@ -104,10 +154,13 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity2, cubeMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(cubeEntity2);
     auto boxTransform2 = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cubeEntity2);
-    boxTransform2->setPosition(0.0f, 220.0f, -45.0f);
-    boxTransform2->setScale(20.0f, 20.0f, 20.0f);
+    boxTransform2->setPosition(0.0f, 20.0f, -5.0f);
+    // boxTransform2->setScale(20.0f, 20.0f, 20.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity2, coloredMaterial);
     vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(cubeEntity2);
+    auto joltComp = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(cubeEntity2);
+    joltComp->restitution = 0.5f;
+    joltComp->friction = 0.2f;
 
     // some other ground test
     // ground2 entity
@@ -116,25 +169,12 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity2, cubeMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity2);
     auto boxTransform3 = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(groundEntity2);
-    boxTransform3->setPosition(0.0f, 10.0f, 0.0f);
-    boxTransform3->setScale(500.0f, 1.0f, 500.0f);
+    boxTransform3->setPosition(0.0f, -0.1f, 0.0f);
+    boxTransform3->setScale(50.0f, 0.1f, 50.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity2, texturedMaterial);
     vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
     auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
     jolt->isStatic = true;
-
-    // test entity class
-    // auto testEntity = vengine.ecs->getEntityByTag("chair");
-    // if (testEntity.getId() != 0) {
-    //     spdlog::debug("Test entity ID: {}", testEntity.getId());
-    //     auto comp = testEntity.getComponent<Vengine::MeshComponent>();
-    //     spdlog::debug("Test entity component stuff: {}", comp->mesh->getVertexCount());
-    //     auto transform = testEntity.getComponent<Vengine::TransformComponent>();
-    //     spdlog::debug("Test entity transform stuff: {} {} {}",
-    //                   transform->getPositionX(),
-    //                   transform->getPositionY(),
-    //                   transform->getPositionZ());
-    // }
 }
 
 void TestScene::cleanup(Vengine::Vengine& vengine) {

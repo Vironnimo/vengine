@@ -38,6 +38,9 @@ class Utils {
    private:
     static std::random_device randomDevice;
     static std::mt19937 gen;
+    static bool genInitialized;
+
+    static auto initGen() -> void;
 };
 
 }  // namespace Vengine

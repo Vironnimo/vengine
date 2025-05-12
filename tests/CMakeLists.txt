@@ -10,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 set(TEST_SOURCES
     main.cpp
     ../src/vengine/core/signal_system.cpp
-    event_system_tests.cpp
+    signal_system_tests.cpp
     ../src/vengine/core/actions.cpp
     ../src/vengine/core/action.cpp
     actions_tests.cpp
@@ -28,6 +28,12 @@ add_executable(${PROJECT_NAME}_tests
 target_link_libraries(${PROJECT_NAME}_tests PRIVATE 
     spdlog::spdlog
     glfw
+)
+
+set_target_properties(${PROJECT_NAME}_tests PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/tests/Debug"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/tests/Release"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests/$<CONFIG>"
 )
 
 # target_link_libraries(${PROJECT_NAME}_tests PRIVATE OpenGL::GL glad::glad glm::glm)

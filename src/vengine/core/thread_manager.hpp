@@ -148,9 +148,7 @@ class ThreadManager {
    private:
     void startWorkers(size_t threadCount) {
         for (size_t i = 0; i < threadCount; ++i) {
-            m_workers.emplace_back([this, i] {
-                // spdlog::debug("Worker thread {} started", i);
-
+            m_workers.emplace_back([this] {
                 while (true) {
                     Task task;
 

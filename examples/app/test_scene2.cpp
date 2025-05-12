@@ -20,7 +20,7 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     vengine.scenes->getCurrentScene()->getCameras()->setActive(mainCameraEntity);
 
     auto camTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mainCameraEntity);
-    camTransform->setPosition(0.0f, 20.0f, 150.0f);
+    camTransform->setPosition(0.0f, -82.0f, 50.0f);
     // don't forget the aspect ratio
     auto camComp = vengine.ecs->getEntityComponent<Vengine::CameraComponent>(mainCameraEntity);
     camComp->aspectRatio = static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
@@ -49,11 +49,13 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity2);
     auto boxTransform3 = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(groundEntity2);
     boxTransform3->setPosition(0.0f, -100.0f, 0.0f);
-    boxTransform3->setScale(200.0f, 1.0f, 200.0f);
+    boxTransform3->setScale(200.0f, 0.1f, 200.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity2, texturedMaterial);
     vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
     auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
     jolt->isStatic = true;
+    jolt->restitution = 0.2f;
+    jolt->friction = 0.2f;
 
     // a grid of cubes
     int gridWidth = 50;
@@ -79,6 +81,9 @@ void TestScene2::load(Vengine::Vengine& vengine) {
             }
 
             vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(entity);
+            auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(entity);
+            jolt->restitution = 0.8f;
+            jolt->friction = 0.2f;
 
             float currentX = startX + static_cast<float>(col) * spacingX;
             float currentY = startY - static_cast<float>(row) * spacingY;

@@ -6,9 +6,6 @@
 #include <memory>
 #include <tl/expected.hpp>
 
-#include <jolt/Jolt.h>
-#include <jolt/RegisterTypes.h>
-
 #include "vengine/core/event_system.hpp"
 #include "vengine/core/thread_manager.hpp"
 #include "vengine/ecs/components.hpp"

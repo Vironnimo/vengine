@@ -10,10 +10,6 @@ find_package(sol2 CONFIG REQUIRED)
 find_package(Jolt CONFIG REQUIRED)
 
 set(SOURCES
-        # app/app.cpp
-        # app/test_module.cpp
-        # app/test_scene.cpp
-        # app/test_scene2.cpp
         vengine/vengine.cpp
         vengine/core/resource_manager.cpp
         vengine/core/action.cpp

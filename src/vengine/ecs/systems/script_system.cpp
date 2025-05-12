@@ -309,18 +309,18 @@ void ScriptSystem::registerBindings(Vengine* vengine) {
         }
     };
 
-    lua.set_function("subscribe_key_event", [](sol::function lua_callback) {
+    lua.set_function("subscribe_key_event", [](const sol::function& lua_callback) {
         // Example: subscribe to KeyPressedEvent
         g_eventSystem.subscribe<KeyPressedEvent>(
             [lua_callback](const KeyPressedEvent& event) { lua_callback(event.key, event.repeat); });
     });
 
-    lua.set_function("subscribe_mouse_event", [](sol::function lua_callback) {
+    lua.set_function("subscribe_mouse_event", [](const sol::function& lua_callback) {
         // Example: subscribe to KeyPressedEvent
         g_eventSystem.subscribe<MouseMovedEvent>(
             [lua_callback](const MouseMovedEvent& event) { lua_callback(event.x, event.y, event.lastX, event.lastY); });
     });
-    lua.set_function("subscribe_mouse_scroll_event", [](sol::function lua_callback) {
+    lua.set_function("subscribe_mouse_scroll_event", [](const sol::function& lua_callback) {
         // Example: subscribe to KeyPressedEvent
         g_eventSystem.subscribe<MouseScrollEvent>(
             [lua_callback](const MouseScrollEvent& event) { lua_callback(event.xOffset, event.yOffset); });

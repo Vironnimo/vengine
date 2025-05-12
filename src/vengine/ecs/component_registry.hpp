@@ -8,7 +8,6 @@
 
 namespace Vengine {
 
-// Maximum number of component types
 constexpr size_t MAX_COMPONENTS = 32;
 using ComponentBitset = std::bitset<MAX_COMPONENTS>;
 using ComponentId = uint32_t;
