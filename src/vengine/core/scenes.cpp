@@ -35,7 +35,7 @@ void Scenes::load(const std::string& name, Vengine& vengine) {
             it->second->setEntities(m_currentScene->getEntities());
 
             // reset jolt by hand if it exists
-            auto joltSystem = vengine.ecs->getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");
+            auto joltSystem = vengine.ecs->getSystem<PhysicsSystem>("JoltPhysicsSystem");
             if (joltSystem) {
                 vengine.ecs->resetPhysicsSystem();
             }

@@ -41,7 +41,7 @@ class Texture : public IResource {
 
         m_width = m_rawData->width;
         m_height = m_rawData->height;
-        m_needsGpuInit = true;
+        m_needsMainThreadInit = true;
         m_isLoaded = true;
         // spdlog::info("Loaded texture data from: {}", fullPath.string());
 
@@ -49,8 +49,8 @@ class Texture : public IResource {
     }
 
     // send data to gpu
-    auto finalizeOnGpu() -> bool {
-        if (!m_needsGpuInit || !m_rawData || !m_rawData->pixels) {
+    auto finalizeOnMainThread() -> bool override {
+        if (!m_needsMainThreadInit || !m_rawData || !m_rawData->pixels) {
             return false;
         }
 
@@ -74,7 +74,7 @@ class Texture : public IResource {
         // stbi_image_free(m_rawData->pixels);
         // m_rawData.reset();
 
-        m_needsGpuInit = false;
+        m_needsMainThreadInit = false;
         return true;
     }
 
@@ -117,16 +117,11 @@ class Texture : public IResource {
         return m_height;
     }
 
-    [[nodiscard]] auto needsGpuInit() const -> bool {
-        return m_needsGpuInit;
-    }
-
    private:
     GLuint m_id = 0;
     int m_width = 0;
     int m_height = 0;
     std::shared_ptr<RawImageData> m_rawData;
-    bool m_needsGpuInit = false;
     int m_channels = 0;
 };
 

@@ -6,13 +6,13 @@
 #include <memory>
 #include <tl/expected.hpp>
 
-#include "vengine/core/event_system.hpp"
+#include "vengine/core/event_manager.hpp"
 #include "vengine/core/thread_manager.hpp"
 #include "vengine/ecs/components.hpp"
 #include "vengine/renderer/renderer.hpp"
 #include "vengine/core/resource_manager.hpp"
 #include "vengine/ecs/systems.hpp"
-#include "vengine/core/input_system.hpp"
+#include "vengine/core/input_manager.hpp"
 #include "vengine/core/cameras.hpp"
 
 namespace Vengine {
@@ -28,7 +28,7 @@ Vengine::~Vengine() {
     spdlog::debug("Destructor Vengine");
 
     // so what would be the best order to destroy things?
-    g_eventSystem.clear();
+    g_eventManager.clear();
     threadManager.reset();
     resourceManager.reset();
     scenes.reset();
@@ -51,8 +51,8 @@ Vengine::~Vengine() {
     spdlog::flush_on(spdlog::level::debug);
     spdlog::info("Vengine: starting...");
 
-    signals = std::make_unique<SignalSystem>();
-    events = &g_eventSystem;
+    signals = std::make_unique<Signals>();
+    events = &g_eventManager;
 
     timers->start("vengine.window_creation");
     window = std::make_shared<Window>();
@@ -75,7 +75,7 @@ Vengine::~Vengine() {
         return tl::unexpected(result.error());
     }
 
-    inputSystem = std::make_unique<InputSystem>();
+    inputSystem = std::make_unique<InputManager>();
     inputSystem->setWindow(window->get());
     actions = std::make_unique<Actions>();
 
@@ -103,7 +103,7 @@ Vengine::~Vengine() {
     // register built-in systems
     auto transformSystem = std::make_shared<TransformSystem>();
     transformSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
-    auto joltPhysicsSystem = std::make_shared<JoltPhysicsSystem>();
+    auto joltPhysicsSystem = std::make_shared<PhysicsSystem>();
     joltPhysicsSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
     ecs->registerSystem("TransformSystem", std::make_shared<TransformSystem>());
     ecs->registerSystem("JoltPhysicsSystem", joltPhysicsSystem);
@@ -148,7 +148,7 @@ auto Vengine::run() -> void {
         auto transformSystem = ecs->getSystem<TransformSystem>("TransformSystem");
         transformSystem->update(ecs->getActiveEntities(), timers->deltaTime());
 
-        auto joltPhysicsSystem = ecs->getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");
+        auto joltPhysicsSystem = ecs->getSystem<PhysicsSystem>("JoltPhysicsSystem");
         joltPhysicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
         // auto physicsAndCollisionTaskFuture = threadManager->enqueueTask(
         //     [this]() {
@@ -201,7 +201,7 @@ void Vengine::registerGlfwCallbacks() {
     // should just trigger a window resize event, right?
     glfwSetFramebufferSizeCallback(window->get(), [](GLFWwindow* wnd, int width, int height) {
         // TODO so where do we handle the resize event?
-        g_eventSystem.publish(WindowResizeEvent{width, height});
+        g_eventManager.publish(WindowResizeEvent{width, height});
         glViewport(0, 0, width, height);
         auto* vengine = static_cast<Vengine*>(glfwGetWindowUserPointer(wnd));
         if (vengine && vengine->ecs) {
@@ -213,11 +213,11 @@ void Vengine::registerGlfwCallbacks() {
 
     glfwSetKeyCallback(window->get(), [](GLFWwindow*, int key, int scancode, int action, int mods) {
         if (action == GLFW_PRESS) {
-            g_eventSystem.publish(KeyPressedEvent{key, false});
+            g_eventManager.publish(KeyPressedEvent{key, false});
         } else if (action == GLFW_REPEAT) {
-            g_eventSystem.publish(KeyPressedEvent{key, true});
+            g_eventManager.publish(KeyPressedEvent{key, true});
         } else if (action == GLFW_RELEASE) {
-            g_eventSystem.publish(KeyReleasedEvent{key});
+            g_eventManager.publish(KeyReleasedEvent{key});
         }
     });
 
@@ -228,7 +228,7 @@ void Vengine::registerGlfwCallbacks() {
         spdlog::debug("Vengine: Active Camera changed to CameraID: {}", event.newCamera);
 
         glfwSetScrollCallback(window->get(), [](GLFWwindow*, double xoffset, double yoffset) {
-            g_eventSystem.publish(MouseScrollEvent{static_cast<int>(xoffset), static_cast<int>(yoffset)});
+            g_eventManager.publish(MouseScrollEvent{static_cast<int>(xoffset), static_cast<int>(yoffset)});
         });
     });
 

@@ -54,8 +54,8 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
     auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
     jolt->isStatic = true;
-    jolt->restitution = 0.2f;
-    jolt->friction = 0.2f;
+    // jolt->restitution = 0.2f;
+    // jolt->friction = 1.0f;
 
     // a grid of cubes
     int gridWidth = 50;
@@ -82,8 +82,8 @@ void TestScene2::load(Vengine::Vengine& vengine) {
 
             vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(entity);
             auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(entity);
-            jolt->restitution = 0.8f;
-            jolt->friction = 0.2f;
+            // jolt->restitution = 0.8f;
+            // jolt->friction = 0.2f;
 
             float currentX = startX + static_cast<float>(col) * spacingX;
             float currentY = startY - static_cast<float>(row) * spacingY;

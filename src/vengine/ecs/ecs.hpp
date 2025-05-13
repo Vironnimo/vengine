@@ -8,7 +8,7 @@
 #include "base_system.hpp"
 #include "vengine/ecs/entities.hpp"
 #include "vengine/ecs/entity.hpp"
-#include "vengine/ecs/systems/jolt_physics_system.hpp"
+#include "vengine/ecs/systems/physics_system.hpp"
 
 namespace Vengine {
 
@@ -45,7 +45,7 @@ class ECS {
 
     auto destroyEntity(EntityId entity) -> void {
         // TODO gotta check first if the entity has a jolt component
-        auto joltSystem = getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");
+        auto joltSystem = getSystem<PhysicsSystem>("JoltPhysicsSystem");
         if (joltSystem) {
             joltSystem->removeBody(entity, m_activeEntities);
         }
@@ -135,9 +135,9 @@ class ECS {
         return nullptr;
     }
 
-// TODO: yeah this is a weird one, gotta rethink this
+    // TODO: yeah this is a weird one, gotta rethink this
     void resetPhysicsSystem() {
-        auto joltSystem = std::make_shared<JoltPhysicsSystem>();
+        auto joltSystem = std::make_shared<PhysicsSystem>();
         joltSystem->setEnabled(false);
 
         m_systems["JoltPhysicsSystem"] = joltSystem;

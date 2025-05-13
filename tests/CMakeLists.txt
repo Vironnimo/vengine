@@ -9,8 +9,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 set(TEST_SOURCES
     main.cpp
-    ../src/vengine/core/signal_system.cpp
-    signal_system_tests.cpp
+    ../src/vengine/core/signals.cpp
+    signals_tests.cpp
     ../src/vengine/core/actions.cpp
     ../src/vengine/core/action.cpp
     actions_tests.cpp

@@ -4,11 +4,10 @@
 
 namespace Vengine {
 
-class InputSystem {
+class InputManager {
 public:
-    InputSystem();
-    ~InputSystem();
-
+    InputManager();
+    ~InputManager();
 
     void update(); 
 

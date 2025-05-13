@@ -20,7 +20,7 @@ class Mesh : public IResource {
 
     auto load(const std::string& fileName) -> bool override;
     auto unload() -> bool override;
-    auto finalizeOnGpu() -> bool;
+    auto finalizeOnMainThread() -> bool override;
 
     auto draw() const -> void;
 
@@ -51,10 +51,6 @@ class Mesh : public IResource {
         return m_indices;
     }
 
-    [[nodiscard]] auto needsGpuInit() const -> bool {
-        return m_needsGpuInit;
-    }
-
    private:
     std::vector<float> m_vertices;  // keep raw data for who knows what?
     std::vector<uint32_t> m_indices;
@@ -63,8 +59,6 @@ class Mesh : public IResource {
     std::shared_ptr<IndexBuffer> m_indexBuffer;
     bool m_useIndices = false;
     VertexLayout m_layout;
-
-    bool m_needsGpuInit = false;  
 };
 
 }  // namespace Vengine

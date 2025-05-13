@@ -6,10 +6,10 @@
 
 namespace Vengine {
 
-class SignalSystem {
+class Signals {
    public:
-    SignalSystem();
-    ~SignalSystem();
+    Signals();
+    ~Signals();
 
     void subscribe(const std::string& eventName, std::function<void(void*)> callback);
     void publish(const std::string& eventName, void* data = nullptr);

@@ -28,12 +28,12 @@ auto Mesh::load(const std::string& fileName) -> bool {
                       floatsPerVertex);
     }
 
-    m_needsGpuInit = true;
+    m_needsMainThreadInit = true;
     return true;
 }
 
-auto Mesh::finalizeOnGpu() -> bool {
-    if (!m_needsGpuInit) {
+auto Mesh::finalizeOnMainThread() -> bool {
+    if (!m_needsMainThreadInit) {
         return false;
     }
 
@@ -49,7 +49,7 @@ auto Mesh::finalizeOnGpu() -> bool {
         spdlog::warn("Mesh created without indices.");
     }  
 
-    m_needsGpuInit = false;
+    m_needsMainThreadInit = false;
     return true;
 }
 

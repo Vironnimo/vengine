@@ -14,8 +14,21 @@ class IResource {
         return m_isLoaded;
     }
 
+    [[nodiscard]] auto needsMainThreadInit() const -> bool {
+        return m_needsMainThreadInit;
+    }
+
+    virtual auto finalizeOnMainThread() -> bool {
+        if (!m_needsMainThreadInit) {
+            return false;
+        }
+        m_needsMainThreadInit = false;
+        return true;
+    }
+
    protected:
     bool m_isLoaded = false;
+    bool m_needsMainThreadInit = false;
 };
 
 }  // namespace Vengine

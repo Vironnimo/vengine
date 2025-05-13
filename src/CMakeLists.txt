@@ -15,17 +15,17 @@ set(SOURCES
         vengine/core/action.cpp
         vengine/core/cameras.cpp
         vengine/core/uuid.cpp
-        vengine/core/input_system.cpp
+        vengine/core/input_manager.cpp
         vengine/core/actions.cpp
         vengine/core/timers.cpp
         vengine/core/mesh.cpp
         vengine/core/mesh_loader.cpp
-        vengine/core/signal_system.cpp
-        vengine/core/event_system.cpp
+        vengine/core/signals.cpp
+        vengine/core/event_manager.cpp
         vengine/core/scenes.cpp
         vengine/utils/utils.cpp
         vengine/ecs/entity.cpp
-        vengine/ecs/systems/jolt_physics_system.cpp
+        vengine/ecs/systems/physics_system.cpp
         vengine/ecs/systems/script_system.cpp
         vengine/renderer/renderer.cpp
         vengine/renderer/material.cpp

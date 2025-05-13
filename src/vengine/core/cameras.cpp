@@ -1,5 +1,5 @@
 #include "cameras.hpp"
-#include "vengine/core/event_system.hpp"
+#include "vengine/core/event_manager.hpp"
 
 namespace Vengine {
 Cameras::Cameras() {
@@ -32,7 +32,7 @@ void Cameras::setActive(EntityId camera) {
     }
 
     m_activeCamera = camera;  
-    g_eventSystem.publish(CameraChangedEvent{camera});
+    g_eventManager.publish(CameraChangedEvent{camera});
 }
 
 auto Cameras::getActive() const -> EntityId {

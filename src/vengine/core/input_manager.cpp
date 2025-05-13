@@ -1,24 +1,24 @@
-#include "input_system.hpp"
+#include "input_manager.hpp"
 
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
-#include "vengine/core/event_system.hpp"
+#include "vengine/core/event_manager.hpp"
 
 namespace Vengine {
 
-void InputSystem::setWindow(GLFWwindow* window) {
+void InputManager::setWindow(GLFWwindow* window) {
     m_window = window;
 }
 
-InputSystem::InputSystem() {
+InputManager::InputManager() {
     spdlog::debug("Constructor InputSystem");
 }
 
-InputSystem::~InputSystem() {
+InputManager::~InputManager() {
     spdlog::debug("Destructor InputSystem");
 }
 
-void InputSystem::update() {
+void InputManager::update() {
     m_keysPressed.clear();
     m_keysReleased.clear();
     m_mousePressed.clear();
@@ -27,7 +27,7 @@ void InputSystem::update() {
     pollInput();
 }
 
-void InputSystem::pollInput() {
+void InputManager::pollInput() {
     if (!m_window) {
         return;
     }
@@ -76,43 +76,43 @@ void InputSystem::pollInput() {
 
     // send mouse moved event
     if (m_mouseDeltaX != 0.0 || m_mouseDeltaY != 0.0) {
-        g_eventSystem.publish(MouseMovedEvent{static_cast<int>(m_mouseX),
+        g_eventManager.publish(MouseMovedEvent{static_cast<int>(m_mouseX),
                                               static_cast<int>(m_mouseY),
                                               static_cast<int>(m_lastMouseX),
                                               static_cast<int>(m_lastMouseY)});
     }
 }
 
-auto InputSystem::isKeyDown(int key) const -> bool {
+auto InputManager::isKeyDown(int key) const -> bool {
     auto it = m_keysDown.find(key);
     return it != m_keysDown.end() && it->second;
 }
-auto InputSystem::isKeyPressed(int key) const -> bool {
+auto InputManager::isKeyPressed(int key) const -> bool {
     auto it = m_keysPressed.find(key);
     return it != m_keysPressed.end() && it->second;
 }
-auto InputSystem::isKeyReleased(int key) const -> bool {
+auto InputManager::isKeyReleased(int key) const -> bool {
     auto it = m_keysReleased.find(key);
     return it != m_keysReleased.end() && it->second;
 }
 
-auto InputSystem::isMouseButtonDown(int button) const -> bool {
+auto InputManager::isMouseButtonDown(int button) const -> bool {
     auto it = m_mouseDown.find(button);
     return it != m_mouseDown.end() && it->second;
 }
-auto InputSystem::isMouseButtonPressed(int button) const -> bool {
+auto InputManager::isMouseButtonPressed(int button) const -> bool {
     auto it = m_mousePressed.find(button);
     return it != m_mousePressed.end() && it->second;
 }
-auto InputSystem::isMouseButtonReleased(int button) const -> bool {
+auto InputManager::isMouseButtonReleased(int button) const -> bool {
     auto it = m_mouseReleased.find(button);
     return it != m_mouseReleased.end() && it->second;
 }
 
-auto InputSystem::getMouseX() const -> double {
+auto InputManager::getMouseX() const -> double {
     return m_mouseX;
 }
-auto InputSystem::getMouseY() const -> double {
+auto InputManager::getMouseY() const -> double {
     return m_mouseY;
 }
 

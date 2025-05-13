@@ -6,7 +6,7 @@
 #include "components.hpp"
 #include "base_system.hpp"
 #include "systems/script_system.hpp"
-#include "systems/jolt_physics_system.hpp"
+#include "systems/physics_system.hpp"
 
 namespace Vengine {
 

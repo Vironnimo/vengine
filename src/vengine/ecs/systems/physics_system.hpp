@@ -6,15 +6,16 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
+
 #include "vengine/ecs/base_system.hpp"
 #include "vengine/ecs/entities.hpp"
 
 namespace Vengine {
 
-class JoltPhysicsSystem : public BaseSystem {
+class PhysicsSystem : public BaseSystem {
    public:
-    JoltPhysicsSystem();
-    ~JoltPhysicsSystem() override;
+    PhysicsSystem();
+    ~PhysicsSystem() override;
 
     void update(std::shared_ptr<Entities> entities, float deltaTime) override;
     void removeBody(EntityId entityId, const std::shared_ptr<Entities>& entities);

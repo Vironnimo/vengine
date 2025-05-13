@@ -3,7 +3,7 @@
 #include "vengine/core/events.hpp"
 #include "vengine/ecs/components.hpp"
 #include "vengine/vengine.hpp"
-#include "vengine/core/event_system.hpp"
+#include "vengine/core/event_manager.hpp"
 
 namespace Vengine {
 
@@ -268,27 +268,27 @@ void ScriptSystem::registerBindings(Vengine* vengine) {
                                                                                    &CameraComponent::isActiveCamera);
 
     // Expose InputSystem methods to Lua
-    lua.new_usertype<InputSystem>("InputSystem",
+    lua.new_usertype<InputManager>("InputSystem",
                                   "isKeyDown",
-                                  &InputSystem::isKeyDown,
+                                  &InputManager::isKeyDown,
                                   "isKeyPressed",
-                                  &InputSystem::isKeyPressed,
+                                  &InputManager::isKeyPressed,
                                   "isKeyReleased",
-                                  &InputSystem::isKeyReleased,
+                                  &InputManager::isKeyReleased,
                                   "isMouseButtonDown",
-                                  &InputSystem::isMouseButtonDown,
+                                  &InputManager::isMouseButtonDown,
                                   "isMouseButtonPressed",
-                                  &InputSystem::isMouseButtonPressed,
+                                  &InputManager::isMouseButtonPressed,
                                   "isMouseButtonReleased",
-                                  &InputSystem::isMouseButtonReleased,
+                                  &InputManager::isMouseButtonReleased,
                                   "getMouseX",
-                                  &InputSystem::getMouseX,
+                                  &InputManager::getMouseX,
                                   "getMouseY",
-                                  &InputSystem::getMouseY,
+                                  &InputManager::getMouseY,
                                   "getMouseDeltaX",
-                                  &InputSystem::getMouseDeltaX,
+                                  &InputManager::getMouseDeltaX,
                                   "getMouseDeltaY",
-                                  &InputSystem::getMouseDeltaY);
+                                  &InputManager::getMouseDeltaY);
 
     // Expose the input system instance as 'input'
     lua["input"] = vengine->inputSystem.get();
@@ -311,18 +311,18 @@ void ScriptSystem::registerBindings(Vengine* vengine) {
 
     lua.set_function("subscribe_key_event", [](const sol::function& lua_callback) {
         // Example: subscribe to KeyPressedEvent
-        g_eventSystem.subscribe<KeyPressedEvent>(
+        g_eventManager.subscribe<KeyPressedEvent>(
             [lua_callback](const KeyPressedEvent& event) { lua_callback(event.key, event.repeat); });
     });
 
     lua.set_function("subscribe_mouse_event", [](const sol::function& lua_callback) {
         // Example: subscribe to KeyPressedEvent
-        g_eventSystem.subscribe<MouseMovedEvent>(
+        g_eventManager.subscribe<MouseMovedEvent>(
             [lua_callback](const MouseMovedEvent& event) { lua_callback(event.x, event.y, event.lastX, event.lastY); });
     });
     lua.set_function("subscribe_mouse_scroll_event", [](const sol::function& lua_callback) {
         // Example: subscribe to KeyPressedEvent
-        g_eventSystem.subscribe<MouseScrollEvent>(
+        g_eventManager.subscribe<MouseScrollEvent>(
             [lua_callback](const MouseScrollEvent& event) { lua_callback(event.xOffset, event.yOffset); });
     });
 }

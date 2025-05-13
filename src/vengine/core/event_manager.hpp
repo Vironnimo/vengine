@@ -9,13 +9,13 @@
 
 namespace Vengine {
 
-class EventSystem {
+class EventManager {
    public:
-    EventSystem() {
+    EventManager() {
         spdlog::debug("Constructor EventSystem");
 
     }
-    ~EventSystem() {
+    ~EventManager() {
         spdlog::debug("Destructor EventSystem");
     }
 
@@ -45,6 +45,6 @@ class EventSystem {
     std::unordered_map<std::type_index, std::vector<std::function<void(const Event&)>>> m_handlers;
 };
 
-extern EventSystem g_eventSystem;
+extern EventManager g_eventManager;
 
 }  // namespace Vengine

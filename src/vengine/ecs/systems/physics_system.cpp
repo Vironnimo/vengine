@@ -1,4 +1,4 @@
-#include "jolt_physics_system.hpp"
+#include "physics_system.hpp"
 
 #include <spdlog/spdlog.h>
 #include <Jolt/Jolt.h>
@@ -9,6 +9,7 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <glm/gtc/quaternion.hpp>
 
 namespace Vengine {
 
@@ -49,18 +50,18 @@ class ObjectLayerPairFilterImpl final : public JPH::ObjectLayerPairFilter {
 
 }  // anonymous namespace
 
-JoltPhysicsSystem::JoltPhysicsSystem() {
+PhysicsSystem::PhysicsSystem() {
     // spdlog::debug("Constructor JoltPhysicsSystem");
     initializeJolt();
 }
 
-JoltPhysicsSystem::~JoltPhysicsSystem() {
+PhysicsSystem::~PhysicsSystem() {
     // spdlog::debug("Destructor JoltPhysicsSystem");
     delete m_tempAllocator;
     delete m_jobSystem;
 }
 
-void JoltPhysicsSystem::initializeJolt() {
+void PhysicsSystem::initializeJolt() {
     if (m_initialized) {
         return;
     }
@@ -72,7 +73,7 @@ void JoltPhysicsSystem::initializeJolt() {
     JPH::RegisterTypes();
 
     m_tempAllocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
-    m_jobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, 8); // 8 threads for now
+    m_jobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, 8);  // 8 threads for now
 
     static BroadPhaseLayerInterfaceImpl broadPhaseLayerInterface;
     static ObjectVsBroadPhaseLayerFilterImpl objectVsBroadPhaseLayerFilter;
@@ -92,7 +93,7 @@ void JoltPhysicsSystem::initializeJolt() {
     m_initialized = true;
 }
 
-void JoltPhysicsSystem::createBodyForEntity(EntityId entityId, const std::shared_ptr<Entities>& entities) {
+void PhysicsSystem::createBodyForEntity(EntityId entityId, const std::shared_ptr<Entities>& entities) {
     auto joltComp = entities->getEntityComponent<JoltPhysicsComponent>(entityId);
     auto transform = entities->getEntityComponent<TransformComponent>(entityId);
     auto meshComp = entities->getEntityComponent<MeshComponent>(entityId);
@@ -106,7 +107,7 @@ void JoltPhysicsSystem::createBodyForEntity(EntityId entityId, const std::shared
     glm::vec3 halfExtent = ((meshMax - meshMin) * 0.5f) * scale;
 
     JPH::BoxShapeSettings shapeSettings(JPH::Vec3(halfExtent.x, halfExtent.y, halfExtent.z));
-    // shapeSettings.mConvexRadius = 0.0f; 
+    // shapeSettings.mConvexRadius = 0.0f;
     auto shapeResult = shapeSettings.Create();
     if (shapeResult.HasError()) {
         spdlog::error("Jolt: Failed to create shape: {}", shapeResult.GetError().c_str());
@@ -119,12 +120,15 @@ void JoltPhysicsSystem::createBodyForEntity(EntityId entityId, const std::shared
     JPH::RVec3 joltPos(pos.x + meshCenter.x * scale.x, pos.y + meshCenter.y * scale.y, pos.z + meshCenter.z * scale.z);
     // JPH::RVec3 joltPos(pos.x, pos.y, pos.z);
 
+    glm::vec3 rotation = transform->getRotation();  // (pitch, yaw, roll) or (x, y, z)
+    JPH::Vec3 joltRot = JPH::Vec3(rotation.x, rotation.y, rotation.z);
+    JPH::Quat joltQuat = JPH::Quat::sEulerAngles(joltRot);
+
     JPH::BodyCreationSettings bodySettings(shape,
                                            joltPos,
-                                           JPH::Quat::sIdentity(),
+                                           joltQuat,  // <-- use the actual rotation
                                            joltComp->isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
-                                           0  // object layer
-    );
+                                           0);
 
     bodySettings.mRestitution = joltComp->restitution;
     bodySettings.mFriction = joltComp->friction;
@@ -136,7 +140,7 @@ void JoltPhysicsSystem::createBodyForEntity(EntityId entityId, const std::shared
     joltComp->initialized = true;
 }
 
-void JoltPhysicsSystem::update(std::shared_ptr<Entities> entities, float deltaTime) {
+void PhysicsSystem::update(std::shared_ptr<Entities> entities, float deltaTime) {
     if (!m_initialized) {
         return;
     }
@@ -182,12 +186,16 @@ void JoltPhysicsSystem::update(std::shared_ptr<Entities> entities, float deltaTi
             transform->setPosition(static_cast<float>(pos.GetX()),
                                    static_cast<float>(pos.GetY()),
                                    static_cast<float>(pos.GetZ()));
+
             // TODO: i guess rotation aswell?
+            JPH::Quat rot = bodyInterface.GetRotation(joltComp->bodyId);
+            glm::quat glmRot(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ());
+            transform->setRotation(glm::eulerAngles(glmRot));
         }
     }
 }
 
-void JoltPhysicsSystem::removeBody(EntityId entityId, const std::shared_ptr<Entities>& entities) {
+void PhysicsSystem::removeBody(EntityId entityId, const std::shared_ptr<Entities>& entities) {
     auto joltComp = entities->getEntityComponent<JoltPhysicsComponent>(entityId);
     if (joltComp && joltComp->initialized) {
         auto& bodyInterface = m_physicsSystem.GetBodyInterface();
