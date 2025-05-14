@@ -129,7 +129,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     auto materialComp = vengine.ecs->getEntityComponent<Vengine::MaterialComponent>(treeEntity);
     materialComp->materialsByName["Bark"] = texturedMaterial;
     auto treeTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(treeEntity);
-    treeTransform->setPosition(10.0f, 0.4f, 0.0f);
+    treeTransform->setPosition(10.0f, 0.4f, -10.0f);
 
     // flower entity
     auto flowerEntity = vengine.ecs->createEntity();
@@ -167,18 +167,18 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // aquariumTransform->setScale(100.15f, 100.15f, 100.15f);
 
     // chair entity
-    auto chairEntity = vengine.ecs->createEntity();
-    vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
-    vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
-    vengine.ecs->addComponent<Vengine::VelocityComponent>(chairEntity);
-    vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
-    vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
-    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(chairEntity);
-    // auto moveScript = vengine.resourceManager->get<Vengine::Script>("move");
-    // vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, moveScript);
-    auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
-    chairTransform->setPosition(-25.0f, 100.0f, 5.0f);
-    chairTransform->setScale(0.01f, 0.01f, 0.01f);
+    // auto chairEntity = vengine.ecs->createEntity();
+    // vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
+    // vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
+    // vengine.ecs->addComponent<Vengine::VelocityComponent>(chairEntity);
+    // vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
+    // vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
+    // vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(chairEntity);
+    // // auto moveScript = vengine.resourceManager->get<Vengine::Script>("move");
+    // // vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, moveScript);
+    // auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
+    // chairTransform->setPosition(-25.0f, 100.0f, 5.0f);
+    // chairTransform->setScale(0.01f, 0.01f, 0.01f);
 
     // cube entity
     auto cubeEntity = vengine.ecs->createEntity();
@@ -196,7 +196,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(cubeEntity2, cubeMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(cubeEntity2);
     auto boxTransform2 = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(cubeEntity2);
-    boxTransform2->setPosition(0.0f, 20.0f, -5.0f);
+    boxTransform2->setPosition(0.0f, 40.0f, -5.0f);
     // boxTransform2->setScale(20.0f, 20.0f, 20.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity2, coloredMaterial);
     vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(cubeEntity2);

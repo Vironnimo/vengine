@@ -112,35 +112,6 @@ class ResourceManager {
                             },
                             "Finalize resource: " + name);
                     }
-
-                    // // TODO add needsgpuinit to resource base class, so we just check that not the type of the resource..
-                    // if constexpr (std::is_same_v<T, Texture>) {
-                    //     auto texture = std::static_pointer_cast<Texture>(resource);
-                    //     if (texture->needsGpuInit()) {
-                    //         m_threadManager->enqueueMainThreadTask(
-                    //             [texture, name]() {
-                    //                 if (texture->finalizeOnGpu()) {
-                    //                     // spdlog::info("Finalized texture on GPU: {}", name);
-                    //                 } else {
-                    //                     spdlog::error("Failed to finalize texture on GPU: {}", name);
-                    //                 }
-                    //             },
-                    //             "Finalize texture: " + name);
-                    //     }
-                    // } else if constexpr (std::is_same_v<T, Mesh>) {
-                    //     auto mesh = std::static_pointer_cast<Mesh>(resource);
-                    //     if (mesh->needsGpuInit()) {
-                    //         m_threadManager->enqueueMainThreadTask(
-                    //             [mesh, name]() {
-                    //                 if (mesh->finalizeOnGpu()) {
-                    //                     // spdlog::info("Finalized mesh on GPU: {}", name);
-                    //                 } else {
-                    //                     spdlog::error("Failed to finalize mesh on GPU: {}", name);
-                    //                 }
-                    //             },
-                    //             "Finalize mesh: " + name);
-                    //     }
-                    // }
                 } else {
                     spdlog::error("Failed to load {} resource: {}", typeid(T).name(), name);
                 }

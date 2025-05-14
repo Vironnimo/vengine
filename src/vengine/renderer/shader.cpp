@@ -110,6 +110,15 @@ auto Shader::unbind() -> void {
     return m_id;
 }
 
+auto Shader::setUniform1i(const std::string& name, int value) const -> void {
+    GLint location = glGetUniformLocation(m_id, name.c_str());
+    glUniform1i(location, value);
+
+    if (location == -1) {
+        spdlog::error("Uniform '{}' not found in shader program", name);
+    }
+}
+
 auto Shader::setUniformMat4(const std::string& name, const glm::mat4& value) const -> void {
     GLint location = glGetUniformLocation(m_id, name.c_str());
     // &value[0][0] gives us the memory address of the first element (top-left) in a mat4,

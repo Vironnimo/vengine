@@ -4,6 +4,7 @@
 #include <tl/expected.hpp>
 
 #include "vengine/core/error.hpp"
+#include "vengine/core/resources.hpp"
 #include "vengine/renderer/materials.hpp"
 #include "vengine/renderer/window.hpp"
 #include "vengine/renderer/shaders.hpp"
@@ -33,6 +34,10 @@ class Renderer {
    private:
     std::shared_ptr<Window> m_window;
     bool m_skyboxEnabled = false;
+
+    // shadow test
+    GLuint m_shadowMap;
+    GLuint m_shadowFBO;
 };
 
 }  // namespace Vengine

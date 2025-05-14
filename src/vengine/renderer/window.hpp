@@ -13,8 +13,8 @@ namespace Vengine {
 struct WindowParams {
     std::string title = "Vengine";
     bool centered = true;
-    int width = 1024;
-    int height = 768;
+    int width = 1600;
+    int height = 900;
     int widthMin = 0;
     int heightMin = 0;
     int maxFps = 0;

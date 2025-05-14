@@ -70,6 +70,76 @@ Renderer::~Renderer() {
 }
 
 auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
+    // light stuff
+    auto lightEntities = scene->getEntities()->getEntitiesWith<LightComponent>();
+    // default light values
+    glm::vec3 lightDirection = glm::vec3(0.0f, 10.0f, 0.0f);
+    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    float lightIntensity = 1.0f;
+    glm::vec3 lightPos = glm::vec3(0.0f, 10.0f, 0.0f);  // default
+
+    if (!lightEntities.empty()) {
+        auto lightComp = scene->getEntities()->getEntityComponent<LightComponent>(lightEntities[0]);
+        lightDirection = lightComp->direction;
+        lightColor = lightComp->color;
+        lightIntensity = lightComp->intensity;
+        auto lightTransform = scene->getEntities()->getEntityComponent<TransformComponent>(lightEntities[0]);
+        lightPos = lightTransform->getPosition();
+    }
+    // --- SHADOW MAP PASS ---
+    // 1. Set viewport to shadow map size
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, 2048, 2048);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // 2. Use your depth-only shader
+    auto shadowShader = shaders->get("shadow_depth").value();
+    shadowShader->bind();
+
+    // 3. Compute light's view-projection matrix (orthographic for directional light)
+    glm::vec3 lightTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 lightUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::mat4 lightView = glm::lookAt(lightPos, lightTarget, lightUp);
+    float orthoSize = 100.0f;
+    glm::mat4 lightProj = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, 1.0f, 200.0f);
+    glm::mat4 lightSpaceMatrix = lightProj * lightView;
+    shadowShader->setUniformMat4("uLightSpaceMatrix", lightSpaceMatrix);
+
+    // 4. Batch shadow casters by mesh
+    std::map<std::shared_ptr<Mesh>, std::vector<glm::mat4>> shadowBatches;
+    auto shadowCasters = scene->getEntities()->getEntitiesWith<TransformComponent, MeshComponent>();
+    for (auto entity : shadowCasters) {
+        auto transformComp = scene->getEntities()->getEntityComponent<TransformComponent>(entity);
+        auto meshComp = scene->getEntities()->getEntityComponent<MeshComponent>(entity);
+        if (!transformComp || !meshComp || !meshComp->mesh)
+            continue;
+        shadowBatches[meshComp->mesh].push_back(transformComp->getTransform());
+    }
+
+    // 5. Draw each batch with instancing
+    for (const auto& [mesh, transforms] : shadowBatches) {
+        uploadInstanceTransforms(mesh, transforms);
+        mesh->getVertexArray()->bind();
+        if (mesh->useIndices()) {
+            glDrawElementsInstanced(GL_TRIANGLES,
+                                    static_cast<GLsizei>(mesh->getIndexBuffer()->getCount()),
+                                    GL_UNSIGNED_INT,
+                                    nullptr,
+                                    static_cast<GLsizei>(transforms.size()));
+        } else {
+            glDrawArraysInstanced(GL_TRIANGLES,
+                                  0,
+                                  static_cast<GLsizei>(mesh->getVertexCount()),
+                                  static_cast<GLsizei>(transforms.size()));
+        }
+        mesh->getVertexArray()->unbind();
+    }
+
+    // 6. Unbind framebuffer and reset viewport to window size
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, m_window->getWidth(), m_window->getHeight());
+
     glClearColor(0.4f, 0.6f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -91,19 +161,19 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     glm::mat4 viewMatrix = cameraComponent->getViewMatrix(cameraTransform);
     glm::mat4 projectionMatrix = cameraComponent->getProjectionMatrix();
 
-    // light stuff
-    auto lightEntities = scene->getEntities()->getEntitiesWith<LightComponent>();
-    // default light values
-    glm::vec3 lightDirection = glm::vec3(0.0f, 10.0f, 0.0f);
-    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    float lightIntensity = 1.0f;
+    // // light stuff
+    // auto lightEntities = scene->getEntities()->getEntitiesWith<LightComponent>();
+    // // default light values
+    // glm::vec3 lightDirection = glm::vec3(0.0f, 10.0f, 0.0f);
+    // glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    // float lightIntensity = 1.0f;
 
-    if (!lightEntities.empty()) {
-        auto lightComp = scene->getEntities()->getEntityComponent<LightComponent>(lightEntities[0]);
-        lightDirection = lightComp->direction;
-        lightColor = lightComp->color;
-        lightIntensity = lightComp->intensity;
-    }
+    // if (!lightEntities.empty()) {
+    //     auto lightComp = scene->getEntities()->getEntityComponent<LightComponent>(lightEntities[0]);
+    //     lightDirection = lightComp->direction;
+    //     lightColor = lightComp->color;
+    //     lightIntensity = lightComp->intensity;
+    // }
     // if (!lightEntities.empty()) {
     //     auto lightEntity = lightEntities[0];
     //     auto lightComp = scene->getEntities()->getEntityComponent<LightComponent>(lightEntity);
@@ -214,6 +284,12 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
             continue;
         }
 
+        // Before drawing each batch/material:
+        shader->setUniformMat4("uLightSpaceMatrix", lightSpaceMatrix);  // from shadow pass
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+        shader->setUniform1i("uShadowMap", 1);
         shader->setUniformMat4("uView", viewMatrix);
         shader->setUniformMat4("uProjection", projectionMatrix);
         shader->setUniformVec3("uLightDirection", lightDirection);
@@ -360,6 +436,10 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     if (!shaderInit) {
         return tl::unexpected(shaderInit.error());
     }
+    // NOTE default shader
+    shaders->add(std::make_shared<Shader>("shadow_depth",
+                                          "resources/shaders/shadow_depth.vert",
+                                          "resources/shaders/shadow_depth.frag"));
 
     materials = std::make_unique<Materials>();
     auto materialsInit = materials->init();
@@ -375,6 +455,26 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     // should also be somewhere else
     setVSync(false);
     setMSAA(true);
+
+    // test shadow stuff
+    glGenFramebuffers(1, &m_shadowFBO);
+    glGenTextures(1, &m_shadowMap);
+    glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 2048, 2048, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+
+    // Set required texture parameters for shadow mapping
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return {};
 }
