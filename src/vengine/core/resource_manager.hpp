@@ -79,7 +79,7 @@ class ResourceManager {
                             },
                             loadArgsTuple);
                     } else {
-                        resource = m_meshLoader->loadFromObj(fileName);
+                        resource = m_meshLoader->loadModel(fileName);
                     }
                     if (!resource) {
                         spdlog::error("Failed to load mesh: {}", fileName);

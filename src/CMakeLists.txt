@@ -8,6 +8,7 @@ find_package(Freetype REQUIRED)
 find_package(Lua REQUIRED)
 find_package(sol2 CONFIG REQUIRED)
 find_package(Jolt CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
 set(SOURCES
         vengine/vengine.cpp
@@ -56,6 +57,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         ${LUA_LIBRARIES}
         sol2
         Jolt::Jolt
+        assimp::assimp
 )
 
 find_path(MINIAUDIO_INCLUDE_DIRS "miniaudio.h")

@@ -1,6 +1,11 @@
 #include "mesh_loader.hpp"
 #include <cstddef>
 
+#include <assimp/Importer.hpp>
+#include <cstdint>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 #include <spdlog/spdlog.h>
@@ -16,164 +21,128 @@ MeshLoader::~MeshLoader() {
     spdlog::debug("Destructor MeshLoader");
 }
 
-auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mesh> {
+auto MeshLoader::loadModel(const std::string& filename) -> std::shared_ptr<Mesh> {
     auto modelPath = getModelPath(filename);
-
-    // configure tinyobjloader
-    tinyobj::ObjReaderConfig config;
-    config.mtl_search_path = modelPath.parent_path().string();
-
-    tinyobj::ObjReader reader;
-    if (!reader.ParseFromFile(modelPath.string(), config)) {
-        if (!reader.Error().empty()) {
-            spdlog::error("tinyobjreader error: {}", reader.Error());
-        }
-        spdlog::error("failed to load .obj file: {}", modelPath.string());
+    
+    Assimp::Importer importer;
+    
+    const aiScene* scene = importer.ReadFile(
+        modelPath.string(),
+        aiProcess_Triangulate |           // ensure triangles
+        aiProcess_GenSmoothNormals |      // generate normals if not present
+        aiProcess_FlipUVs |               // flip tex coords (opengl needs this)
+        aiProcess_CalcTangentSpace |      // ??
+        aiProcess_JoinIdenticalVertices |
+        aiProcess_ValidateDataStructure  
+    );
+    
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        spdlog::error("Assimp error: {}", importer.GetErrorString());
+        return nullptr;
     }
-
-    if (!reader.Warning().empty()) {
-        spdlog::warn("tinyobjreader warning: {}", reader.Warning());
-    }
-
-    const auto& attrib = reader.GetAttrib();
-    const auto& shapes = reader.GetShapes();
-    const auto& materials = reader.GetMaterials();
-
+    
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
-    bool hasTexCoords = !attrib.texcoords.empty();
-    bool hasNormals = !attrib.normals.empty();
-    int floatsPerVertex = hasTexCoords ? 5 : 3;
-    if (hasNormals) {
-        floatsPerVertex += 3;
-    }
-    // spdlog::debug("Loading OBJ: '{}'. Has TexCoords: {}, Has Normals: {}, FloatsPerVertex: {}", filename, hasTexCoords,
-    // hasNormals,
-    //               floatsPerVertex);
-
-    // helper thingy to make sure we don't have duplicate vertices
-    struct VertexKey {
-        int v_idx, vt_idx, vn_idx;
-
-        auto operator<(const VertexKey& other) const -> bool {
-            return std::tie(v_idx, vt_idx, vn_idx) < std::tie(other.v_idx, other.vt_idx, other.vn_idx);
-        }
-        // add equality operator for map lookup
-        bool operator==(const VertexKey& other) const {
-            return std::tie(v_idx, vt_idx, vn_idx) == std::tie(other.v_idx, other.vt_idx, other.vn_idx);
-        }
-    };
-
-    std::map<VertexKey, uint32_t> uniqueVertices;
-    struct SubmeshInfo {
-        uint32_t indexOffset;
-        uint32_t indexCount;
+    std::vector<Submesh> submeshes;
+    
+    bool hasTexCoords = false;
+    bool hasNormals = true;  // always true i guess
+    
+    size_t totalVertexCount = 0;
+    for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+        aiMesh* mesh = scene->mMeshes[i];
+        size_t submeshStartIndex = indices.size();
+        
+        // get material name for mesh
         std::string materialName;
-    };
-    std::vector<SubmeshInfo> submeshes;
-
-    for (const auto& shape : shapes) {
-        size_t index_offset = 0;
-        int last_material_id = -1;
-        size_t submesh_start = 0;
-        for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
-            size_t fv = shape.mesh.num_face_vertices[f];
-            int material_id = shape.mesh.material_ids.empty() ? -1 : shape.mesh.material_ids[f];
-
-            // start new submesh
-            if (material_id != last_material_id && f > 0) {
-                SubmeshInfo submesh;
-                submesh.indexOffset = static_cast<uint32_t>(submesh_start * 3);  // 3 indices per face
-                submesh.indexCount = static_cast<uint32_t>((f - submesh_start) * 3);
-                submesh.materialName =
-                    (last_material_id >= 0 && last_material_id < materials.size()) ? materials[last_material_id].name : "";
-                submeshes.push_back(submesh);
-                submesh_start = f;
+        if (mesh->mMaterialIndex < scene->mNumMaterials) {
+            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+            aiString name;
+            if (material->Get(AI_MATKEY_NAME, name) == AI_SUCCESS) {
+                materialName = name.C_Str();
+            } else {
+                materialName = "material_" + std::to_string(mesh->mMaterialIndex);
             }
-            last_material_id = material_id;
-
-            if (fv != 3) {
-                spdlog::warn("Face {} in shape '{}' is not a triangle ({} vertices), skipping.", f, shape.name, fv);
-                index_offset += fv;
-                continue;
-            }
-
-            for (size_t v = 0; v < fv; v++) {
-                tinyobj::index_t idx = shape.mesh.indices[index_offset + v];
-
-                VertexKey key;
-                key.v_idx = idx.vertex_index;
-                key.vt_idx = idx.texcoord_index;
-                key.vn_idx = idx.normal_index;
-
-                if (uniqueVertices.find(key) == uniqueVertices.end()) {
-                    // new, add it
-                    uniqueVertices[key] = static_cast<uint32_t>(vertices.size() / static_cast<size_t>(floatsPerVertex));
-
-                    // 1. Position (always present)
-                    vertices.push_back(attrib.vertices[3 * static_cast<size_t>(key.v_idx) + 0]);
-                    vertices.push_back(attrib.vertices[3 * static_cast<size_t>(key.v_idx) + 1]);
-                    vertices.push_back(attrib.vertices[3 * static_cast<size_t>(key.v_idx) + 2]);
-
-                    // 2. Texture Coords (if available in OBJ and vertex)
-                    if (hasTexCoords) {
-                        if (key.vt_idx >= 0) {
-                            vertices.push_back(attrib.texcoords[2 * static_cast<size_t>(key.vt_idx) + 0]);
-                            vertices.push_back(attrib.texcoords[2 * static_cast<size_t>(key.vt_idx) + 1]);
-                        } else {
-                            vertices.push_back(0.0f);  // add dummy tex coords if there are none, is this a mistake?
-                            vertices.push_back(0.0f);
-                        }
-                    }
-
-                    // 3. Normals (if available in OBJ and vertex)
-                    if (hasNormals) {
-                        if (key.vn_idx >= 0) {
-                            vertices.push_back(attrib.normals[3 * static_cast<size_t>(key.vn_idx) + 0]);
-                            vertices.push_back(attrib.normals[3 * static_cast<size_t>(key.vn_idx) + 1]);
-                            vertices.push_back(attrib.normals[3 * static_cast<size_t>(key.vn_idx) + 2]);
-                        } else {
-                            // again dummy data, probably a mistake
-                            vertices.push_back(0.0f);
-                            vertices.push_back(1.0f);
-                            vertices.push_back(0.0f);
-                            spdlog::warn("Vertex missing normal index in OBJ, using default normal.");
-                        }
-                    }
-                }
-                indices.push_back(uniqueVertices[key]);
-            }
-            index_offset += fv;
+            
+            m_materialCache[std::to_string(mesh->mMaterialIndex)] = materialName;
         }
-        // Add last submesh for this shape
-        if (shape.mesh.num_face_vertices.size() > 0) {
-            SubmeshInfo submesh;
-            submesh.indexOffset = static_cast<uint32_t>(submesh_start * 3);
-            submesh.indexCount = static_cast<uint32_t>((shape.mesh.num_face_vertices.size() - submesh_start) * 3);
-            submesh.materialName =
-                (last_material_id >= 0 && last_material_id < materials.size()) ? materials[last_material_id].name : "";
-            submeshes.push_back(submesh);
+        
+        size_t vertexStartIndex = vertices.size() / 8;  // 8 = 3 pos + 2 tex + 3 norm
+        hasTexCoords = mesh->mTextureCoords[0] != nullptr;
+        
+        // process vertices
+        for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+            // position
+            vertices.push_back(mesh->mVertices[j].x);
+            vertices.push_back(mesh->mVertices[j].y);
+            vertices.push_back(mesh->mVertices[j].z);
+            
+            // texture coordinates 
+            if (hasTexCoords) {
+                vertices.push_back(mesh->mTextureCoords[0][j].x);
+                vertices.push_back(mesh->mTextureCoords[0][j].y);
+            } else {
+                // defaults
+                vertices.push_back(0.0f);
+                vertices.push_back(0.0f);
+            }
+            
+            // normals (always present due to aiProcess_GenSmoothNormals)
+            vertices.push_back(mesh->mNormals[j].x);
+            vertices.push_back(mesh->mNormals[j].y);
+            vertices.push_back(mesh->mNormals[j].z);
         }
+        
+        totalVertexCount += mesh->mNumVertices;
+        
+        // indices
+        for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
+            aiFace face = mesh->mFaces[j];
+            for (unsigned int k = 0; k < face.mNumIndices; k++) {
+                indices.push_back(face.mIndices[k] + static_cast<uint32_t>(vertexStartIndex));
+            }
+        }
+        
+        Submesh submesh;
+        submesh.indexOffset = static_cast<uint32_t>(submeshStartIndex);
+        submesh.indexCount = static_cast<uint32_t>(indices.size() - submeshStartIndex);
+        submesh.materialName = materialName;
+        submeshes.push_back(submesh);
+        
+        // spdlog::debug("Processed mesh {} with {} vertices, {} indices, material: {}", 
+                    //  i, mesh->mNumVertices, mesh->mNumFaces * 3, materialName);
     }
-
+    
+    // Validate vertex data consistency
     VertexLayout layout;
     layout.hasPosition = true;
-    layout.hasTexCoords = hasTexCoords;
+    layout.hasTexCoords = true; 
     layout.hasNormals = hasNormals;
 
-    auto mesh = std::make_shared<Mesh>(vertices, indices, layout);
-
-    // add submeshes to mesh
-    for (const auto& s : submeshes) {
-        Submesh submesh;
-        submesh.indexOffset = s.indexOffset;
-        submesh.indexCount = s.indexCount;
-        submesh.materialName = s.materialName;
-        mesh->addSubmesh(submesh);
-        spdlog::debug("Submesh: {} indices, material: {}", submesh.indexCount, submesh.materialName);
+    int floatsPerVertex = layout.calculateStride() / static_cast<int>(sizeof(float));
+    size_t expectedFloats = totalVertexCount * static_cast<size_t>(floatsPerVertex);
+    
+    if (vertices.size() != expectedFloats) {
+        spdlog::warn("Vertex data inconsistency detected. Expected {} floats but got {}. Fixing...", 
+                    expectedFloats, vertices.size());
+        
+        // fix vertex data if necessary 
+        if (vertices.size() > expectedFloats) {
+            vertices.resize(expectedFloats);
+        } else if (vertices.size() < expectedFloats) {
+            vertices.resize(expectedFloats, 0.0f);
+        }
     }
-
-    return mesh;
+    
+    spdlog::debug("Created mesh with {} vertices, {} indices, {} submeshes", 
+                 vertices.size() / static_cast<size_t>(floatsPerVertex), indices.size(), submeshes.size());
+    
+    auto result = std::make_shared<Mesh>(vertices, indices, layout);
+    for (const auto& submesh : submeshes) {
+        result->addSubmesh(submesh);
+    }
+    
+    return result;
 }
 
 auto MeshLoader::createPlane(float width, float height, int widthSegments, int heightSegments) -> std::shared_ptr<Mesh> {

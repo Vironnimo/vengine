@@ -11,6 +11,7 @@
     "miniaudio",
     "lua",
     "sol2",
-    "joltphysics"
+    "joltphysics",
+    "assimp"
   ]
 }

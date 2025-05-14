@@ -20,7 +20,7 @@ App::App() {
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("aquarium", "aquarium.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("plane", "buildin.plane", 500.0f, 500.0f);
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("cube", "box.obj");
-    // m_vengine->resourceManager->loadAsync<Vengine::Mesh>("chair", "chair.obj");
+    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("tank", "Tank.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("grass", "test3.jpg");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("stone", "test6.jpg");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("flowerTexture", "flower.png");

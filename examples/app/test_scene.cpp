@@ -88,7 +88,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
 
     // load objects into meshes
     auto cubeMesh = vengine.resourceManager->get<Vengine::Mesh>("cube");
-    auto chairMesh = vengine.resourceManager->get<Vengine::Mesh>("chair");
+    auto tankMesh = vengine.resourceManager->get<Vengine::Mesh>("tank");
     auto groundMesh = vengine.resourceManager->get<Vengine::Mesh>("plane");
     auto antMesh = vengine.resourceManager->get<Vengine::Mesh>("ant");
     auto aquariumMesh = vengine.resourceManager->get<Vengine::Mesh>("aquarium");
@@ -166,19 +166,18 @@ void TestScene::load(Vengine::Vengine& vengine) {
     aquariumTransform->setPosition(0.0f, 5.0f, 0.0f);
     // aquariumTransform->setScale(100.15f, 100.15f, 100.15f);
 
-    // chair entity
-    // auto chairEntity = vengine.ecs->createEntity();
-    // vengine.ecs->addComponent<Vengine::TagComponent>(chairEntity, "chair");
-    // vengine.ecs->addComponent<Vengine::MeshComponent>(chairEntity, chairMesh);
-    // vengine.ecs->addComponent<Vengine::VelocityComponent>(chairEntity);
-    // vengine.ecs->addComponent<Vengine::TransformComponent>(chairEntity);
-    // vengine.ecs->addComponent<Vengine::MaterialComponent>(chairEntity, texturedMaterial2);
-    // vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(chairEntity);
-    // // auto moveScript = vengine.resourceManager->get<Vengine::Script>("move");
-    // // vengine.ecs->addComponent<Vengine::ScriptComponent>(chairEntity, moveScript);
-    // auto chairTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(chairEntity);
-    // chairTransform->setPosition(-25.0f, 100.0f, 5.0f);
-    // chairTransform->setScale(0.01f, 0.01f, 0.01f);
+    // tank entity
+    auto tankEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(tankEntity, "tank");
+    vengine.ecs->addComponent<Vengine::MeshComponent>(tankEntity, tankMesh);
+    vengine.ecs->addComponent<Vengine::VelocityComponent>(tankEntity);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(tankEntity);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(tankEntity, texturedMaterial2);
+    // vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(tankEntity);
+    // auto moveScript = vengine.resourceManager->get<Vengine::Script>("move");
+    // vengine.ecs->addComponent<Vengine::ScriptComponent>(tankEntity, moveScript);
+    auto tankTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(tankEntity);
+    tankTransform->setPosition(-25.0f, 0.0f, 0.0f);
 
     // cube entity
     auto cubeEntity = vengine.ecs->createEntity();
