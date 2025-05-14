@@ -237,4 +237,21 @@ struct JoltPhysicsComponent : public BaseComponent {
     float friction = 0.2f;
 };
 
+struct LightComponent : public BaseComponent {
+    enum class LightType {
+        DIRECTIONAL,
+        POINT,
+        SPOT  
+    };
+
+    LightType type = LightType::DIRECTIONAL;
+    glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
+    float intensity = 1.0f;
+
+    // For DIRECTIONAL light, this is the direction the light is shining.
+    // For POINT light, this would be its position (usually handled by TransformComponent).
+    // For SPOT light, this is the direction it's pointing.
+    glm::vec3 direction = glm::vec3(0.0f, -1.0f, 0.0f); // Default: shining downwards
+};
+
 }  // namespace Vengine

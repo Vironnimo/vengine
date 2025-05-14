@@ -100,6 +100,7 @@ Vengine::~Vengine() {
     ecs->registerComponent<ScriptComponent>("Script");
     ecs->registerComponent<CameraComponent>("Camera");
     ecs->registerComponent<JoltPhysicsComponent>("JoltPhysics");
+    ecs->registerComponent<LightComponent>("Light");
     // register built-in systems
     auto transformSystem = std::make_shared<TransformSystem>();
     transformSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics

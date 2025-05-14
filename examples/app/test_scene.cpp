@@ -56,7 +56,6 @@ void TestScene::load(Vengine::Vengine& vengine) {
     blueMaterial->setBool("uUseTexture", false);
     blueMaterial->setVec4("uColor", glm::vec4(0.2f, 0.4f, 0.8f, 1.0f));
 
-
     vengine.renderer->materials->add("stone", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto stoneMaterial = vengine.renderer->materials->get("stone");
     stoneMaterial->setBool("uUseTexture", true);
@@ -106,6 +105,19 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, texturedMaterial);
     // auto planeBounds = groundMesh->getBounds();
     // vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first, planeBounds.second);
+
+    // light entity
+    auto lightEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(lightEntity, "light");
+    vengine.ecs->addComponent<Vengine::TransformComponent>(lightEntity);
+    vengine.ecs->addComponent<Vengine::LightComponent>(lightEntity);
+    auto lightTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(lightEntity);
+    // set the light source position like a sun in the sky
+    lightTransform->setPosition(20.0f, 50.0f, 20.0f);
+    auto lightComp = vengine.ecs->getEntityComponent<Vengine::LightComponent>(lightEntity);
+    glm::vec3 sunPos = lightTransform->getPosition();
+    glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
+    lightComp->direction = glm::normalize(target - sunPos);
 
     // tree entity
     auto treeMesh = vengine.resourceManager->get<Vengine::Mesh>("tree");

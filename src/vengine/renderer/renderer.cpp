@@ -91,6 +91,36 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     glm::mat4 viewMatrix = cameraComponent->getViewMatrix(cameraTransform);
     glm::mat4 projectionMatrix = cameraComponent->getProjectionMatrix();
 
+    // light stuff
+    auto lightEntities = scene->getEntities()->getEntitiesWith<LightComponent>();
+    // default light values
+    glm::vec3 lightDirection = glm::vec3(0.0f, 10.0f, 0.0f);
+    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    float lightIntensity = 1.0f;
+
+    if (!lightEntities.empty()) {
+        auto lightComp = scene->getEntities()->getEntityComponent<LightComponent>(lightEntities[0]);
+        lightDirection = lightComp->direction;
+        lightColor = lightComp->color;
+        lightIntensity = lightComp->intensity;
+    }
+    // if (!lightEntities.empty()) {
+    //     auto lightEntity = lightEntities[0];
+    //     auto lightComp = scene->getEntities()->getEntityComponent<LightComponent>(lightEntity);
+    //     auto lightTransform = scene->getEntities()->getEntityComponent<TransformComponent>(lightEntity);
+
+    //     if (lightTransform) {
+    //         // Assuming forward is -Z in your engine
+    //         glm::vec3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
+    //         glm::vec3 direction = glm::mat3(lightTransform->getTransform()) * forward;
+    //         lightDirection = glm::normalize(direction);
+    //     } else {
+    //         lightDirection = lightComp->direction;
+    //     }
+    //     lightColor = lightComp->color;
+    //     lightIntensity = lightComp->intensity;
+    // }
+
     // batch rendering with submeshes
     std::map<MeshMaterialKey, std::vector<glm::mat4>> simpleBatches;
     std::map<MeshSubmeshMaterialKey, std::vector<glm::mat4>> submeshBatches;
@@ -138,7 +168,7 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         }
     }
 
-    // no submesh rendering
+    // no-submesh rendering
     for (const auto& [key, transforms] : simpleBatches) {
         auto mesh = key.mesh;
         auto material = key.material;
@@ -182,10 +212,12 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         auto shader = material->getShader();
         if (!shader) {
             continue;
-}
+        }
 
         shader->setUniformMat4("uView", viewMatrix);
         shader->setUniformMat4("uProjection", projectionMatrix);
+        shader->setUniformVec3("uLightDirection", lightDirection);
+        shader->setUniformVec3("uLightColor", lightColor * lightIntensity);
 
         uploadInstanceTransforms(mesh, transforms);
 
