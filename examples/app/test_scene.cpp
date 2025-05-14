@@ -42,12 +42,30 @@ void TestScene::load(Vengine::Vengine& vengine) {
     auto texture2 = vengine.resourceManager->get<Vengine::Texture>("test_texture2");
     auto aquariumTexture = vengine.resourceManager->get<Vengine::Texture>("aquariumTexture");
     auto flowerTexture = vengine.resourceManager->get<Vengine::Texture>("flowerTexture");
+    auto grassTexture = vengine.resourceManager->get<Vengine::Texture>("grass");
+    auto stoneTexture = vengine.resourceManager->get<Vengine::Texture>("stone");
     auto defaultShader = vengine.renderer->shaders->get("default");
 
     vengine.renderer->materials->add("colored", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto coloredMaterial = vengine.renderer->materials->get("colored");
     coloredMaterial->setBool("uUseTexture", false);
     coloredMaterial->setVec4("uColor", glm::vec4(0.8f, 0.5f, 0.2f, 1.0f));
+
+    vengine.renderer->materials->add("blue", std::make_shared<Vengine::Material>(defaultShader.value()));
+    auto blueMaterial = vengine.renderer->materials->get("blue");
+    blueMaterial->setBool("uUseTexture", false);
+    blueMaterial->setVec4("uColor", glm::vec4(0.2f, 0.4f, 0.8f, 1.0f));
+
+
+    vengine.renderer->materials->add("stone", std::make_shared<Vengine::Material>(defaultShader.value()));
+    auto stoneMaterial = vengine.renderer->materials->get("stone");
+    stoneMaterial->setBool("uUseTexture", true);
+    stoneMaterial->setTexture("uTexture", std::move(stoneTexture));
+
+    vengine.renderer->materials->add("grass", std::make_shared<Vengine::Material>(defaultShader.value()));
+    auto grassMaterial = vengine.renderer->materials->get("grass");
+    grassMaterial->setBool("uUseTexture", true);
+    grassMaterial->setTexture("uTexture", std::move(grassTexture));
 
     vengine.renderer->materials->add("flower", std::make_shared<Vengine::Material>(defaultShader.value()));
     auto flowerMaterial = vengine.renderer->materials->get("flower");
@@ -88,6 +106,18 @@ void TestScene::load(Vengine::Vengine& vengine) {
     // vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, texturedMaterial);
     // auto planeBounds = groundMesh->getBounds();
     // vengine.ecs->addComponent<Vengine::ColliderComponent>(groundEntity, planeBounds.first, planeBounds.second);
+
+    // tree entity
+    auto treeMesh = vengine.resourceManager->get<Vengine::Mesh>("tree");
+    auto treeEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(treeEntity, "tree");
+    vengine.ecs->addComponent<Vengine::MeshComponent>(treeEntity, treeMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(treeEntity);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(treeEntity, grassMaterial);
+    auto materialComp = vengine.ecs->getEntityComponent<Vengine::MaterialComponent>(treeEntity);
+    materialComp->materialsByName["Bark"] = texturedMaterial;
+    auto treeTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(treeEntity);
+    treeTransform->setPosition(10.0f, 0.4f, 0.0f);
 
     // flower entity
     auto flowerEntity = vengine.ecs->createEntity();
@@ -164,16 +194,16 @@ void TestScene::load(Vengine::Vengine& vengine) {
 
     // some other ground test
     // ground2 entity
-    auto groundEntity2 = vengine.ecs->createEntity();
-    vengine.ecs->addComponent<Vengine::TagComponent>(groundEntity2, "cube3");
-    vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity2, cubeMesh);
-    vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity2);
-    auto boxTransform3 = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(groundEntity2);
+    auto groundEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(groundEntity, "ground");
+    vengine.ecs->addComponent<Vengine::MeshComponent>(groundEntity, cubeMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(groundEntity);
+    auto boxTransform3 = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(groundEntity);
     boxTransform3->setPosition(0.0f, -0.1f, 0.0f);
     boxTransform3->setScale(50.0f, 0.1f, 50.0f);
-    vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity2, texturedMaterial);
-    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
-    auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, stoneMaterial);
+    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(groundEntity);
+    auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(groundEntity);
     jolt->isStatic = true;
 }
 

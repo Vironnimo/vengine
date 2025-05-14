@@ -14,12 +14,15 @@ App::App() {
     m_vengine->timers->start("app_constructor");
 
     // load resources async at the beginning
+    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("tree", "Lowpoly_tree_sample.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("ant", "ant.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("flower", "flower.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("aquarium", "aquarium.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("plane", "buildin.plane", 500.0f, 500.0f);
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("cube", "box.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("chair", "chair.obj");
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("grass", "test3.jpg");
+    m_vengine->resourceManager->loadAsync<Vengine::Texture>("stone", "test6.jpg");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("flowerTexture", "flower.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("aquariumTexture", "aquarium.png");
     m_vengine->resourceManager->loadAsync<Vengine::Texture>("test_texture", "test.jpg");
@@ -58,7 +61,7 @@ App::App() {
            !m_vengine->resourceManager->isLoaded("skybox_top") || !m_vengine->resourceManager->isLoaded("skybox_bottom") ||
            !m_vengine->resourceManager->isLoaded("cube") || !m_vengine->resourceManager->isLoaded("chair") ||
            !m_vengine->resourceManager->isLoaded("ant") || !m_vengine->resourceManager->isLoaded("aquarium") ||
-           !m_vengine->resourceManager->isLoaded("aquariumTexture")) {
+           !m_vengine->resourceManager->isLoaded("aquariumTexture") || !m_vengine->resourceManager->isLoaded("tree")) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 

@@ -36,3 +36,7 @@ void main() {
     // FragColor = vec4(normalize(fs_Normal) * 0.5 + 0.5, 1.0);
     FragColor = vec4(result, baseColor.a); // Keep original alpha
 }
+
+// void main() {
+//     FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Solid red
+// }

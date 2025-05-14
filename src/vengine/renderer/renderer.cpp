@@ -21,6 +21,15 @@ struct MeshMaterialKey {
     }
 };
 
+struct MeshSubmeshMaterialKey {
+    std::shared_ptr<Mesh> mesh;
+    size_t submeshIndex;
+    std::shared_ptr<Material> material;
+    bool operator<(const MeshSubmeshMaterialKey& other) const {
+        return std::tie(mesh, submeshIndex, material) < std::tie(other.mesh, other.submeshIndex, other.material);
+    }
+};
+
 static auto uploadInstanceTransforms(const std::shared_ptr<Mesh>& mesh, const std::vector<glm::mat4>& transforms) -> void {
     static std::unordered_map<std::shared_ptr<Mesh>, GLuint> instanceVBOs;
     GLuint instanceVBO = 0;
@@ -82,8 +91,9 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     glm::mat4 viewMatrix = cameraComponent->getViewMatrix(cameraTransform);
     glm::mat4 projectionMatrix = cameraComponent->getProjectionMatrix();
 
-    // batch rendering, get all objects with the same mesh and material, just the transform changes
-    std::map<MeshMaterialKey, std::vector<glm::mat4>> batches;
+    // batch rendering with submeshes
+    std::map<MeshMaterialKey, std::vector<glm::mat4>> simpleBatches;
+    std::map<MeshSubmeshMaterialKey, std::vector<glm::mat4>> submeshBatches;
 
     auto list = scene->getEntities()->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
     for (auto entity : list) {
@@ -91,19 +101,49 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         auto meshComp = scene->getEntities()->getEntityComponent<MeshComponent>(entity);
         auto materialComp = scene->getEntities()->getEntityComponent<MaterialComponent>(entity);
 
-        // for each object we add the transform to the right batch
-        if (transformComp && meshComp && meshComp->mesh && materialComp && materialComp->material) {
-            MeshMaterialKey key{meshComp->mesh, materialComp->material};
-            batches[key].push_back(transformComp->getTransform());
+        if (!transformComp || !meshComp || !meshComp->mesh || !materialComp || !materialComp->material) {
+            continue;
+        }
+
+        if (transformComp->dirty) {
+            transformComp->updateMatrix();
+            transformComp->dirty = false;
+        }
+
+        auto mesh = meshComp->mesh;
+        auto defaultMaterial = materialComp->material;
+        const auto& submeshes = mesh->getSubmeshes();
+
+        if (submeshes.empty()) {
+            // simple mesh, no submeshes, rendered simply
+            MeshMaterialKey key{mesh, defaultMaterial};
+            simpleBatches[key].push_back(transformComp->getTransform());
+        } else {
+            // has submeshes, render each with its own material
+            for (size_t i = 0; i < submeshes.size(); i++) {
+                const auto& submesh = submeshes[i];
+                auto material = defaultMaterial;
+
+                // check for material, if non stay with default
+                if (!submesh.materialName.empty()) {
+                    auto it = materialComp->materialsByName.find(submesh.materialName);
+                    if (it != materialComp->materialsByName.end()) {
+                        material = it->second;
+                    }
+                }
+
+                MeshSubmeshMaterialKey key{mesh, i, material};
+                submeshBatches[key].push_back(transformComp->getTransform());
+            }
         }
     }
 
-    // render all batches
-    for (const auto& [key, transforms] : batches) {
+    // no submesh rendering
+    for (const auto& [key, transforms] : simpleBatches) {
         auto mesh = key.mesh;
         auto material = key.material;
-        material->bind();
 
+        material->bind();
         auto shader = material->getShader();
         if (!shader) {
             continue;
@@ -112,7 +152,7 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         shader->setUniformMat4("uView", viewMatrix);
         shader->setUniformMat4("uProjection", projectionMatrix);
 
-        // TODO what todo with this?
+        // TODO still have to take care of this one
         uploadInstanceTransforms(mesh, transforms);
 
         mesh->getVertexArray()->bind();
@@ -131,7 +171,93 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         mesh->getVertexArray()->unbind();
     }
 
-    // render viable entities
+    // submesh rendering
+    for (const auto& [key, transforms] : submeshBatches) {
+        auto mesh = key.mesh;
+        auto submeshIndex = key.submeshIndex;
+        auto material = key.material;
+        const auto& submesh = mesh->getSubmeshes()[submeshIndex];
+
+        material->bind();
+        auto shader = material->getShader();
+        if (!shader) {
+            continue;
+}
+
+        shader->setUniformMat4("uView", viewMatrix);
+        shader->setUniformMat4("uProjection", projectionMatrix);
+
+        uploadInstanceTransforms(mesh, transforms);
+
+        mesh->getVertexArray()->bind();
+        if (mesh->useIndices()) {
+            glDrawElementsInstanced(GL_TRIANGLES,
+                                    static_cast<GLsizei>(submesh.indexCount),
+                                    GL_UNSIGNED_INT,
+                                    reinterpret_cast<void*>(submesh.indexOffset * sizeof(uint32_t)),
+                                    static_cast<GLsizei>(transforms.size()));
+        } else {
+            // submeshes without indices? even a thing?
+            // size_t vertexCount = mesh->getVertexCount();
+            // size_t verticesPerSubmesh = vertexCount / mesh->getSubmeshes().size();
+            // size_t vertexOffset = submeshIndex * verticesPerSubmesh;
+
+            // glDrawArraysInstanced(GL_TRIANGLES,
+            //                       static_cast<GLsizei>(vertexOffset),
+            //                       static_cast<GLsizei>(verticesPerSubmesh),
+            //                       static_cast<GLsizei>(transforms.size()));
+        }
+        mesh->getVertexArray()->unbind();
+    }
+
+    // batch rendering, get all objects with the same mesh and material, just the transform changes
+    // std::map<MeshMaterialKey, std::vector<glm::mat4>> batches;
+    // auto list = scene->getEntities()->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
+    // for (auto entity : list) {
+    //     auto transformComp = scene->getEntities()->getEntityComponent<TransformComponent>(entity);
+    //     auto meshComp = scene->getEntities()->getEntityComponent<MeshComponent>(entity);
+    //     auto materialComp = scene->getEntities()->getEntityComponent<MaterialComponent>(entity);
+
+    //     // for each object we add the transform to the right batch
+    //     if (transformComp && meshComp && meshComp->mesh && materialComp && materialComp->material) {
+    //         MeshMaterialKey key{meshComp->mesh, materialComp->material};
+    //         batches[key].push_back(transformComp->getTransform());
+    //     }
+    // }
+
+    // // render all batches
+    // for (const auto& [key, transforms] : batches) {
+    //     auto mesh = key.mesh;
+    //     auto material = key.material;
+    //     material->bind();
+
+    //     auto shader = material->getShader();
+    //     if (!shader) {
+    //         continue;
+    //     }
+
+    //     shader->setUniformMat4("uView", viewMatrix);
+    //     shader->setUniformMat4("uProjection", projectionMatrix);
+
+    //     uploadInstanceTransforms(mesh, transforms);
+
+    //     mesh->getVertexArray()->bind();
+    //     if (mesh->useIndices()) {
+    //         glDrawElementsInstanced(GL_TRIANGLES,
+    //                                 static_cast<GLsizei>(mesh->getIndexBuffer()->getCount()),
+    //                                 GL_UNSIGNED_INT,
+    //                                 nullptr,
+    //                                 static_cast<GLsizei>(transforms.size()));
+    //     } else {
+    //         glDrawArraysInstanced(GL_TRIANGLES,
+    //                               0,
+    //                               static_cast<GLsizei>(mesh->getVertexCount()),
+    //                               static_cast<GLsizei>(transforms.size()));
+    //     }
+    //     mesh->getVertexArray()->unbind();
+    // }
+
+    // render viable entities (old stuff)
     // auto list = scene->getEntities()->getEntitiesWith<TransformComponent, MeshComponent, MaterialComponent>();
     // for (auto entity : list) {
     //     auto transformComp = scene->getEntities()->getEntityComponent<TransformComponent>(entity);

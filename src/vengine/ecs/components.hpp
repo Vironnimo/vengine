@@ -24,14 +24,15 @@ struct TagComponent : public BaseComponent {
 
 struct TextComponent : public BaseComponent {
     std::string text;
-    std::string fontId; // store id or a ref to the font?
+    std::string fontId;  // store id or a ref to the font?
     float x = 0.0f;
     float y = 0.0f;
     float scale = 1.0f;
     glm::vec4 color = glm::vec4(1.0f);
 
     TextComponent(std::string text, std::string fontId, float x, float y, float scale, glm::vec4 color)
-        : text(std::move(text)), fontId(std::move(fontId)), x(x), y(y), scale(scale), color(color) {}
+        : text(std::move(text)), fontId(std::move(fontId)), x(x), y(y), scale(scale), color(color) {
+    }
 };
 
 struct ScriptComponent : public BaseComponent {
@@ -60,7 +61,9 @@ struct MaterialComponent : public BaseComponent {
     MaterialComponent(std::shared_ptr<Material> material) : material(std::move(material)) {
     }
 
+    // TODO redo this with properly made backup material and materials per mesh
     std::shared_ptr<Material> material;
+    std::unordered_map<std::string, std::shared_ptr<Material>> materialsByName;
 };
 
 struct PersistentComponent : public BaseComponent {

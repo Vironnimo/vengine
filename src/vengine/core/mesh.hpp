@@ -12,6 +12,12 @@ namespace Vengine {
 
 class VertexArray;
 
+struct Submesh {
+    uint32_t indexOffset;
+    uint32_t indexCount;
+    std::string materialName;  
+};
+
 class Mesh : public IResource {
    public:
     Mesh() = default;
@@ -51,6 +57,14 @@ class Mesh : public IResource {
         return m_indices;
     }
 
+    [[nodiscard]] auto getSubmeshes() const -> const std::vector<Submesh>& {
+        return m_submeshes;
+    }
+
+    auto addSubmesh(const Submesh& submesh) -> void {
+        m_submeshes.push_back(submesh);
+    }
+
    private:
     std::vector<float> m_vertices;  // keep raw data for who knows what?
     std::vector<uint32_t> m_indices;
@@ -59,6 +73,8 @@ class Mesh : public IResource {
     std::shared_ptr<IndexBuffer> m_indexBuffer;
     bool m_useIndices = false;
     VertexLayout m_layout;
+
+    std::vector<Submesh> m_submeshes;
 };
 
 }  // namespace Vengine

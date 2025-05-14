@@ -37,7 +37,7 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
 
     const auto& attrib = reader.GetAttrib();
     const auto& shapes = reader.GetShapes();
-    // const auto& materials = reader.GetMaterials();
+    const auto& materials = reader.GetMaterials();
 
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
@@ -65,11 +65,33 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
     };
 
     std::map<VertexKey, uint32_t> uniqueVertices;
+    struct SubmeshInfo {
+        uint32_t indexOffset;
+        uint32_t indexCount;
+        std::string materialName;
+    };
+    std::vector<SubmeshInfo> submeshes;
 
     for (const auto& shape : shapes) {
         size_t index_offset = 0;
+        int last_material_id = -1;
+        size_t submesh_start = 0;
         for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
             size_t fv = shape.mesh.num_face_vertices[f];
+            int material_id = shape.mesh.material_ids.empty() ? -1 : shape.mesh.material_ids[f];
+
+            // start new submesh
+            if (material_id != last_material_id && f > 0) {
+                SubmeshInfo submesh;
+                submesh.indexOffset = static_cast<uint32_t>(submesh_start * 3);  // 3 indices per face
+                submesh.indexCount = static_cast<uint32_t>((f - submesh_start) * 3);
+                submesh.materialName =
+                    (last_material_id >= 0 && last_material_id < materials.size()) ? materials[last_material_id].name : "";
+                submeshes.push_back(submesh);
+                submesh_start = f;
+            }
+            last_material_id = material_id;
+
             if (fv != 3) {
                 spdlog::warn("Face {} in shape '{}' is not a triangle ({} vertices), skipping.", f, shape.name, fv);
                 index_offset += fv;
@@ -81,13 +103,8 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
 
                 VertexKey key;
                 key.v_idx = idx.vertex_index;
-
-                if (idx.texcoord_index >= 0) {
-                    key.vt_idx = idx.texcoord_index;
-                }
-                if (idx.normal_index >= 0) {
-                    key.vn_idx = idx.normal_index;
-                }
+                key.vt_idx = idx.texcoord_index;
+                key.vn_idx = idx.normal_index;
 
                 if (uniqueVertices.find(key) == uniqueVertices.end()) {
                     // new, add it
@@ -128,6 +145,15 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
             }
             index_offset += fv;
         }
+        // Add last submesh for this shape
+        if (shape.mesh.num_face_vertices.size() > 0) {
+            SubmeshInfo submesh;
+            submesh.indexOffset = static_cast<uint32_t>(submesh_start * 3);
+            submesh.indexCount = static_cast<uint32_t>((shape.mesh.num_face_vertices.size() - submesh_start) * 3);
+            submesh.materialName =
+                (last_material_id >= 0 && last_material_id < materials.size()) ? materials[last_material_id].name : "";
+            submeshes.push_back(submesh);
+        }
     }
 
     VertexLayout layout;
@@ -136,8 +162,17 @@ auto MeshLoader::loadFromObj(const std::string& filename) -> std::shared_ptr<Mes
     layout.hasNormals = hasNormals;
 
     auto mesh = std::make_shared<Mesh>(vertices, indices, layout);
-    // spdlog::info("Loaded mesh '{}': {} vertices, {} indices", filename, vertices.size() /
-    // static_cast<size_t>(floatsPerVertex), indices.size());
+
+    // add submeshes to mesh
+    for (const auto& s : submeshes) {
+        Submesh submesh;
+        submesh.indexOffset = s.indexOffset;
+        submesh.indexCount = s.indexCount;
+        submesh.materialName = s.materialName;
+        mesh->addSubmesh(submesh);
+        spdlog::debug("Submesh: {} indices, material: {}", submesh.indexCount, submesh.materialName);
+    }
+
     return mesh;
 }
 
