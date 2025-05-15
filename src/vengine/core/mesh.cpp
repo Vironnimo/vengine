@@ -14,13 +14,13 @@ Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indi
 
 auto Mesh::load(const std::string& fileName) -> bool {
     int floatsPerVertex = getFloatsPerVertex();
-    spdlog::debug("Constructor Mesh. Indices: {}, Vertices: {}, Layout: (Pos:{}, Tex:{}, Norm:{}), FloatsPerVertex: {}",
-                  m_indices.size(),
-                  m_vertices.size() / static_cast<size_t>(floatsPerVertex),
-                  m_layout.hasPosition,
-                  m_layout.hasTexCoords,
-                  m_layout.hasNormals,
-                  floatsPerVertex);
+    // spdlog::debug("Constructor Mesh. Indices: {}, Vertices: {}, Layout: (Pos:{}, Tex:{}, Norm:{}), FloatsPerVertex: {}",
+    //               m_indices.size(),
+    //               m_vertices.size() / static_cast<size_t>(floatsPerVertex),
+    //               m_layout.hasPosition,
+    //               m_layout.hasTexCoords,
+    //               m_layout.hasNormals,
+    //               floatsPerVertex);
 
     if (m_vertices.empty() || (m_vertices.size() % static_cast<size_t>(floatsPerVertex) != 0)) {
         spdlog::error("Mesh vertex data size ({}) is not a multiple of floatsPerVertex ({})",
@@ -62,18 +62,7 @@ auto Mesh::unload() -> bool {
 }
 
 Mesh::~Mesh() {
-    spdlog::debug("Destructor Mesh, indices count: {}, vertices count: {}", m_indices.size(), m_vertices.size());
-}
-
-auto Mesh::draw() const -> void {
-    m_vertexArray->bind();
-
-    if (m_useIndices) {
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indexBuffer->getCount()), GL_UNSIGNED_INT, nullptr);
-    } else {
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(getVertexCount()));
-    }
-    m_vertexArray->unbind();
+    // spdlog::debug("Destructor Mesh, indices count: {}, vertices count: {}", m_indices.size(), m_vertices.size());
 }
 
 [[nodiscard]] auto Mesh::getFloatsPerVertex() const -> int {

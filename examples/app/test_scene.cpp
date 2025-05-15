@@ -119,6 +119,14 @@ void TestScene::load(Vengine::Vengine& vengine) {
     glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
     lightComp->direction = glm::normalize(target - sunPos);
 
+    // living room entity
+    auto livingRoomMesh = vengine.resourceManager->get<Vengine::Mesh>("living_room");
+    auto livingRoomEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(livingRoomEntity, "living_room");
+    vengine.ecs->addComponent<Vengine::MeshComponent>(livingRoomEntity, livingRoomMesh);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(livingRoomEntity);
+    vengine.ecs->addComponent<Vengine::MaterialComponent>(livingRoomEntity, texturedMaterial);
+
     // tree entity
     auto treeMesh = vengine.resourceManager->get<Vengine::Mesh>("tree");
     auto treeEntity = vengine.ecs->createEntity();
@@ -137,7 +145,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(flowerEntity, flowerMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(flowerEntity);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(flowerEntity, flowerMaterial);
-    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(flowerEntity);
+    vengine.ecs->addComponent<Vengine::PhysicsComponent>(flowerEntity);
     auto flowerTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(flowerEntity);
     flowerTransform->setPosition(2.0f, 3.2f, 0.0f);
     // flowerTransform->setScale(100.15f, 100.15f, 100.15f);
@@ -149,7 +157,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(ant, antMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(ant);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(ant, coloredMaterial);
-    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(ant);
+    vengine.ecs->addComponent<Vengine::PhysicsComponent>(ant);
     auto antTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(ant);
     antTransform->setRotation(0.0f, 0.55f, 0.0f);
     antTransform->setPosition(-2.0f, 5.0f, 0.0f);
@@ -161,7 +169,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
     vengine.ecs->addComponent<Vengine::MeshComponent>(aquarium, aquariumMesh);
     vengine.ecs->addComponent<Vengine::TransformComponent>(aquarium);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(aquarium, aquariumMaterial);
-    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(aquarium);
+    vengine.ecs->addComponent<Vengine::PhysicsComponent>(aquarium);
     auto aquariumTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(aquarium);
     aquariumTransform->setPosition(0.0f, 5.0f, 0.0f);
     // aquariumTransform->setScale(100.15f, 100.15f, 100.15f);
@@ -198,8 +206,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     boxTransform2->setPosition(0.0f, 40.0f, -5.0f);
     // boxTransform2->setScale(20.0f, 20.0f, 20.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(cubeEntity2, coloredMaterial);
-    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(cubeEntity2);
-    auto joltComp = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(cubeEntity2);
+    vengine.ecs->addComponent<Vengine::PhysicsComponent>(cubeEntity2);
+    auto joltComp = vengine.ecs->getEntityComponent<Vengine::PhysicsComponent>(cubeEntity2);
     joltComp->restitution = 0.5f;
     joltComp->friction = 0.2f;
 
@@ -213,8 +221,8 @@ void TestScene::load(Vengine::Vengine& vengine) {
     boxTransform3->setPosition(0.0f, -0.1f, 0.0f);
     boxTransform3->setScale(50.0f, 0.1f, 50.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity, stoneMaterial);
-    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(groundEntity);
-    auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(groundEntity);
+    vengine.ecs->addComponent<Vengine::PhysicsComponent>(groundEntity);
+    auto jolt = vengine.ecs->getEntityComponent<Vengine::PhysicsComponent>(groundEntity);
     jolt->isStatic = true;
 }
 

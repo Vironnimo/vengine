@@ -14,6 +14,7 @@ App::App() {
     m_vengine->timers->start("app_constructor");
 
     // load resources async at the beginning
+    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("living_room", "table.blend");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("tree", "Lowpoly_tree_sample.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("ant", "ant.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("flower", "flower.obj");
@@ -56,17 +57,10 @@ App::App() {
     }
 
     // sleep until skybox textures are loaded
-    while (!m_vengine->resourceManager->isLoaded("skybox_back") || !m_vengine->resourceManager->isLoaded("skybox_front") ||
-           !m_vengine->resourceManager->isLoaded("skybox_left") || !m_vengine->resourceManager->isLoaded("skybox_right") ||
-           !m_vengine->resourceManager->isLoaded("skybox_top") || !m_vengine->resourceManager->isLoaded("skybox_bottom") ||
-           !m_vengine->resourceManager->isLoaded("cube") || /* !m_vengine->resourceManager->isLoaded("chair") || */
-           !m_vengine->resourceManager->isLoaded("ant") || !m_vengine->resourceManager->isLoaded("aquarium") ||
-           !m_vengine->resourceManager->isLoaded("aquariumTexture") || !m_vengine->resourceManager->isLoaded("tree")) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
+    m_vengine->threadManager->waitForCompletion();
 
     // -------------------- ACTIONS ---------------------
-    m_vengine->actions->add("quit", "Quit", [this]() { m_vengine->isRunning = false; });
+    m_vengine->actions->add("quit", [this]() { m_vengine->isRunning = false; });
     m_vengine->actions->addKeybinding("quit", {GLFW_KEY_ESCAPE, false, false, false});
 
     // add scenes
@@ -77,12 +71,12 @@ App::App() {
     m_vengine->loadScene("TestScene");
 
     // switch scenes (o and p)
-    m_vengine->actions->add("scene.switch.scene1", "Switch Scene", [this]() {
+    m_vengine->actions->add("scene.switch.scene1", [this]() {
         if (m_vengine->getCurrentSceneName() != "TestScene") {
             m_vengine->loadScene("TestScene");
         }
     });
-    m_vengine->actions->add("scene.switch.scene2", "Switch Scene", [this]() {
+    m_vengine->actions->add("scene.switch.scene2", [this]() {
         if (m_vengine->getCurrentSceneName() != "TestScene2") {
             m_vengine->loadScene("TestScene2");
         }

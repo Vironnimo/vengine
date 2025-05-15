@@ -9,11 +9,10 @@
 #include "component_registry.hpp"
 #include "vengine/core/uuid.hpp"
 #include "vengine/ecs/components.hpp"
-#include "vengine/ecs/entity.hpp"
 
 namespace Vengine {
 
-// class Entity;
+class Entity;
 using EntityId = uint64_t;
 using ComponentBitset = std::bitset<32>;
 
@@ -28,28 +27,14 @@ class Entities {
         clear();
     }
 
+    auto getEntity(EntityId entity) -> Entity;
+    auto getEntityByTag(const std::string& tag) -> Entity;
+
     auto createEntity() -> EntityId {
         EntityId entity = UUID::create();
         m_entityBitsets[entity] = ComponentBitset();
         m_entities.insert(entity);
         return entity;
-    }
-
-    auto getEntity(EntityId entity) -> Entity {
-        return {entity, this};
-    }
-
-    auto getEntityByTag(const std::string& tag) -> Entity {
-        auto taggedEntities = getEntitiesWith<TagComponent>();
-
-        for (auto entityId : taggedEntities) {
-            auto tagComponent = getEntityComponent<TagComponent>(entityId);
-            if (tagComponent && tagComponent->tag == tag) {
-                return {entityId, this};
-            }
-        }
-
-        return {};
     }
 
     auto destroyEntity(EntityId entity) -> void {

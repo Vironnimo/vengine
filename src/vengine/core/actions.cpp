@@ -16,18 +16,20 @@ Actions::~Actions() {
 
 auto Actions::execute(const std::string& id) -> void {
     auto it = m_actions.find(id);
-    if (it != m_actions.end()) {
-        it->second->execute();
+    if (it == m_actions.end()) {
+        spdlog::warn("Action {} not found", id);
+        return;
     }
+    it->second->execute();
 }
 
-auto Actions::add(const std::string& id, const std::string& name, std::function<void()> callback) -> bool {
+auto Actions::add(const std::string& id, std::function<void()> callback) -> bool {
     auto it = m_actions.find(id);
     if (it != m_actions.end()) {
         return false;
     }
 
-    m_actions.emplace(id, std::make_unique<Action>(id, name, std::move(callback)));
+    m_actions.emplace(id, std::make_unique<Action>(id, std::move(callback)));
     return true;
 }
 

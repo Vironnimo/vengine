@@ -140,7 +140,7 @@ class ECS {
         auto joltSystem = std::make_shared<PhysicsSystem>();
         joltSystem->setEnabled(false);
 
-        m_systems["JoltPhysicsSystem"] = joltSystem;
+        m_systems["PhysicsSystem"] = joltSystem;
     }
 
    private:

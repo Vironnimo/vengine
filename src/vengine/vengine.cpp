@@ -20,7 +20,7 @@ namespace Vengine {
 Vengine::Vengine() {
     auto result = init();
     if (!result) {
-        spdlog::error("{}", result.error().message);
+        spdlog::error("{}", result.error().toString());
     }
 }
 
@@ -70,8 +70,8 @@ Vengine::~Vengine() {
 
     threadManager = std::make_shared<ThreadManager>();
 
-    resourceManager = std::make_unique<ResourceManager>(threadManager);
-    if (auto result = resourceManager->init(); !result) {
+    resourceManager = std::make_unique<ResourceManager>();
+    if (auto result = resourceManager->init(threadManager); !result) {
         return tl::unexpected(result.error());
     }
 
@@ -99,15 +99,15 @@ Vengine::~Vengine() {
     ecs->registerComponent<MaterialComponent>("Material");
     ecs->registerComponent<ScriptComponent>("Script");
     ecs->registerComponent<CameraComponent>("Camera");
-    ecs->registerComponent<JoltPhysicsComponent>("JoltPhysics");
+    ecs->registerComponent<PhysicsComponent>("Physics");
     ecs->registerComponent<LightComponent>("Light");
     // register built-in systems
     auto transformSystem = std::make_shared<TransformSystem>();
     transformSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
-    auto joltPhysicsSystem = std::make_shared<PhysicsSystem>();
-    joltPhysicsSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
+    auto physicsSystem = std::make_shared<PhysicsSystem>();
+    physicsSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
     ecs->registerSystem("TransformSystem", std::make_shared<TransformSystem>());
-    ecs->registerSystem("JoltPhysicsSystem", joltPhysicsSystem);
+    ecs->registerSystem("PhysicsSystem", physicsSystem);
     auto scriptSystem = std::make_shared<ScriptSystem>();
     scriptSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
     scriptSystem->registerBindings(this);
@@ -133,6 +133,7 @@ auto Vengine::run() -> void {
             break;
         }
 
+        threadManager->processMainThreadTasks();
         timers->update();
         inputSystem->update();
 
@@ -140,17 +141,17 @@ auto Vengine::run() -> void {
             module->onUpdate(*this, timers->deltaTime());
         }
         actions->handleInput(window->get());
-        threadManager->processMainThreadTasks();
 
         // script system before everything else?
         auto scriptSystem = ecs->getSystem<ScriptSystem>("ScriptSystem");
         scriptSystem->update(ecs->getActiveEntities(), timers->deltaTime());
 
+        auto physicsSystem = ecs->getSystem<PhysicsSystem>("PhysicsSystem");
+        physicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
+
         auto transformSystem = ecs->getSystem<TransformSystem>("TransformSystem");
         transformSystem->update(ecs->getActiveEntities(), timers->deltaTime());
 
-        auto joltPhysicsSystem = ecs->getSystem<PhysicsSystem>("JoltPhysicsSystem");
-        joltPhysicsSystem->update(ecs->getActiveEntities(), timers->deltaTime());
         // auto physicsAndCollisionTaskFuture = threadManager->enqueueTask(
         //     [this]() {
         //         auto joltPhysicsSystem = ecs->getSystem<JoltPhysicsSystem>("JoltPhysicsSystem");

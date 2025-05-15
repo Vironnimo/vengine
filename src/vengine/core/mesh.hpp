@@ -28,8 +28,6 @@ class Mesh : public IResource {
     auto unload() -> bool override;
     auto finalizeOnMainThread() -> bool override;
 
-    auto draw() const -> void;
-
     [[nodiscard]] auto getBounds() const -> std::pair<glm::vec3, glm::vec3>;
     [[nodiscard]] auto getVertexArray() const -> const std::shared_ptr<VertexArray>& {
         return m_vertexArray;

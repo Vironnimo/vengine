@@ -25,6 +25,7 @@ set(SOURCES
         vengine/core/event_manager.cpp
         vengine/core/scenes.cpp
         vengine/utils/utils.cpp
+        vengine/ecs/entities.cpp
         vengine/ecs/entity.cpp
         vengine/ecs/systems/physics_system.cpp
         vengine/ecs/systems/script_system.cpp

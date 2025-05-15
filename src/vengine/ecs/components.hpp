@@ -226,7 +226,7 @@ struct CameraComponent : public BaseComponent {
     }
 };
 
-struct JoltPhysicsComponent : public BaseComponent {
+struct PhysicsComponent : public BaseComponent {
     JPH::BodyID bodyId;
     bool initialized = false;
     bool isStatic = false;

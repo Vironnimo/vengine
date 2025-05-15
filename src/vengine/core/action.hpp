@@ -15,8 +15,8 @@ struct KeyBinding {
 
 class Action {
    public:
-    Action(std::string id, std::string name, std::function<void()> callback)
-        : m_id(std::move(id)), m_name(std::move(name)), m_callback(std::move(callback)) {
+    Action(std::string id, std::function<void()> callback)
+        : m_id(std::move(id)), m_callback(std::move(callback)) {
     }
 
     auto execute() -> void;
@@ -27,7 +27,6 @@ class Action {
 
    private:
     std::string m_id;
-    std::string m_name;
     std::function<void()> m_callback;
     std::vector<KeyBinding> m_keyBindings;
 };

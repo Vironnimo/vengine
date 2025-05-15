@@ -94,7 +94,7 @@ void PhysicsSystem::initializeJolt() {
 }
 
 void PhysicsSystem::createBodyForEntity(EntityId entityId, const std::shared_ptr<Entities>& entities) {
-    auto joltComp = entities->getEntityComponent<JoltPhysicsComponent>(entityId);
+    auto joltComp = entities->getEntityComponent<PhysicsComponent>(entityId);
     auto transform = entities->getEntityComponent<TransformComponent>(entityId);
     auto meshComp = entities->getEntityComponent<MeshComponent>(entityId);
 
@@ -145,11 +145,17 @@ void PhysicsSystem::update(std::shared_ptr<Entities> entities, float deltaTime) 
         return;
     }
 
-    auto list = entities->getEntitiesWith<JoltPhysicsComponent, TransformComponent, MeshComponent>();
+    // litle startup delay so objects are not beinged altered during the first frame
+    if (m_startupDelay > 0.0f) {
+        m_startupDelay -= deltaTime;
+        return;
+    }
+
+    auto list = entities->getEntitiesWith<PhysicsComponent, TransformComponent, MeshComponent>();
 
     // create jolt bodies
     for (auto entityId : list) {
-        auto joltComp = entities->getEntityComponent<JoltPhysicsComponent>(entityId);
+        auto joltComp = entities->getEntityComponent<PhysicsComponent>(entityId);
         if (joltComp && !joltComp->initialized) {
             createBodyForEntity(entityId, entities);
         }
@@ -159,7 +165,7 @@ void PhysicsSystem::update(std::shared_ptr<Entities> entities, float deltaTime) 
 
     // apply velocity from component, which is just changed by the user
     for (auto entityId : list) {
-        auto joltComp = entities->getEntityComponent<JoltPhysicsComponent>(entityId);
+        auto joltComp = entities->getEntityComponent<PhysicsComponent>(entityId);
         auto velocityComp = entities->getEntityComponent<VelocityComponent>(entityId);
         if (joltComp && joltComp->initialized && velocityComp && !joltComp->isStatic) {
             glm::vec3 velocity = velocityComp->velocity;
@@ -179,7 +185,7 @@ void PhysicsSystem::update(std::shared_ptr<Entities> entities, float deltaTime) 
 
     // sync back to transform component
     for (auto entityId : list) {
-        auto joltComp = entities->getEntityComponent<JoltPhysicsComponent>(entityId);
+        auto joltComp = entities->getEntityComponent<PhysicsComponent>(entityId);
         auto transform = entities->getEntityComponent<TransformComponent>(entityId);
         if (joltComp && transform && joltComp->initialized) {
             JPH::RVec3 pos = bodyInterface.GetPosition(joltComp->bodyId);
@@ -196,7 +202,7 @@ void PhysicsSystem::update(std::shared_ptr<Entities> entities, float deltaTime) 
 }
 
 void PhysicsSystem::removeBody(EntityId entityId, const std::shared_ptr<Entities>& entities) {
-    auto joltComp = entities->getEntityComponent<JoltPhysicsComponent>(entityId);
+    auto joltComp = entities->getEntityComponent<PhysicsComponent>(entityId);
     if (joltComp && joltComp->initialized) {
         auto& bodyInterface = m_physicsSystem.GetBodyInterface();
         bodyInterface.RemoveBody(joltComp->bodyId);

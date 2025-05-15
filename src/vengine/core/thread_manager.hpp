@@ -44,7 +44,8 @@ class ThreadManager {
     }
 
     template <typename F>
-    auto enqueueTask(F&& func, const std::string& name = "",
+    auto enqueueTask(F&& func,
+                     const std::string& name = "",
                      TaskPriority priority = TaskPriority::Normal) -> std::future<decltype(func())> {
         using ReturnType = decltype(func());
 
@@ -70,7 +71,7 @@ class ThreadManager {
         Task task;
         task.function = std::forward<F>(func);
         task.name = name;
-        task.priority = TaskPriority::Normal;  
+        task.priority = TaskPriority::Normal;
 
         std::lock_guard<std::mutex> lock(m_mainThreadMutex);
         m_mainThreadTasks.push(std::move(task));
@@ -121,7 +122,7 @@ class ThreadManager {
                     }
                 }
 
-                // small sleep 
+                // small sleep
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         }
@@ -173,7 +174,9 @@ class ThreadManager {
                         }
 
                         try {
-                            // spdlog::debug("Thread {} executing task: {}", i, task.name);
+                            // if (!task.name.empty()) {
+                                // spdlog::debug("ThreadManager executing task: {}", task.name);
+                            // }
                             task.function();
                         } catch (const std::exception& e) {
                             spdlog::error("Exception in task '{}': {}", task.name, e.what());

@@ -9,7 +9,7 @@ function update(entityId, dt)
         return
     end
 
-    local sensitivity = 0.01
+    local sensitivity = 0.005
     local speed = 20.0
     local moveForward, moveRight = 0, 0
 

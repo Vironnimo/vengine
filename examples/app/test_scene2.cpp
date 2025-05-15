@@ -51,8 +51,8 @@ void TestScene2::load(Vengine::Vengine& vengine) {
     boxTransform3->setPosition(0.0f, -100.0f, 0.0f);
     boxTransform3->setScale(200.0f, 0.1f, 200.0f);
     vengine.ecs->addComponent<Vengine::MaterialComponent>(groundEntity2, texturedMaterial);
-    vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
-    auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(groundEntity2);
+    vengine.ecs->addComponent<Vengine::PhysicsComponent>(groundEntity2);
+    auto jolt = vengine.ecs->getEntityComponent<Vengine::PhysicsComponent>(groundEntity2);
     jolt->isStatic = true;
     // jolt->restitution = 0.2f;
     // jolt->friction = 1.0f;
@@ -80,8 +80,8 @@ void TestScene2::load(Vengine::Vengine& vengine) {
                 vengine.ecs->addComponent<Vengine::MaterialComponent>(entity, texturedMaterial2);
             }
 
-            vengine.ecs->addComponent<Vengine::JoltPhysicsComponent>(entity);
-            auto jolt = vengine.ecs->getEntityComponent<Vengine::JoltPhysicsComponent>(entity);
+            vengine.ecs->addComponent<Vengine::PhysicsComponent>(entity);
+            auto jolt = vengine.ecs->getEntityComponent<Vengine::PhysicsComponent>(entity);
             // jolt->restitution = 0.8f;
             // jolt->friction = 0.2f;
 

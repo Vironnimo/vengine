@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vengine/ecs/entity.hpp"
 #include "vengine/ecs/entities.hpp" 
+#include "vengine/ecs/entity.hpp"
 
 namespace Vengine {
 

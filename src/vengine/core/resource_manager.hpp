@@ -26,44 +26,63 @@ struct LoadTask {
 // TODO split resources map into different types
 class ResourceManager {
    public:
-    ResourceManager(std::shared_ptr<ThreadManager> threadManager);
+    ResourceManager();
     ~ResourceManager();
-    auto init() -> tl::expected<void, Error>;
+    auto init(std::shared_ptr<ThreadManager> threadManager) -> tl::expected<void, Error>;
 
-    template <typename T>
-    auto load(const std::string& name, const std::string& fileName) -> bool {
+    template <typename T, typename... Args>
+    auto load(const std::string& name, const std::string& fileName, Args&&... loadArgs) -> bool {
+        assert(!fileName.empty() && "Filename cannot be empty");
+        assert(!name.empty() && "Name cannot be empty");
+
+        auto argsSize = sizeof...(loadArgs);
+        spdlog::debug("Loading resource: {} from file: {}", name, fileName);
+        std::shared_ptr<T> resource;
+
         if constexpr (std::is_same_v<T, Mesh>) {
-            // auto mesh = m_meshLoader->loadFromObj(fileName);
-            // if (!mesh) {
-            //     spdlog::error("Failed to load mesh: {}", fileName);
-            //     return false;
-            // }
-
-            // if (mesh->load(fileName)) {
-            //     std::lock_guard<std::mutex> lock(m_resourceMutex);
-            //     m_resources[std::type_index(typeid(T))][name] = mesh;
-
-            //     return true;
-            // }
+            if (fileName == "buildin.plane") {
+                // TODO what if we have more than 4 args?
+                // resource = std::apply(
+                //     [this](auto&&... args) { return m_meshLoader->createPlane(std::forward<decltype(args)>(args)...); },
+                //     loadArgsTuple);
+            } else {
+                resource = m_meshLoader->loadModel(fileName);
+            }
+            if (!resource) {
+                spdlog::error("Failed to load mesh: {}", fileName);
+                return false;
+            }
         }
 
-        auto resource = std::make_shared<T>();
+        if (!resource) {
+            resource = std::make_shared<T>();
+        }
 
         if constexpr (std::is_same_v<T, Sound>) {
             resource->setEngine(&m_audioEngine);
         }
 
         if (resource->load(fileName)) {
-            std::lock_guard<std::mutex> lock(m_resourceMutex);
-            m_resources[std::type_index(typeid(T))][name] = resource;
-            return true;
-        }
+            {
+                std::lock_guard<std::mutex> lock(m_resourceMutex);
+                m_resources[std::type_index(typeid(T))][name] = resource;
+            }
 
-        return false;
+            if (resource->needsMainThreadInit()) {
+                resource->finalizeOnMainThread();
+            }
+        } else {
+            spdlog::error("Failed to load {} resource: {}", typeid(T).name(), name);
+            return false;
+        }
+        return true;
     }
 
     template <typename T, typename... Args>
     auto loadAsync(const std::string& name, const std::string& fileName, Args&&... loadArgs) -> void {
+        assert(!fileName.empty() && "Filename cannot be empty");
+        assert(!name.empty() && "Name cannot be empty");
+
         auto argsSize = sizeof...(loadArgs);
         m_threadManager->enqueueTask(
             [this, name, fileName, argsSize, loadArgsTuple = std::make_tuple(std::forward<Args>(loadArgs)...)]() {
@@ -122,13 +141,10 @@ class ResourceManager {
     auto isLoaded(const std::string& name) -> bool {
         std::lock_guard<std::mutex> lock(m_resourceMutex);
 
-        return std::any_of(
-            m_resources.begin(), m_resources.end(),
-            [&name](const auto& pair) {
-                const auto& resources = pair.second;
-                return resources.find(name) != resources.end();
-            }
-        );
+        return std::any_of(m_resources.begin(), m_resources.end(), [&name](const auto& pair) {
+            const auto& resources = pair.second;
+            return resources.find(name) != resources.end();
+        });
     }
 
     template <typename T>

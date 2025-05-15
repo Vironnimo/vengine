@@ -16,13 +16,16 @@
 
 namespace Vengine {
 
-ResourceManager::ResourceManager(std::shared_ptr<ThreadManager> threadManager) : m_threadManager(std::move(threadManager)) {
+ResourceManager::ResourceManager() {
     spdlog::debug("Constructor ResourceManager");
-    m_meshLoader = std::make_unique<MeshLoader>();
 }
 
-auto ResourceManager::init() -> tl::expected<void, Error> {
+auto ResourceManager::init(std::shared_ptr<ThreadManager> threadManager) -> tl::expected<void, Error> {
+    assert(threadManager != nullptr && "ThreadManager cannot be null");
     m_resourceRoot = std::filesystem::path("resources");
+
+    m_meshLoader = std::make_unique<MeshLoader>();
+    m_threadManager = std::move(threadManager);
 
     if (!std::filesystem::exists(m_resourceRoot)) {
         return tl::unexpected(Error{"Resource root does not exist"});
@@ -42,11 +45,8 @@ ResourceManager::~ResourceManager() {
     for (auto& [type, resources] : m_resources) {
         for (auto& [name, resource] : resources) {
             resource->unload();
-            resource.reset();
         }
-        resources.clear();
     }
-    m_resources.clear();
 
     ma_engine_uninit(&m_audioEngine);
 }

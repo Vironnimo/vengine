@@ -1,4 +1,5 @@
 #include "action.hpp"
+#include <cassert>
 
 namespace Vengine {
 
@@ -9,6 +10,8 @@ auto Action::execute() -> void {
 }
 
 auto Action::addKeyBinding(KeyBinding keyBind) -> void {
+    assert(keyBind.key != 0 && "KeyBinding key cannot be 0");
+    
     m_keyBindings.push_back(keyBind);
 }
 
@@ -18,9 +21,6 @@ auto Action::getKeyBindings() -> const std::vector<KeyBinding>& {
 
 auto Action::getId() const -> const std::string& {
     return m_id;
-}
-auto Action::getName() const -> const std::string& {
-    return m_name;
 }
 
 }  // namespace Vengine

@@ -1,13 +1,11 @@
 #include "mesh_loader.hpp"
 #include <cstddef>
 
-#include <assimp/Importer.hpp>
 #include <cstdint>
+#include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
 #include <spdlog/spdlog.h>
 #include "vengine/renderer/vertex_layout.hpp"
 
@@ -22,6 +20,7 @@ MeshLoader::~MeshLoader() {
 }
 
 auto MeshLoader::loadModel(const std::string& filename) -> std::shared_ptr<Mesh> {
+    assert(!filename.empty() && "Filename cannot be empty");
     auto modelPath = getModelPath(filename);
     
     Assimp::Importer importer;

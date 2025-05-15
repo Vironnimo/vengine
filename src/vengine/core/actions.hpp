@@ -10,15 +10,13 @@
 
 namespace Vengine {
 
-// TODO add cooldown to hotkeys so we don't have rapid fire
-
 class Actions {
    public:
     Actions();
     ~Actions();
 
     auto execute(const std::string& id) -> void;
-    auto add(const std::string& id, const std::string& name, std::function<void()> callback) -> bool;
+    auto add(const std::string& id, std::function<void()> callback) -> bool;
     auto addKeybinding(const std::string& actionId, KeyBinding keyBind) -> void;
 
     auto isKeyBindingPressed(GLFWwindow* window, const KeyBinding& keyBind) -> bool;

@@ -11,6 +11,7 @@ Cameras::~Cameras() {
 }
 
 void Cameras::add(EntityId camera) {
+    assert(camera != 0 && "Camera ID cannot be 0");
     if (m_cameras.find(camera) != m_cameras.end()) {
         return;
     }
@@ -27,7 +28,12 @@ void Cameras::remove(EntityId camera) {
 }
 
 void Cameras::setActive(EntityId camera) {
+    assert(camera != 0 && "Camera ID cannot be 0");
+    if (camera == m_activeCamera) {
+        return;
+    }
     if (m_cameras.find(camera) == m_cameras.end()) {
+        spdlog::warn("Camera {} is not registered", camera);
         return;
     }
 

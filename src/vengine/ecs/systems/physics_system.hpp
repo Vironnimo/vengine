@@ -21,6 +21,7 @@ class PhysicsSystem : public BaseSystem {
     void removeBody(EntityId entityId, const std::shared_ptr<Entities>& entities);
 
    private:
+    // test stuff
     JPH::PhysicsSystem m_physicsSystem;
     JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
     JPH::JobSystemThreadPool* m_jobSystem = nullptr;
@@ -28,6 +29,9 @@ class PhysicsSystem : public BaseSystem {
 
     void initializeJolt();
     void createBodyForEntity(EntityId entityId, const std::shared_ptr<Entities>& entities);
+
+    // litle startup delay so objects are not beinged altered during the first frame
+    float m_startupDelay = 0.2f;
 };
 
 }  // namespace Vengine

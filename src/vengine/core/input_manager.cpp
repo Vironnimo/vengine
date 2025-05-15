@@ -6,16 +6,17 @@
 
 namespace Vengine {
 
-void InputManager::setWindow(GLFWwindow* window) {
-    m_window = window;
-}
-
 InputManager::InputManager() {
     spdlog::debug("Constructor InputSystem");
 }
 
 InputManager::~InputManager() {
     spdlog::debug("Destructor InputSystem");
+}
+
+void InputManager::setWindow(GLFWwindow* window) {
+    assert(window != nullptr && "Window cannot be null");
+    m_window = window;
 }
 
 void InputManager::update() {
@@ -29,6 +30,7 @@ void InputManager::update() {
 
 void InputManager::pollInput() {
     if (!m_window) {
+        spdlog::warn("InputManager: No window set, cannot poll input");
         return;
     }
 
