@@ -14,7 +14,7 @@ class IResource {
         return m_isLoaded;
     }
 
-    [[nodiscard]] auto needsMainThreadInit() const -> bool {
+    [[nodiscard]] virtual auto needsMainThreadInit() const -> bool {
         return m_needsMainThreadInit;
     }
 

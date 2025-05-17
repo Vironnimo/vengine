@@ -6,7 +6,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-#include "vengine/renderer/shader.hpp"
+#include "vengine/core/shader.hpp"
 #include "vengine/renderer/vertex_array.hpp"
 #include "vengine/renderer/vertex_buffer.hpp"
 #include "vengine/core/resources.hpp"

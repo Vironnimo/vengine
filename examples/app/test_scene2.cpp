@@ -29,14 +29,14 @@ void TestScene2::load(Vengine::Vengine& vengine) {
 
     auto texture = vengine.resourceManager->get<Vengine::Texture>("test_texture");
     auto texture2 = vengine.resourceManager->get<Vengine::Texture>("test_texture2");
-    auto defaultShader = vengine.renderer->shaders->get("default");
+    auto defaultShader = vengine.resourceManager->get<Vengine::Shader>("default");
 
-    vengine.renderer->materials->add("default", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("default", std::make_shared<Vengine::Material>(defaultShader));
     auto texturedMaterial = vengine.renderer->materials->get("default");
     texturedMaterial->setBool("uUseTexture", true);
     texturedMaterial->setTexture("uTexture", std::move(texture));
 
-    vengine.renderer->materials->add("default2", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("default2", std::make_shared<Vengine::Material>(defaultShader));
     auto texturedMaterial2 = vengine.renderer->materials->get("default2");
     texturedMaterial2->setBool("uUseTexture", true);
     texturedMaterial2->setTexture("uTexture", std::move(texture2));

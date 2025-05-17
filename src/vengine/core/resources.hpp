@@ -32,7 +32,8 @@ class Texture : public IResource {
             m_rawData = std::make_shared<RawImageData>();
         }
 
-        m_rawData->pixels = stbi_load(fullPath.string().c_str(), &m_rawData->width, &m_rawData->height, &m_rawData->channels, 0);
+        m_rawData->pixels =
+            stbi_load(fullPath.string().c_str(), &m_rawData->width, &m_rawData->height, &m_rawData->channels, 0);
 
         if (!m_rawData->pixels) {
             spdlog::error("Failed to load texture from file: {}", fullPath.string());
@@ -46,6 +47,25 @@ class Texture : public IResource {
         // spdlog::info("Loaded texture data from: {}", fullPath.string());
 
         return true;
+    }
+
+    auto setRawData(unsigned char* data, int width, int height, int channels) -> void {
+        // Make a copy of the data
+        size_t dataSize = width * height * channels;
+        unsigned char* dataCopy = new unsigned char[dataSize];
+        std::memcpy(dataCopy, data, dataSize);
+
+        // Store the data
+        m_width = width;
+        m_height = height;
+        m_channels = channels;
+        m_rawPixels.reset(dataCopy, [](unsigned char* p) { delete[] p; });
+        m_needsMainThreadInit = true;
+        m_isLoaded = true;
+    }
+
+    auto setName(const std::string& name) -> void {
+        m_name = name;
     }
 
     // send data to gpu
@@ -66,7 +86,15 @@ class Texture : public IResource {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         GLenum format = (m_rawData->channels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, m_rawData->width, m_rawData->height, 0, format, GL_UNSIGNED_BYTE, m_rawData->pixels);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     format,
+                     m_rawData->width,
+                     m_rawData->height,
+                     0,
+                     format,
+                     GL_UNSIGNED_BYTE,
+                     m_rawData->pixels);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         // TODO reactivate i guess. for now the skybox needs the data on reload the scene
@@ -121,7 +149,9 @@ class Texture : public IResource {
     GLuint m_id = 0;
     int m_width = 0;
     int m_height = 0;
+    std::string m_name;
     std::shared_ptr<RawImageData> m_rawData;
+    std::shared_ptr<unsigned char> m_rawPixels = nullptr;
     int m_channels = 0;
 };
 
@@ -220,7 +250,7 @@ class Sound : public IResource {
 };
 
 class Script : public IResource {
-public:
+   public:
     Script() = default;
 
     auto load(const std::string& fileName) -> bool override {
@@ -243,10 +273,14 @@ public:
         return true;
     }
 
-    [[nodiscard]] auto getSource() const -> const std::string& { return m_source; }
-    [[nodiscard]] auto getPath() const -> const std::string& { return m_path; }
+    [[nodiscard]] auto getSource() const -> const std::string& {
+        return m_source;
+    }
+    [[nodiscard]] auto getPath() const -> const std::string& {
+        return m_path;
+    }
 
-private:
+   private:
     std::string m_source;
     std::string m_path;
 };

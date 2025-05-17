@@ -8,6 +8,7 @@
 #include <Jolt/Physics/Body/BodyID.h>
 
 #include "vengine/renderer/material.hpp"
+#include "vengine/core/model.hpp"
 #include "vengine/core/mesh.hpp"
 
 namespace Vengine {
@@ -55,6 +56,13 @@ struct MeshComponent : public BaseComponent {
     }
 
     std::shared_ptr<Mesh> mesh;
+};
+
+struct ModelComponent : public BaseComponent {
+    ModelComponent(std::shared_ptr<Model> model) : model(std::move(model)) {
+    }
+
+    std::shared_ptr<Model> model;
 };
 
 struct MaterialComponent : public BaseComponent {

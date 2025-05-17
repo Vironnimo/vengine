@@ -57,6 +57,7 @@ class Vengine {
    private:
     std::vector<std::shared_ptr<Module>> m_modules;
 
+    void addDefaults();
     void registerGlfwCallbacks();
 };
 

@@ -13,8 +13,10 @@ App::App() {
     spdlog::debug("Constructor App");
     m_vengine->timers->start("app_constructor");
 
+    auto defaultShader = m_vengine->resourceManager->get<Vengine::Shader>("default");
     // load resources async at the beginning
-    m_vengine->resourceManager->loadAsync<Vengine::Mesh>("living_room", "table.blend");
+    // m_vengine->resourceManager->loadModelAsync("table_____________________", "table.blend", defaultShader);
+    m_vengine->resourceManager->loadModelAsync("mercedes", "cottage.fbx", defaultShader);
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("tree", "Lowpoly_tree_sample.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("ant", "ant.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("flower", "flower.obj");
@@ -47,14 +49,17 @@ App::App() {
     }
 
     // load shaders
-    m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("default",
-                                                                        "resources/shaders/default_new.vert",
-                                                                        "resources/shaders/default_new.frag"));
-    auto defaultShader = m_vengine->renderer->shaders->get("default");
-    if (!defaultShader) {
-        spdlog::error(defaultShader.error().message);
-        return;
-    }
+    // m_vengine->resourceManager->loadAsync<Vengine::Shader>("default", "resources/shaders/default_new.vert", "resources/shaders/default_new.frag");
+    // m_vengine->resourceManager->loadAsync<Vengine::Shader>("default.text", "resources/shaders/text.vert", "resources/shaders/text.frag");
+    m_vengine->resourceManager->load<Vengine::Shader>("skybox", "resources/shaders/skybox.vert", "resources/shaders/skybox.frag");
+    // m_vengine->renderer->shaders->add(std::make_shared<Vengine::Shader>("default",
+    //                                                                     "resources/shaders/default_new.vert",
+    //                                                                     "resources/shaders/default_new.frag"));
+    // auto defaultShader = m_vengine->renderer->shaders->get("default");
+    // if (!defaultShader) {
+    //     spdlog::error(defaultShader.error().message);
+    //     return;
+    // }
 
     // sleep until skybox textures are loaded
     m_vengine->threadManager->waitForCompletion();

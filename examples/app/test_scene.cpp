@@ -35,7 +35,7 @@ void TestScene::load(Vengine::Vengine& vengine) {
 
     std::vector<std::shared_ptr<Vengine::Texture>> skyboxTextures =
         {skyboxRight, skyboxLeft, skyboxTop, skyboxBottom, skyboxBack, skyboxFront};
-    vengine.renderer->loadSkybox(skyboxTextures);
+    vengine.renderer->loadSkybox(skyboxTextures, vengine.resourceManager->get<Vengine::Shader>("skybox"));
 
     // create materials (textures + shaders or just shaders)
     auto texture = vengine.resourceManager->get<Vengine::Texture>("test_texture");
@@ -44,44 +44,44 @@ void TestScene::load(Vengine::Vengine& vengine) {
     auto flowerTexture = vengine.resourceManager->get<Vengine::Texture>("flowerTexture");
     auto grassTexture = vengine.resourceManager->get<Vengine::Texture>("grass");
     auto stoneTexture = vengine.resourceManager->get<Vengine::Texture>("stone");
-    auto defaultShader = vengine.renderer->shaders->get("default");
+    auto defaultShader = vengine.resourceManager->get<Vengine::Shader>("default");
 
-    vengine.renderer->materials->add("colored", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("colored", std::make_shared<Vengine::Material>(defaultShader));
     auto coloredMaterial = vengine.renderer->materials->get("colored");
     coloredMaterial->setBool("uUseTexture", false);
     coloredMaterial->setVec4("uColor", glm::vec4(0.8f, 0.5f, 0.2f, 1.0f));
 
-    vengine.renderer->materials->add("blue", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("blue", std::make_shared<Vengine::Material>(defaultShader));
     auto blueMaterial = vengine.renderer->materials->get("blue");
     blueMaterial->setBool("uUseTexture", false);
     blueMaterial->setVec4("uColor", glm::vec4(0.2f, 0.4f, 0.8f, 1.0f));
 
-    vengine.renderer->materials->add("stone", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("stone", std::make_shared<Vengine::Material>(defaultShader));
     auto stoneMaterial = vengine.renderer->materials->get("stone");
     stoneMaterial->setBool("uUseTexture", true);
     stoneMaterial->setTexture("uTexture", std::move(stoneTexture));
 
-    vengine.renderer->materials->add("grass", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("grass", std::make_shared<Vengine::Material>(defaultShader));
     auto grassMaterial = vengine.renderer->materials->get("grass");
     grassMaterial->setBool("uUseTexture", true);
     grassMaterial->setTexture("uTexture", std::move(grassTexture));
 
-    vengine.renderer->materials->add("flower", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("flower", std::make_shared<Vengine::Material>(defaultShader));
     auto flowerMaterial = vengine.renderer->materials->get("flower");
     flowerMaterial->setBool("uUseTexture", true);
     flowerMaterial->setTexture("uTexture", std::move(flowerTexture));
 
-    vengine.renderer->materials->add("aquarium", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("aquarium", std::make_shared<Vengine::Material>(defaultShader));
     auto aquariumMaterial = vengine.renderer->materials->get("aquarium");
     aquariumMaterial->setBool("uUseTexture", true);
     aquariumMaterial->setTexture("uTexture", std::move(aquariumTexture));
 
-    vengine.renderer->materials->add("default", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("default", std::make_shared<Vengine::Material>(defaultShader));
     auto texturedMaterial = vengine.renderer->materials->get("default");
     texturedMaterial->setBool("uUseTexture", true);
     texturedMaterial->setTexture("uTexture", std::move(texture));
 
-    vengine.renderer->materials->add("default2", std::make_shared<Vengine::Material>(defaultShader.value()));
+    vengine.renderer->materials->add("default2", std::make_shared<Vengine::Material>(defaultShader));
     auto texturedMaterial2 = vengine.renderer->materials->get("default2");
     texturedMaterial2->setBool("uUseTexture", true);
     texturedMaterial2->setTexture("uTexture", std::move(texture2));
@@ -119,13 +119,27 @@ void TestScene::load(Vengine::Vengine& vengine) {
     glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
     lightComp->direction = glm::normalize(target - sunPos);
 
-    // living room entity
-    auto livingRoomMesh = vengine.resourceManager->get<Vengine::Mesh>("living_room");
-    auto livingRoomEntity = vengine.ecs->createEntity();
-    vengine.ecs->addComponent<Vengine::TagComponent>(livingRoomEntity, "living_room");
-    vengine.ecs->addComponent<Vengine::MeshComponent>(livingRoomEntity, livingRoomMesh);
-    vengine.ecs->addComponent<Vengine::TransformComponent>(livingRoomEntity);
-    vengine.ecs->addComponent<Vengine::MaterialComponent>(livingRoomEntity, texturedMaterial);
+    // table entity
+    // auto tableMesh = vengine.resourceManager->get<Vengine::Model>("table_____________________");
+    // auto tableEntity = vengine.ecs->createEntity();
+    // vengine.ecs->addComponent<Vengine::TagComponent>(tableEntity, "table");
+    // vengine.ecs->addComponent<Vengine::ModelComponent>(tableEntity, tableMesh);
+    // auto modelComp = vengine.ecs->getEntityComponent<Vengine::ModelComponent>(tableEntity);
+    // modelComp->model->setDefaultMaterial(texturedMaterial);
+    // vengine.ecs->addComponent<Vengine::TransformComponent>(tableEntity);
+
+    // mercedes entity
+    // auto mercedesMesh = vengine.resourceManager->get<Vengine::Model>("mercedes");
+    // auto mercedesEntity = vengine.ecs->createEntity();
+    // vengine.ecs->addComponent<Vengine::TagComponent>(mercedesEntity, "mercedes");
+    // vengine.ecs->addComponent<Vengine::ModelComponent>(mercedesEntity, mercedesMesh);
+    // // auto modelComp = vengine.ecs->getEntityComponent<Vengine::ModelComponent>(mercedesEntity);
+    // // modelComp->model->setDefaultMaterial(texturedMaterial);
+    // vengine.ecs->addComponent<Vengine::TransformComponent>(mercedesEntity);
+    // auto mercedesTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mercedesEntity);
+    // mercedesTransform->setPosition(0.0f, 0.0f, 0.0f);
+    // // mercedesTransform->setRotation(-1.5f, 0.00f, 0.0f);
+    // mercedesTransform->setScale(0.01f, 0.01f, 0.01f);
 
     // tree entity
     auto treeMesh = vengine.resourceManager->get<Vengine::Mesh>("tree");

@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #include <freetype/freetype.h>
 
-#include "vengine/renderer/shader.hpp"
+#include "vengine/core/shader.hpp"
 #include "vengine/renderer/vertex_array.hpp"
 #include "vengine/renderer/vertex_buffer.hpp"
 

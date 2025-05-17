@@ -33,16 +33,31 @@ auto Mesh::load(const std::string& fileName) -> bool {
 }
 
 auto Mesh::finalizeOnMainThread() -> bool {
-    if (!m_needsMainThreadInit) {
+    // Validate input data
+    if (m_vertices.empty()) {
+        spdlog::error("Cannot finalize mesh: no vertex data");
         return false;
     }
 
+    // Create vertex buffer
     m_vertexBuffer = std::make_shared<VertexBuffer>(m_vertices.data(), m_vertices.size() * sizeof(float));
+    if (!m_vertexBuffer || m_vertexBuffer->getId() == 0) {
+        spdlog::error("Failed to create vertex buffer");
+        return false;
+    }
 
+    // Create vertex array
     m_vertexArray = std::make_shared<VertexArray>();
+    if (!m_vertexArray || m_vertexArray->getID() == 0) {
+        spdlog::error("Failed to create vertex array");
+        return false;
+    }
+    
+    // Add buffer to vertex array
     m_vertexArray->addVertexBuffer(m_vertexBuffer, m_layout);
-
-    if (m_useIndices) {
+    
+    // Create index buffer if needed
+    if (m_useIndices && !m_indices.empty()) {
         m_indexBuffer = std::make_shared<IndexBuffer>(m_indices.data(), m_indices.size());
         m_vertexArray->addIndexBuffer(m_indexBuffer);
     } else {
@@ -50,6 +65,14 @@ auto Mesh::finalizeOnMainThread() -> bool {
     }  
 
     m_needsMainThreadInit = false;
+    
+    // Log successful initialization
+    int floatsPerVertex = getFloatsPerVertex();
+    spdlog::debug("Mesh finalized successfully: VAO ID: {}, Vertices: {}, Indices: {}",
+                m_vertexArray->getID(), 
+                m_vertices.size() / static_cast<size_t>(floatsPerVertex),
+                m_indices.size());
+                
     return true;
 }
 

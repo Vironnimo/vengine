@@ -6,6 +6,7 @@
 #include <tl/expected.hpp>
 #include "vengine/core/error.hpp"
 #include "vengine/core/thread_manager.hpp"
+#include "vengine/core/model_loader.hpp"
 
 #include "vengine/core/mesh_loader.hpp"
 #include "resources.hpp"
@@ -35,7 +36,7 @@ class ResourceManager {
         assert(!fileName.empty() && "Filename cannot be empty");
         assert(!name.empty() && "Name cannot be empty");
 
-        auto argsSize = sizeof...(loadArgs);
+        // auto argsSize = sizeof...(loadArgs);
         spdlog::debug("Loading resource: {} from file: {}", name, fileName);
         std::shared_ptr<T> resource;
 
@@ -52,6 +53,10 @@ class ResourceManager {
                 spdlog::error("Failed to load mesh: {}", fileName);
                 return false;
             }
+        }
+
+        if constexpr (std::is_same_v<T, Shader>) {
+            resource = std::make_shared<T>(name, fileName, std::get<0>(std::tuple<Args...>(loadArgs...)));
         }
 
         if (!resource) {
@@ -105,6 +110,9 @@ class ResourceManager {
                         return;
                     }
                 }
+                if constexpr (std::is_same_v<T, Shader>) {
+                    resource = std::make_shared<T>(name, fileName, std::get<0>(loadArgsTuple));
+                }
 
                 if (!resource) {
                     resource = std::make_shared<T>();
@@ -138,6 +146,12 @@ class ResourceManager {
             "Load " + std::string(typeid(T).name()) + ": " + name);
     }
 
+    template <typename T>
+    auto add(const std::string& name, std::shared_ptr<T> resource) -> void {
+        std::lock_guard<std::mutex> lock(m_resourceMutex);
+        m_resources[std::type_index(typeid(T))][name] = resource;
+    }
+
     auto isLoaded(const std::string& name) -> bool {
         std::lock_guard<std::mutex> lock(m_resourceMutex);
 
@@ -161,6 +175,13 @@ class ResourceManager {
         return nullptr;
     }
 
+    auto loadModel(const std::string& name,
+                   const std::string& fileName,
+                   std::shared_ptr<Shader> defaultShader = nullptr) -> bool;
+    auto loadModelAsync(const std::string& name,
+                        const std::string& fileName,
+                        std::shared_ptr<Shader> defaultShader = nullptr) -> void;
+
    private:
     std::filesystem::path m_resourceRoot;
     std::unordered_map<std::type_index, std::unordered_map<std::string, std::shared_ptr<IResource>>> m_resources;
@@ -168,7 +189,8 @@ class ResourceManager {
     std::shared_ptr<ThreadManager> m_threadManager;
     std::mutex m_resourceMutex;
 
-    std::unique_ptr<MeshLoader> m_meshLoader;
+    std::shared_ptr<MeshLoader> m_meshLoader;
+    std::unique_ptr<ModelLoader> m_modelLoader;
 
     ma_engine m_audioEngine;
 };

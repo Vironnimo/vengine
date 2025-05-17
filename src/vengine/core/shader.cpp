@@ -186,4 +186,31 @@ auto Shader::setUniformVec3(const std::string& name, const glm::vec3& value) con
     }
 }
 
+[[nodiscard]] auto Shader::load(const std::string& fileName) -> bool {
+    // Load the shader from the specified file
+    // auto shaderSource = readFile(fileName);
+    // if (!shaderSource) {
+    //     spdlog::error("Failed to load shader file: {}", fileName);
+    //     return false;
+    // }
+
+    // // Compile the shader
+    // auto shader = compileShader(GL_VERTEX_SHADER, *shaderSource);
+    // if (!shader) {
+    //     spdlog::error("Failed to compile shader: {}", fileName);
+    //     return false;
+    // }
+
+    // // Attach the shader to the program
+    // glAttachShader(m_id, *shader);
+    return true;
+}
+
+[[nodiscard]] auto Shader::unload() -> bool {
+    // Detach and delete the shader from the program
+    glDetachShader(m_id, m_id);
+    glDeleteShader(m_id);
+    return true;
+}
+
 }  // namespace Vengine

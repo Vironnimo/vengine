@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <glm/glm.hpp>
 #include "vengine/core/resources.hpp"
-#include "vengine/renderer/shader.hpp"
+#include "vengine/core/shader.hpp"
     
 namespace Vengine {
 

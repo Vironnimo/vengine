@@ -14,12 +14,11 @@ class MeshLoader {
     MeshLoader();
     ~MeshLoader();
     auto loadModel(const std::string& filename) -> std::shared_ptr<Mesh>;
-    auto loadFromObj(const std::string& filename) -> std::shared_ptr<Mesh>;
     auto createPlane(float width = 100.0f, float height = 100.0f, int widthSegments = 1,
                      int heightSegments = 1) -> std::shared_ptr<Mesh>;
+    auto getModelPath(const std::string& filename) -> std::filesystem::path;
 
    private:
-    auto getModelPath(const std::string& filename) -> std::filesystem::path;
 
     std::unordered_map<std::string, std::string> m_materialCache;
 };

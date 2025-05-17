@@ -70,6 +70,7 @@ Vengine::~Vengine() {
 
     threadManager = std::make_shared<ThreadManager>();
 
+    // resources
     resourceManager = std::make_unique<ResourceManager>();
     if (auto result = resourceManager->init(threadManager); !result) {
         return tl::unexpected(result.error());
@@ -88,6 +89,13 @@ Vengine::~Vengine() {
     if (auto result = renderer->init(window); !result) {
         return tl::unexpected(result.error());
     }
+    spdlog::info("Vengine: renderer initialized");
+    addDefaults();
+    renderer->initFonts(resourceManager->get<Shader>("default.text"));
+    // if (auto result = renderer->initFonts(resourceManager->get<Shader>("default.text")); !result) {
+        // spdlog::warn(result.error().message);
+    // }
+    renderer->setShadowShader(resourceManager->get<Shader>("shadow_depth"));
 
     // register built-in components
     ecs->registerComponent<TagComponent>("Tag");
@@ -96,6 +104,7 @@ Vengine::~Vengine() {
     ecs->registerComponent<TransformComponent>("Transform");
     ecs->registerComponent<VelocityComponent>("Velocity");
     ecs->registerComponent<MeshComponent>("Mesh");
+    ecs->registerComponent<ModelComponent>("Model");
     ecs->registerComponent<MaterialComponent>("Material");
     ecs->registerComponent<ScriptComponent>("Script");
     ecs->registerComponent<CameraComponent>("Camera");
@@ -112,6 +121,7 @@ Vengine::~Vengine() {
     scriptSystem->setEnabled(false);  // calling manually to make sure it runs before collision and physics
     scriptSystem->registerBindings(this);
     ecs->registerSystem("ScriptSystem", scriptSystem);
+
 
     // time logging
     auto vengineStartTime = timers->getElapsed("vengine.start");
@@ -163,6 +173,15 @@ auto Vengine::run() -> void {
         ecs->runSystems(timers->deltaTime());
         renderer->render(scenes->getCurrentScene());
     }
+}
+
+void Vengine::addDefaults() {
+    // default resources
+    resourceManager->load<Shader>("default", "resources/shaders/default_new.vert", "resources/shaders/default_new.frag");
+    resourceManager->load<Shader>("default.text", "resources/shaders/text.vert", "resources/shaders/text.frag");
+    resourceManager->load<Shader>("shadow_depth",
+                                  "resources/shaders/shadow_depth.vert",
+                                  "resources/shaders/shadow_depth.frag");
 }
 
 void Vengine::addModule(std::shared_ptr<Module> module) {

@@ -6,16 +6,24 @@
 
 #include <tl/expected.hpp>
 #include "vengine/core/error.hpp"
+#include "vengine/core/i_resource.hpp"
 
 namespace Vengine {
 
-class Shader {
+class Shader : public IResource {
    public:
+    Shader() = default;
     Shader(std::string name, const std::string& vertexFile, const std::string& fragmentFile);
-    ~Shader();
+    ~Shader() override;
     auto bind() const -> void;
     auto unbind() -> void;
     [[nodiscard]] auto getId() const -> GLuint;
+
+    [[nodiscard]] auto load(const std::string& fileName) -> bool override;
+    [[nodiscard]] auto unload() -> bool override;
+            // move the stuff to mainthread!!
+    [[nodiscard]] auto needsMainThreadInit() const -> bool override { return false; }
+    [[nodiscard]] auto finalizeOnMainThread() -> bool override { return true; }
 
     // TODO uniform methods... which do we need, which could we need?
     auto setUniform1i(const std::string& name, int value) const -> void;

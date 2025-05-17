@@ -6,7 +6,7 @@
 #include <freetype/freetype.h>
 
 #include "vengine/renderer/font.hpp"
-#include "vengine/renderer/shader.hpp"
+#include "vengine/core/shader.hpp"
 #include "vengine/core/error.hpp"
 #include "vengine/renderer/vertex_array.hpp"
 #include "vengine/renderer/vertex_buffer.hpp"

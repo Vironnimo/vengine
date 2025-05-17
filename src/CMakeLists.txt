@@ -21,6 +21,8 @@ set(SOURCES
         vengine/core/timers.cpp
         vengine/core/mesh.cpp
         vengine/core/mesh_loader.cpp
+        vengine/core/model_loader.cpp
+        vengine/core/model.cpp
         vengine/core/signals.cpp
         vengine/core/event_manager.cpp
         vengine/core/scenes.cpp
@@ -35,8 +37,8 @@ set(SOURCES
         vengine/renderer/index_buffer.cpp
         vengine/renderer/vertex_array.cpp
         vengine/renderer/vertex_buffer.cpp
-        vengine/renderer/shader.cpp
-        vengine/renderer/shaders.cpp
+        vengine/core/shader.cpp
+        # vengine/renderer/shaders.cpp
         vengine/renderer/font.cpp
         vengine/renderer/fonts.cpp
         vengine/renderer/skybox.cpp
