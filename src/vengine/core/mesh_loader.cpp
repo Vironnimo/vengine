@@ -140,6 +140,8 @@ auto MeshLoader::loadModel(const std::string& filename) -> std::shared_ptr<Mesh>
     for (const auto& submesh : submeshes) {
         result->addSubmesh(submesh);
     }
+
+    result->load(filename);
     
     return result;
 }

@@ -50,16 +50,27 @@ class Texture : public IResource {
     }
 
     auto setRawData(unsigned char* data, int width, int height, int channels) -> void {
+        // Create the RawImageData struct if it doesn't exist
+        if (!m_rawData) {
+            m_rawData = std::make_shared<RawImageData>();
+        }
+
         // Make a copy of the data
         size_t dataSize = width * height * channels;
         unsigned char* dataCopy = new unsigned char[dataSize];
         std::memcpy(dataCopy, data, dataSize);
 
-        // Store the data
+        // Store in the RawImageData struct
+        m_rawData->pixels = dataCopy;
+        m_rawData->width = width;
+        m_rawData->height = height;
+        m_rawData->channels = channels;
+
+        // Also update the member variables
         m_width = width;
         m_height = height;
         m_channels = channels;
-        m_rawPixels.reset(dataCopy, [](unsigned char* p) { delete[] p; });
+
         m_needsMainThreadInit = true;
         m_isLoaded = true;
     }
@@ -70,7 +81,7 @@ class Texture : public IResource {
 
     // send data to gpu
     auto finalizeOnMainThread() -> bool override {
-        if (!m_needsMainThreadInit || !m_rawData || !m_rawData->pixels) {
+        if (!m_needsMainThreadInit || !m_rawData) {
             return false;
         }
 

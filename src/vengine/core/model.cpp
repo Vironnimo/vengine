@@ -13,7 +13,7 @@ Model::~Model() {
 }
 
 auto Model::load(const std::string& fileName) -> bool {
-    // This is intentionally minimal as actual loading will be handled by ModelLoader
+    // m_mesh->load(fileName);
     return true;
 }
 

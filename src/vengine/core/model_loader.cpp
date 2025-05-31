@@ -25,7 +25,7 @@ ModelLoader::~ModelLoader() {
 auto ModelLoader::loadModel(const std::string& filename, std::shared_ptr<Shader> defaultShader) -> std::shared_ptr<Model> {
     auto model = std::make_shared<Model>();
     
-    // Load the mesh and get the scene
+    // Load the mesh 
     auto mesh = m_meshLoader->loadModel(filename);
     if (!mesh) {
         spdlog::error("Failed to load mesh for model: {}", filename);

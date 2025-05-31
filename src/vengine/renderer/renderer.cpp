@@ -108,6 +108,7 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     }
     // --- SHADOW MAP PASS ---
     // 1. Set viewport to shadow map size
+    glCullFace(GL_FRONT);
     glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, 2048, 2048);
     glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
@@ -134,7 +135,38 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         if (!transformComp || !meshComp || !meshComp->mesh) {
             continue;
         }
+
+        if (transformComp->dirty) {
+            transformComp->updateMatrix();
+            transformComp->dirty = false;
+        }
+
         shadowBatches[meshComp->mesh].push_back(transformComp->getTransform());
+    }
+
+    // Add ModelComponent entities to shadow casting
+    auto modelShadowCasters = scene->getEntities()->getEntitiesWith<TransformComponent, ModelComponent>();
+    for (auto entity : modelShadowCasters) {
+        auto transformComp = scene->getEntities()->getEntityComponent<TransformComponent>(entity);
+        auto modelComp = scene->getEntities()->getEntityComponent<ModelComponent>(entity);
+
+        if (!transformComp || !modelComp || !modelComp->model) {
+            continue;
+        }
+
+        auto model = modelComp->model;
+        auto mesh = model->getMesh();
+
+        if (!mesh || !mesh->getVertexArray()) {
+            continue;
+        }
+
+        if (transformComp->dirty) {
+            transformComp->updateMatrix();
+            transformComp->dirty = false;
+        }
+
+        shadowBatches[mesh].push_back(transformComp->getTransform());
     }
 
     // 5. Draw each batch with instancing
@@ -159,6 +191,7 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     // 6. Unbind framebuffer and reset viewport to window size
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, m_window->getWidth(), m_window->getHeight());
+    glCullFace(GL_BACK);
 
     glClearColor(0.4f, 0.6f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -247,12 +280,6 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         if (!mesh || !defaultMaterial) {
             spdlog::warn("Model entity {} has invalid mesh or material", entity);
             continue;
-        }
-
-        // Ensure mesh has been properly initialized
-        if (mesh->needsMainThreadInit()) {
-            spdlog::warn("Model mesh requires initialization, calling finalizeOnMainThread");
-            mesh->finalizeOnMainThread();
         }
 
         // Skip if vertex array is still not available
@@ -420,16 +447,6 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         return tl::unexpected(Error{"Failed to initialize GLAD"});
     }
 
-    // shaders = std::make_unique<Shaders>();
-    // auto shaderInit = shaders->init();
-    // if (!shaderInit) {
-    // return tl::unexpected(shaderInit.error());
-    // }
-    // NOTE default shader
-    // shaders->add(std::make_shared<Shader>("shadow_depth",
-    //   "resources/shaders/shadow_depth.vert",
-    //   "resources/shaders/shadow_depth.frag"));
-
     materials = std::make_unique<Materials>();
     auto materialsInit = materials->init();
     if (!materialsInit) {
@@ -458,6 +475,13 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
+
+    // Check framebuffer completeness
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        spdlog::error("Shadow framebuffer not complete!");
+        return tl::unexpected(Error{"Failed to create shadow framebuffer"});
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return {};

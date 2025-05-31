@@ -120,26 +120,29 @@ void TestScene::load(Vengine::Vengine& vengine) {
     lightComp->direction = glm::normalize(target - sunPos);
 
     // table entity
-    // auto tableMesh = vengine.resourceManager->get<Vengine::Model>("table_____________________");
-    // auto tableEntity = vengine.ecs->createEntity();
-    // vengine.ecs->addComponent<Vengine::TagComponent>(tableEntity, "table");
-    // vengine.ecs->addComponent<Vengine::ModelComponent>(tableEntity, tableMesh);
-    // auto modelComp = vengine.ecs->getEntityComponent<Vengine::ModelComponent>(tableEntity);
+    auto tableMesh = vengine.resourceManager->get<Vengine::Model>("table_____________________");
+    auto tableEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(tableEntity, "table");
+    vengine.ecs->addComponent<Vengine::ModelComponent>(tableEntity, tableMesh);
+    auto modelComp = vengine.ecs->getEntityComponent<Vengine::ModelComponent>(tableEntity);
     // modelComp->model->setDefaultMaterial(texturedMaterial);
-    // vengine.ecs->addComponent<Vengine::TransformComponent>(tableEntity);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(tableEntity);
+    auto transformComp = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(tableEntity);
+    transformComp->setPosition(0.0f, 1.2f, 10.0f);
+    transformComp->setRotation(-1.6f, 0.0f, 0.0f);
 
     // mercedes entity
-    // auto mercedesMesh = vengine.resourceManager->get<Vengine::Model>("mercedes");
-    // auto mercedesEntity = vengine.ecs->createEntity();
-    // vengine.ecs->addComponent<Vengine::TagComponent>(mercedesEntity, "mercedes");
-    // vengine.ecs->addComponent<Vengine::ModelComponent>(mercedesEntity, mercedesMesh);
-    // // auto modelComp = vengine.ecs->getEntityComponent<Vengine::ModelComponent>(mercedesEntity);
-    // // modelComp->model->setDefaultMaterial(texturedMaterial);
-    // vengine.ecs->addComponent<Vengine::TransformComponent>(mercedesEntity);
-    // auto mercedesTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mercedesEntity);
-    // mercedesTransform->setPosition(0.0f, 0.0f, 0.0f);
-    // // mercedesTransform->setRotation(-1.5f, 0.00f, 0.0f);
-    // mercedesTransform->setScale(0.01f, 0.01f, 0.01f);
+    auto mercedesMesh = vengine.resourceManager->get<Vengine::Model>("mercedes");
+    auto mercedesEntity = vengine.ecs->createEntity();
+    vengine.ecs->addComponent<Vengine::TagComponent>(mercedesEntity, "mercedes");
+    vengine.ecs->addComponent<Vengine::ModelComponent>(mercedesEntity, mercedesMesh);
+    auto mercedesmodelComp = vengine.ecs->getEntityComponent<Vengine::ModelComponent>(mercedesEntity);
+    // mercedesmodelComp->model->setDefaultMaterial(texturedMaterial);
+    vengine.ecs->addComponent<Vengine::TransformComponent>(mercedesEntity);
+    auto mercedesTransform = vengine.ecs->getEntityComponent<Vengine::TransformComponent>(mercedesEntity);
+    mercedesTransform->setPosition(0.0f, 0.0f, 0.0f);
+    mercedesTransform->setRotation(-1.5f, 0.00f, 0.0f);
+    mercedesTransform->setScale(0.11f, 0.11f, 0.11f);
 
     // tree entity
     auto treeMesh = vengine.resourceManager->get<Vengine::Mesh>("tree");

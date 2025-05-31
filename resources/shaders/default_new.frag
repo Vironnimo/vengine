@@ -4,6 +4,7 @@ in vec2 texCoord;
 in vec4 vertexColor;
 in vec3 fs_Normal;
 in vec3 fs_FragPos;
+in vec4 fs_FragPosLightSpace;  // Interpolated from vertex shader
 
 out vec4 FragColor;
 
@@ -56,7 +57,8 @@ void main() {
     vec3 specular = uSpecular * spec * uLightColor;
 
     // Shadow calculation (unchanged)
-    vec4 fragPosLightSpace = uLightSpaceMatrix * vec4(fs_FragPos, 1.0);
+    // vec4 fragPosLightSpace = uLightSpaceMatrix * vec4(fs_FragPos, 1.0);
+    vec4 fragPosLightSpace = fs_FragPosLightSpace;  // Use the interpolated value from vertex shader
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;  // to [0,1] range
 

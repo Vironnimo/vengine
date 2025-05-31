@@ -53,55 +53,60 @@ ResourceManager::~ResourceManager() {
     ma_engine_uninit(&m_audioEngine);
 }
 
-auto ResourceManager::loadModel(const std::string& name, const std::string& fileName, 
-                               std::shared_ptr<Shader> defaultShader) -> bool {
+auto ResourceManager::loadModel(const std::string& name,
+                                const std::string& fileName,
+                                std::shared_ptr<Shader> defaultShader) -> bool {
     assert(!fileName.empty() && "Filename cannot be empty");
     assert(!name.empty() && "Name cannot be empty");
-    
+
     spdlog::debug("Loading model: {} from file: {}", name, fileName);
-    
+
     auto model = m_modelLoader->loadModel(fileName, defaultShader);
     if (!model) {
         spdlog::error("Failed to load model: {}", fileName);
         return false;
     }
-    
+
+    model->load(fileName);
+
     {
         std::lock_guard<std::mutex> lock(m_resourceMutex);
         m_resources[std::type_index(typeid(Model))][name] = model;
     }
-    
+
     if (model->needsMainThreadInit()) {
         model->finalizeOnMainThread();
     }
-    
+
     return true;
 }
 
-auto ResourceManager::loadModelAsync(const std::string& name, const std::string& fileName, 
-                                    std::shared_ptr<Shader> defaultShader) -> void {
+auto ResourceManager::loadModelAsync(const std::string& name,
+                                     const std::string& fileName,
+                                     std::shared_ptr<Shader> defaultShader) -> void {
     assert(!fileName.empty() && "Filename cannot be empty");
     assert(!name.empty() && "Name cannot be empty");
-    
+
     spdlog::debug("Loading model async: {} from file: {}", name, fileName);
-    
+
     m_threadManager->enqueueTask([this, name, fileName, defaultShader]() {
         auto model = m_modelLoader->loadModel(fileName, defaultShader);
         if (!model) {
             spdlog::error("Failed to load model: {}", fileName);
             return;
         }
-        
+
+        model->load(fileName);
+
         {
             std::lock_guard<std::mutex> lock(m_resourceMutex);
             m_resources[std::type_index(typeid(Model))][name] = model;
         }
-        
-        // if (model->needsMainThreadInit()) {
-            m_threadManager->enqueueMainThreadTask([model, name]() {
-                model->finalizeOnMainThread();
-            }, "Finalize model: " + name);
-        // }
+
+        if (model->needsMainThreadInit()) {
+            m_threadManager->enqueueMainThreadTask([model, name]() { model->finalizeOnMainThread(); },
+                                                   "Finalize model: " + name);
+        }
     });
 }
 

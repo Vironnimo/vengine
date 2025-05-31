@@ -148,6 +148,17 @@ class ResourceManager {
 
     template <typename T>
     auto add(const std::string& name, std::shared_ptr<T> resource) -> void {
+        if (resource->needsMainThreadInit()) {
+            m_threadManager->enqueueMainThreadTask(
+                [resource, name]() {
+                    if (resource->finalizeOnMainThread()) {
+                        // spdlog::info("Finalized resource on main thread: {}", name);
+                    } else {
+                        spdlog::error("Failed to finalize resource on main thread: {}", name);
+                    }
+                },
+                "Finalize resource: " + name);
+        }
         std::lock_guard<std::mutex> lock(m_resourceMutex);
         m_resources[std::type_index(typeid(T))][name] = resource;
     }
