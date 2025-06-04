@@ -44,7 +44,10 @@ class Vengine {
 
     void addScene(const std::string& name, std::shared_ptr<Scene> scene) const;
     template <typename T>
-    void addScene(const std::string& name);
+    void addScene(const std::string& name) {
+        auto scene = std::make_shared<T>(name);
+        scenes->add(name, std::move(scene));
+    }
 
     void loadScene(const std::string& name);
     void removeScene(const std::string& name) const;
@@ -57,7 +60,7 @@ class Vengine {
    private:
     std::vector<std::shared_ptr<Module>> m_modules;
 
-    void addDefaults();
+    void addDefaults() const;
     void registerGlfwCallbacks();
 };
 

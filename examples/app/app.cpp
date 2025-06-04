@@ -15,7 +15,7 @@ App::App() {
 
     auto defaultShader = m_vengine->resourceManager->get<Vengine::Shader>("default");
     // load resources async at the beginning
-    m_vengine->resourceManager->loadModelAsync("mercedes", "12140_Skull_v3_L2.obj", defaultShader);
+    m_vengine->resourceManager->loadModelAsync("mercedes", "Skull.obj", defaultShader);
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("tree", "Lowpoly_tree_sample.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("ant", "ant.obj");
     m_vengine->resourceManager->loadAsync<Vengine::Mesh>("flower", "flower.obj");

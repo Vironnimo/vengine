@@ -33,9 +33,19 @@ class Renderer {
     auto loadSkybox(const std::vector<std::shared_ptr<Texture>>& faceFiles, std::shared_ptr<Shader> shader) -> bool;
     auto unloadSkybox() -> void;
 
+    auto setPreRenderCallback(std::function<void()> callback) -> void {
+        m_preRenderCallback = std::move(callback);
+    }
+    auto setPostRenderCallback(std::function<void()> callback) -> void {
+        m_postRenderCallback = std::move(callback);
+    }
+
    private:
     std::shared_ptr<Window> m_window;
     bool m_skyboxEnabled = false;
+
+    std::function<void()> m_preRenderCallback;
+    std::function<void()> m_postRenderCallback;
 
     // shadow test
     GLuint m_shadowMap;

@@ -90,13 +90,17 @@ Renderer::~Renderer() {
 }
 
 auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
+    if (m_preRenderCallback) {
+        m_preRenderCallback();
+    }
+
     // light stuff
     auto lightEntities = scene->getEntities()->getEntitiesWith<LightComponent>();
     // default light values
-    glm::vec3 lightDirection = glm::vec3(0.0f, 10.0f, 0.0f);
+    glm::vec3 lightDirection = glm::vec3(-0.5f, -0.7f, -0.5f); 
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     float lightIntensity = 1.0f;
-    glm::vec3 lightPos = glm::vec3(0.0f, 10.0f, 0.0f);  // default
+    glm::vec3 lightPos = glm::vec3(20.0f, 50.0f, 20.0f);  // default
 
     if (!lightEntities.empty()) {
         auto lightComp = scene->getEntities()->getEntityComponent<LightComponent>(lightEntities[0]);
@@ -429,6 +433,9 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         }
     }
 
+    if (m_postRenderCallback) {
+        m_postRenderCallback();
+    }
     glfwSwapBuffers(m_window->get());
     glfwPollEvents();
 }

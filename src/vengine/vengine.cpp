@@ -171,11 +171,15 @@ auto Vengine::run() -> void {
         // physicsAndCollisionTaskFuture.wait();
 
         ecs->runSystems(timers->deltaTime());
+        if (scenes->getCurrentScene() == nullptr) {
+            // spdlog::warn("Vengine: No current scene set, skipping rendering.");
+            continue;
+        }
         renderer->render(scenes->getCurrentScene());
     }
 }
 
-void Vengine::addDefaults() {
+void Vengine::addDefaults() const {
     // default resources
     resourceManager->load<Shader>("default", "resources/shaders/default_new.vert", "resources/shaders/default_new.frag");
     resourceManager->load<Shader>("default.text", "resources/shaders/text.vert", "resources/shaders/text.frag");
@@ -199,11 +203,6 @@ void Vengine::removeModule(const std::shared_ptr<Module>& module) {
 
 void Vengine::addScene(const std::string& name, std::shared_ptr<Scene> scene) const {
     scenes->add(name, std::move(scene));
-}
-
-template <typename T>
-void Vengine::addScene(const std::string& name) {
-    auto scene = std::make_shared<T>(name);
 }
 
 void Vengine::loadScene(const std::string& name) {

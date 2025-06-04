@@ -8,3 +8,9 @@ build/
 .drawio
 CMakeUserPresets.json
 TODO.md
+resources/models/mercedes.fbx
+resources/models/Skull.obj
+resources/models/Skull.mtl
+resources/models/Skull.jpg
+resources/models/cottage.fbx
+resources/models/table.blend

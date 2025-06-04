@@ -11,9 +11,9 @@ out vec4 FragColor;
 uniform sampler2D uTexture;
 uniform bool uUseTexture;
 
-uniform vec3 uLightDirection = vec3(0.5, 11.0, 10.3);
+uniform vec3 uLightDirection = vec3(-0.5, -0.7, -0.5);  // Light pointing down-back-left
 uniform vec3 uLightColor = vec3(1.0, 1.0, 1.0);
-uniform float uAmbientStrength = 0.3;  // light strenght
+uniform float uAmbientStrength = 0.3;  // shadow strength
 
 uniform vec3 uDiffuse = vec3(1.0, 1.0, 1.0);  
 uniform vec3 uAmbient = vec3(1.0, 1.0, 1.0);  
@@ -41,7 +41,7 @@ void main() {
     
     // Prepare normals and light direction
     vec3 norm = normalize(fs_Normal);
-    vec3 lightDir = -normalize(uLightDirection);
+    vec3 lightDir = normalize(-uLightDirection);
 
     // Ambient component
     vec3 ambient = uAmbientStrength * uLightColor * uAmbient;

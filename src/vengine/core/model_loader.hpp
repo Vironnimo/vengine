@@ -18,7 +18,7 @@ class ModelLoader {
     ModelLoader(std::shared_ptr<MeshLoader> meshLoader, ResourceManager* resourceManager);
     ~ModelLoader();
 
-    auto loadModel(const std::string& filename, std::shared_ptr<Shader> defaultShader = nullptr) -> std::shared_ptr<Model>;
+    auto loadModel(const std::string& filename, const std::shared_ptr<Shader>& defaultShader) -> std::shared_ptr<Model>;
 
    private:
     auto loadMaterialsFromMtl(const std::filesystem::path& mtlPath, std::shared_ptr<Shader> defaultShader)

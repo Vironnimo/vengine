@@ -74,7 +74,9 @@ class ResourceManager {
             }
 
             if (resource->needsMainThreadInit()) {
-                resource->finalizeOnMainThread();
+                if (!resource->finalizeOnMainThread()) {
+                    spdlog::error("Failed to finalize resource on main thread: {}", name);
+                }
             }
         } else {
             spdlog::error("Failed to load {} resource: {}", typeid(T).name(), name);

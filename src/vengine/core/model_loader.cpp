@@ -5,6 +5,7 @@
 #include <assimp/postprocess.h>
 #include <algorithm>
 
+#include <cstddef>
 #include <fstream>
 #include <sstream>
 #include <spdlog/spdlog.h>
@@ -22,7 +23,7 @@ ModelLoader::~ModelLoader() {
     spdlog::debug("Destructor ModelLoader");
 }
 
-auto ModelLoader::loadModel(const std::string& filename, std::shared_ptr<Shader> defaultShader) -> std::shared_ptr<Model> {
+auto ModelLoader::loadModel(const std::string& filename, const std::shared_ptr<Shader>& defaultShader) -> std::shared_ptr<Model> {
     auto model = std::make_shared<Model>();
     
     // Load the mesh 
@@ -237,12 +238,14 @@ auto ModelLoader::extractEmbeddedTexture(const aiTexture* texture, const std::st
                    texture->achFormatHint, texture->mWidth);
         
         // mWidth contains the size in bytes for compressed textures
-        int width, height, channels;
+        int width;
+        int height;
+        int channels;
         
         // Decode the compressed texture data
         unsigned char* pixels = stbi_load_from_memory(
             reinterpret_cast<const stbi_uc*>(texture->pcData),
-            texture->mWidth, // Size in bytes
+            static_cast<int>(texture->mWidth), // Size in bytesx
             &width, &height, &channels, 4 // Force RGBA
         );
         
@@ -269,13 +272,13 @@ auto ModelLoader::extractEmbeddedTexture(const aiTexture* texture, const std::st
                    texture->mWidth, texture->mHeight);
         
         // Create texture from raw data
-        unsigned char* pixels = new unsigned char[texture->mWidth * texture->mHeight * 4];
+        unsigned char* pixels = new unsigned char[static_cast<unsigned long long>(texture->mWidth * texture->mHeight * 4)];
         
         // Copy pixel data (assuming RGBA for now)
         for (unsigned int y = 0; y < texture->mHeight; ++y) {
             for (unsigned int x = 0; x < texture->mWidth; ++x) {
                 aiTexel& texel = texture->pcData[y * texture->mWidth + x];
-                unsigned char* pixel = &pixels[(y * texture->mWidth + x) * 4];
+                unsigned char* pixel = &pixels[static_cast<size_t>((y * texture->mWidth + x) * 4)];
                 
                 pixel[0] = texel.r;
                 pixel[1] = texel.g;
@@ -286,7 +289,7 @@ auto ModelLoader::extractEmbeddedTexture(const aiTexture* texture, const std::st
         
         // Create a texture resource from the raw data
         resultTexture = std::make_shared<Texture>();
-        resultTexture->setRawData(pixels, texture->mWidth, texture->mHeight, 4);
+        resultTexture->setRawData(pixels, static_cast<int>(texture->mWidth), static_cast<int>(texture->mHeight), 4);
         resultTexture->setName(texName);
         
         // Register in resource manager
