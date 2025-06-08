@@ -143,6 +143,14 @@ class ECS {
         m_systems["PhysicsSystem"] = joltSystem;
     }
 
+    auto getSystemCount() const -> size_t {
+        return m_systems.size();
+    }
+
+    auto getComponentCount() const -> size_t {
+        return m_componentRegistry->size();
+    }
+
    private:
     std::shared_ptr<ComponentRegistry> m_componentRegistry;
     std::shared_ptr<Entities> m_activeEntities;

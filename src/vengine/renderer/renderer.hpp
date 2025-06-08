@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <tl/expected.hpp>
 
@@ -29,7 +30,9 @@ class Renderer {
 
     auto render(const std::shared_ptr<Scene>& scene) -> void;
     auto setVSync(bool enabled) -> void;
+    [[nodiscard]] auto isVSyncEnabled() const -> bool; 
     auto setMSAA(bool enabled) -> void;
+    [[nodiscard]] auto isMsaaEnabled() const -> bool;
     auto loadSkybox(const std::vector<std::shared_ptr<Texture>>& faceFiles, std::shared_ptr<Shader> shader) -> bool;
     auto unloadSkybox() -> void;
 
@@ -40,12 +43,24 @@ class Renderer {
         m_postRenderCallback = std::move(callback);
     }
 
+    [[nodiscard]] auto getDrawCallCount() const -> size_t; 
+    [[nodiscard]] auto getVertexCount() const -> size_t;
+    [[nodiscard]] auto getTriangleCount() const -> size_t;
+
+
    private:
     std::shared_ptr<Window> m_window;
     bool m_skyboxEnabled = false;
+    bool m_vsyncEnabled = false;
+    bool m_msaaEnabled = false;
 
     std::function<void()> m_preRenderCallback;
     std::function<void()> m_postRenderCallback;
+
+    // statistics
+    size_t m_drawCallCount = 0;
+    size_t m_vertexCount = 0;
+    size_t m_triangleCount = 0;
 
     // shadow test
     GLuint m_shadowMap;

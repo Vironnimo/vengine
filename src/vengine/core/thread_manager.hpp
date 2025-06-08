@@ -90,6 +90,10 @@ class ThreadManager {
             try {
                 spdlog::debug("Main thread executing task: {}", task.name);
                 task.function();
+                {
+                    std::lock_guard<std::mutex> lock(m_mainThreadMutex);
+                    ++m_completedMainThreadTasks;
+                }
             } catch (const std::exception& e) {
                 spdlog::error("Exception in main thread task '{}': {}", task.name, e.what());
             }
@@ -146,6 +150,28 @@ class ThreadManager {
         spdlog::debug("ThreadManager shutdown complete");
     }
 
+    [[nodiscard]] auto getWorkerCount() const -> size_t {
+        return m_workers.size();
+    }
+
+    [[nodiscard]] auto getActiveTaskCount() const -> size_t {
+        return m_tasks.size();
+    }
+
+    [[nodiscard]] auto getMainThreadTaskCount() const -> size_t {
+        return m_mainThreadTasks.size();
+    }
+
+    auto getCompletedTasks() -> size_t {
+        std::lock_guard<std::mutex> lock(m_queueMutex);
+        return m_completedTasks;
+    }
+
+    auto getCompletedMainThreadTasks() -> size_t {
+        std::lock_guard<std::mutex> lock(m_mainThreadMutex);
+        return m_completedMainThreadTasks;
+    }
+
    private:
     void startWorkers(size_t threadCount) {
         for (size_t i = 0; i < threadCount; ++i) {
@@ -186,6 +212,11 @@ class ThreadManager {
                             std::lock_guard<std::mutex> lock(m_busyMutex);
                             --m_busyCount;
                         }
+
+                        {
+                            std::lock_guard<std::mutex> lock(m_queueMutex);
+                            ++m_completedTasks;
+                        }
                         m_completionCondition.notify_all();
                     }
                 }
@@ -206,6 +237,10 @@ class ThreadManager {
 
     std::queue<Task> m_mainThreadTasks;
     std::mutex m_mainThreadMutex;
+
+    // statistics
+    size_t m_completedTasks = 0;
+    size_t m_completedMainThreadTasks = 0;
 };
 
 }  // namespace Vengine

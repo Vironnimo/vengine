@@ -195,6 +195,16 @@ class ResourceManager {
                         const std::string& fileName,
                         std::shared_ptr<Shader> defaultShader = nullptr) -> void;
 
+    template <typename T>
+    auto getLoadedCount() -> size_t {
+        std::lock_guard<std::mutex> lock(m_resourceMutex);
+        auto typeIt = m_resources.find(std::type_index(typeid(T)));
+        if (typeIt != m_resources.end()) {
+            return typeIt->second.size();
+        }
+        return 0;
+    }
+
    private:
     std::filesystem::path m_resourceRoot;
     std::unordered_map<std::type_index, std::unordered_map<std::string, std::shared_ptr<IResource>>> m_resources;

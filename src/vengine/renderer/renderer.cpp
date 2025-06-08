@@ -90,6 +90,10 @@ Renderer::~Renderer() {
 }
 
 auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
+    m_drawCallCount = 0;
+    m_vertexCount = 0;
+    m_triangleCount = 0;
+
     if (m_preRenderCallback) {
         m_preRenderCallback();
     }
@@ -97,7 +101,7 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     // light stuff
     auto lightEntities = scene->getEntities()->getEntitiesWith<LightComponent>();
     // default light values
-    glm::vec3 lightDirection = glm::vec3(-0.5f, -0.7f, -0.5f); 
+    glm::vec3 lightDirection = glm::vec3(-0.5f, -0.7f, -0.5f);
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     float lightIntensity = 1.0f;
     glm::vec3 lightPos = glm::vec3(20.0f, 50.0f, 20.0f);  // default
@@ -183,11 +187,19 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
                                     GL_UNSIGNED_INT,
                                     nullptr,
                                     static_cast<GLsizei>(transforms.size()));
+
+            m_drawCallCount++;
+            m_vertexCount += mesh->getIndexBuffer()->getCount() * transforms.size();
+            m_triangleCount += mesh->getIndexBuffer()->getCount() / 3 * transforms.size();
         } else {
             glDrawArraysInstanced(GL_TRIANGLES,
                                   0,
                                   static_cast<GLsizei>(mesh->getVertexCount()),
                                   static_cast<GLsizei>(transforms.size()));
+
+            m_drawCallCount++;
+            m_vertexCount += mesh->getVertexCount() * transforms.size();
+            m_triangleCount += mesh->getVertexCount() / 3 * transforms.size();
         }
         mesh->getVertexArray()->unbind();
     }
@@ -354,11 +366,19 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
                                     GL_UNSIGNED_INT,
                                     nullptr,
                                     static_cast<GLsizei>(transforms.size()));
+
+            m_drawCallCount++;
+            m_vertexCount += mesh->getIndexBuffer()->getCount() * transforms.size();
+            m_triangleCount += mesh->getIndexBuffer()->getCount() / 3 * transforms.size();
         } else {
             glDrawArraysInstanced(GL_TRIANGLES,
                                   0,
                                   static_cast<GLsizei>(mesh->getVertexCount()),
                                   static_cast<GLsizei>(transforms.size()));
+
+            m_drawCallCount++;
+            m_vertexCount += mesh->getVertexCount() * transforms.size();
+            m_triangleCount += mesh->getVertexCount() / 3 * transforms.size();
         }
         mesh->getVertexArray()->unbind();
     }
@@ -398,6 +418,10 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
                                     GL_UNSIGNED_INT,
                                     reinterpret_cast<void*>(submesh.indexOffset * sizeof(uint32_t)),
                                     static_cast<GLsizei>(transforms.size()));
+
+            m_drawCallCount++;
+            m_vertexCount += submesh.indexCount * transforms.size();
+            m_triangleCount += submesh.indexCount / 3 * transforms.size();
         } else {
             // submeshes without indices? even a thing?
             // size_t vertexCount = mesh->getVertexCount();
@@ -415,6 +439,7 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
     // TODO: handle the skybox some other way, in shader?
     if (m_skyboxEnabled) {
         skybox->render(viewMatrix, projectionMatrix);
+        m_drawCallCount++;
     }
 
     // render each component with a text object
@@ -424,6 +449,7 @@ auto Renderer::render(const std::shared_ptr<Scene>& scene) -> void {
         if (textComp) {
             auto font = fonts->get(textComp->fontId);
             if (font) {
+                m_drawCallCount++;
                 font.value()->draw(textComp->text, textComp->x, textComp->y, textComp->scale, textComp->color);
             } else {
                 spdlog::warn("Font not found: {}", textComp->fontId);
@@ -517,19 +543,35 @@ auto Renderer::unloadSkybox() -> void {
     }
 }
 
+auto Renderer::getDrawCallCount() const -> size_t {
+    return m_drawCallCount;
+}
+
+auto Renderer::getVertexCount() const -> size_t {
+    return m_vertexCount;
+}
+
+auto Renderer::getTriangleCount() const -> size_t {
+    return m_triangleCount;
+}
+
 auto Renderer::setVSync(bool enabled) -> void {
     if (enabled) {
         glfwSwapInterval(1);
+        m_vsyncEnabled = true;
     } else {
         glfwSwapInterval(0);
+        m_vsyncEnabled = false;
     }
 }
 
 auto Renderer::setMSAA(bool enabled) -> void {
     if (enabled) {
         glEnable(GL_MULTISAMPLE);
+        m_msaaEnabled = true;
     } else {
         glDisable(GL_MULTISAMPLE);
+        m_msaaEnabled = false;
     }
 }
 
@@ -544,6 +586,14 @@ auto Renderer::initFonts(std::shared_ptr<Shader> fontShader) -> tl::expected<voi
 
 auto Renderer::setShadowShader(std::shared_ptr<Shader> shader) -> void {
     m_shadowShader = std::move(shader);
+}
+
+auto Renderer::isVSyncEnabled() const -> bool {
+    return m_vsyncEnabled;
+}
+
+auto Renderer::isMsaaEnabled() const -> bool {
+    return m_msaaEnabled;
 }
 
 }  // namespace Vengine
