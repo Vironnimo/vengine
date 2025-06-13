@@ -20,13 +20,31 @@ void EditorScene::load(Vengine::Vengine& vengine) {
     auto camComp = vengine.ecs->getEntityComponent<Vengine::CameraComponent>(editorCamId);
     camComp->aspectRatio = static_cast<float>(vengine.window->getWidth()) / static_cast<float>(vengine.window->getHeight());
 
-    // cube
+    // render a simple cube without everything, no texture, no material
     auto cubeModel = vengine.resourceManager->get<Vengine::Model>("cube");
     auto cubeId = vengine.ecs->createEntity();
     auto cube = vengine.ecs->getEntity(cubeId);
-    cube.addComponent<Vengine::TagComponent>("cube");
+    cube.addComponent<Vengine::TagComponent>("cube_no_texture");
     cube.addComponent<Vengine::TransformComponent>();
     cube.addComponent<Vengine::ModelComponent>(cubeModel);
+
+    // render cube with texture
+    auto cubeTextureModel = vengine.resourceManager->get<Vengine::Model>("cube");
+    auto cubeTextureId = vengine.ecs->createEntity();
+    auto cubeTexture = vengine.ecs->getEntity(cubeTextureId);
+    cubeTexture.addComponent<Vengine::TagComponent>("cube_with_texture");
+    cubeTexture.addComponent<Vengine::TransformComponent>();
+    cubeTexture.addComponent<Vengine::ModelComponent>(cubeTextureModel);
+
+    // render a 3d model with submeshes
+
+    // render 3d model with submeshes and put 1 texture on the model
+
+    // render 3d model with submeshes and texture each submesh differently
+
+    // render 3d model with integrated textures
+
+    // more ??
 }
 
 void EditorScene::cleanup(Vengine::Vengine& vengine) {

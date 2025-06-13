@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -9,26 +10,24 @@
 namespace Vengine {
 
 class Model : public IResource {
-public:
+   public:
     Model();
     ~Model() override;
 
     auto load(const std::string& fileName) -> bool override;
     auto finalizeOnMainThread() -> bool override;
     auto unload() -> bool override;
-    [[nodiscard]] auto needsMainThreadInit() const -> bool override { return m_mesh && m_mesh->needsMainThreadInit(); }
+    [[nodiscard]] auto needsMainThreadInit() const -> bool override;
 
-    // Getters
-    [[nodiscard]] auto getMesh() const -> std::shared_ptr<Mesh> { return m_mesh; }
-    [[nodiscard]] auto getDefaultMaterial() const -> std::shared_ptr<Material> { return m_defaultMaterial; }
+    [[nodiscard]] auto getMesh() const -> std::shared_ptr<Mesh>;
+    [[nodiscard]] auto getDefaultMaterial() const -> std::shared_ptr<Material>;
     [[nodiscard]] auto getMaterialForSubmesh(const std::string& submeshName) const -> std::shared_ptr<Material>;
-    
-    // Setters
-    auto setMesh(std::shared_ptr<Mesh> mesh) -> void { m_mesh = std::move(mesh); }
-    auto setDefaultMaterial(std::shared_ptr<Material> material) -> void { m_defaultMaterial = std::move(material); }
+
+    auto setMesh(std::shared_ptr<Mesh> mesh) -> void;
+    auto setDefaultMaterial(std::shared_ptr<Material> material) -> void;
     auto setMaterial(const std::string& submeshName, std::shared_ptr<Material> material) -> void;
 
-private:
+   private:
     std::shared_ptr<Mesh> m_mesh;
     std::shared_ptr<Material> m_defaultMaterial;
     std::unordered_map<std::string, std::shared_ptr<Material>> m_materials;

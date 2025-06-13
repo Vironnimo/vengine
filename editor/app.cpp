@@ -4,6 +4,7 @@
 #include "vengine/ecs/components.hpp"
 #include "vengine/vengine.hpp"
 
+#include <windows.h>
 #include <memory>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -33,6 +34,8 @@ App::App() {
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
+    setupFonts();
+
     // init opengl for imgui
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
@@ -53,6 +56,26 @@ App::App() {
 App::~App() {
 }
 
+auto App::setupFonts() -> void {
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->Clear();
+
+    auto* defaultFont = io.Fonts->AddFontFromFileTTF("resources/fonts/inter_24_regular.ttf", 17.0f);
+    // auto headerFont = io.Fonts->AddFontFromFileTTF("resources/fonts/Roboto-Bold.ttf", 18.0f);
+
+    // ImFontConfig fontConfig;
+    // fontConfig.OversampleH = 2;
+    // fontConfig.OversampleV = 1;
+    // fontConfig.PixelSnapH = true;
+
+    if (!defaultFont) {
+        spdlog::warn("Failed to load default font, using ImGui default");
+        defaultFont = io.Fonts->AddFontDefault();
+    }
+
+    io.Fonts->Build();
+}
+
 void App::statsPanel(const std::shared_ptr<Vengine::Vengine>& vengine) {
     ImGui::Begin("Vengine Stats");
     static float fpsTimer = 0.0f;
@@ -67,13 +90,13 @@ void App::statsPanel(const std::shared_ptr<Vengine::Vengine>& vengine) {
         fpsCount++;
     }
     fpsTimer += vengine->timers->deltaTime();
-    ImGui::Text("Delta Time: %.3f ms", vengine->timers->deltaTime());
+    ImGui::Text("Delta Time: %.3f ms", static_cast<double>(vengine->timers->deltaTime()));
     ImGui::Text("FPS: %d", fps);
 
     ImGui::SeparatorText("ECS");
     auto entityCount = vengine->ecs->getEntityCount();
     ImGui::Text("Entities: %zu", entityCount);
-    auto systemCount = vengine->ecs->getSystemCount();  // If you have this method
+    auto systemCount = vengine->ecs->getSystemCount();
     ImGui::Text("Registered Systems: %zu", systemCount);
     std::string nodeText = "Registered Components: " + std::to_string(vengine->ecs->getComponentCount());
     if (ImGui::TreeNode(nodeText.c_str())) {
@@ -94,7 +117,7 @@ void App::statsPanel(const std::shared_ptr<Vengine::Vengine>& vengine) {
         ImGui::TreePop();
     }
 
-    // renderer Stats
+    // renderer
     ImGui::SeparatorText("Renderer");
     auto drawCalls = vengine->renderer->getDrawCallCount();
     auto vertexCount = vengine->renderer->getVertexCount();
@@ -103,7 +126,7 @@ void App::statsPanel(const std::shared_ptr<Vengine::Vengine>& vengine) {
     ImGui::Text("Vertices: %zu", vertexCount);
     ImGui::Text("Triangles: %zu", triangleCount);
 
-    // resource Manager Stats
+    // resource manager
     ImGui::SeparatorText("Resources");
     auto textureCount = vengine->resourceManager->getLoadedCount<Vengine::Texture>();
     auto meshCount = vengine->resourceManager->getLoadedCount<Vengine::Mesh>();
@@ -118,7 +141,7 @@ void App::statsPanel(const std::shared_ptr<Vengine::Vengine>& vengine) {
     ImGui::Text("Scripts: %zu", scriptCount);
     ImGui::Text("Sounds: %zu", soundCount);
 
-    // thread Manager Stats
+    // thread Manager
     auto workerCount = vengine->threadManager->getWorkerCount();
     auto activeTasks = vengine->threadManager->getActiveTaskCount();
     auto completedTasks = vengine->threadManager->getCompletedTasks();
@@ -129,28 +152,25 @@ void App::statsPanel(const std::shared_ptr<Vengine::Vengine>& vengine) {
     ImGui::Text("Completed Tasks: %zu", completedTasks);
     ImGui::Text("Completed Main Thread Tasks: %zu", completedMainThreadTasks);
 
-    // Scene Stats
+    // scene
     ImGui::SeparatorText("Scene");
     auto currentScene = vengine->scenes->getCurrentScene();
     if (currentScene) {
         ImGui::Text("Current Scene: %s", vengine->getCurrentSceneName().c_str());
-        // Add scene-specific stats here
     } else {
         ImGui::Text("No active scene");
     }
 
-    // OpenGL Stats (if available)
+    // opengl
     ImGui::SeparatorText("OpenGL");
     ImGui::Text("OpenGL Version: %s", glGetString(GL_VERSION));
     ImGui::Text("GPU: %s", glGetString(GL_RENDERER));
-
-    // VSync status
     bool vsyncEnabled = vengine->renderer->isVSyncEnabled();
     ImGui::Text("VSync: %s", vsyncEnabled ? "Enabled" : "Disabled");
     bool msaaEnabled = vengine->renderer->isMsaaEnabled();
     ImGui::Text("MSAA: %s", msaaEnabled ? "Enabled" : "Disabled");
 
-    // Window Stats
+    // window
     ImGui::SeparatorText("Window");
     int windowWidth = vengine->window->getWidth();
     int windowHeight = vengine->window->getHeight();
@@ -248,11 +268,61 @@ auto App::entityNode(const std::shared_ptr<Vengine::Vengine>& vengine, Vengine::
 
         ImGui::Separator();
         ImGui::Text("Other Components:");
+        if (auto model = vengine->ecs->getEntityComponent<Vengine::ModelComponent>(entityId)) {
+            ImGui::BulletText("Model Component");
+        } else {
+            std::string loadModelButtonId = "Load Model##" + std::to_string(entityId);
+            if (ImGui::Button(loadModelButtonId.c_str())) {
+                std::string filter =
+                    "3D Model Files\0*.obj;*.fbx;*.dae;*.gltf;*.glb;*.blend;*.3ds;*.ply\0"
+                    "OBJ Files\0*.obj\0"
+                    "FBX Files\0*.fbx\0"
+                    "COLLADA Files\0*.dae\0"
+                    "glTF Files\0*.gltf;*.glb\0"
+                    "Blender Files\0*.blend\0"
+                    "All Files\0*.*\0\0";
+
+                std::string selectedFile = openFileDialog("Select 3D Model", filter);
+
+                if (!selectedFile.empty()) {
+                    // Convert absolute path to relative path based on resources directory
+                    std::filesystem::path absolutePath(selectedFile);
+                    std::filesystem::path resourcesPath = std::filesystem::current_path() / "resources";
+
+                    std::string relativePath;
+                    if (absolutePath.string().find(resourcesPath.string()) == 0) {
+                        // File is in resources directory, make it relative
+                        relativePath = std::filesystem::relative(absolutePath, resourcesPath).string();
+                    } else {
+                        // File is outside resources, use filename only (assuming it will be copied)
+                        relativePath = absolutePath.filename().string();
+                        spdlog::warn("Selected file is outside resources directory. Using filename: {}", relativePath);
+                    }
+
+                    // Load the model asynchronously
+                    std::string modelName = "model_" + std::to_string(entityId);
+                    auto defaultShader = vengine->resourceManager->get<Vengine::Shader>("default");
+
+                    try {
+                        vengine->resourceManager->loadModelAsync(modelName, relativePath, defaultShader);
+                        auto model = vengine->resourceManager->get<Vengine::Model>(modelName);
+
+                        if (model) {
+                            vengine->ecs->addComponent<Vengine::ModelComponent>(entityId, model);
+                            spdlog::info("Model component added to entity {}", entityId);
+                        } else {
+                            spdlog::error("Failed to load model for entity {}", entityId);
+                        }
+
+                        spdlog::info("Loading model '{}' for entity {}", relativePath, entityId);
+                    } catch (const std::exception& e) {
+                        spdlog::error("Failed to load model '{}': {}", relativePath, e.what());
+                    }
+                }
+            }
+        }
         if (vengine->ecs->getEntityComponent<Vengine::MeshComponent>(entityId)) {
             ImGui::BulletText("Mesh Component");
-        }
-        if (vengine->ecs->getEntityComponent<Vengine::ModelComponent>(entityId)) {
-            ImGui::BulletText("Model Component");
         }
         if (vengine->ecs->getEntityComponent<Vengine::MaterialComponent>(entityId)) {
             ImGui::BulletText("Material Component");
@@ -272,6 +342,30 @@ auto App::entityNode(const std::shared_ptr<Vengine::Vengine>& vengine, Vengine::
 
         ImGui::TreePop();
     }
+}
+
+auto App::openFileDialog(const std::string& title, const std::string& filter) -> std::string {
+    OPENFILENAME ofn;
+    char fileName[MAX_PATH] = "";
+    auto defaultPath = std::filesystem::current_path() / "resources";
+    std::string defaultPathStr = defaultPath.string();
+
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = GetActiveWindow();
+    ofn.lpstrFile = fileName;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = filter.c_str();
+    ofn.nFilterIndex = 1;
+    ofn.lpstrTitle = title.c_str();
+    ofn.lpstrInitialDir = defaultPathStr.c_str();
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+    if (GetOpenFileName(&ofn)) {
+        return std::string(fileName);
+    }
+
+    return ""; 
 }
 
 void App::run() {

@@ -6,6 +6,7 @@ build/
 .clang-format
 .clangd
 .drawio
+*.excalidraw*
 CMakeUserPresets.json
 TODO.md
 resources/models/mercedes.fbx

@@ -18,7 +18,7 @@ include_directories(${CMAKE_SOURCE_DIR}/vendor)
 
 add_subdirectory(src)
 add_subdirectory(editor)
-add_subdirectory(examples/app)
+# add_subdirectory(examples/app)
 
 enable_testing()
 add_subdirectory(tests)

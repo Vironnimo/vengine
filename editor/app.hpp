@@ -17,6 +17,9 @@ class App {
 
     auto entitiesPanel(const std::shared_ptr<Vengine::Vengine>& vengine) -> void;
     auto entityNode(const std::shared_ptr<Vengine::Vengine>& vengine, Vengine::EntityId entityId) -> void;
+
+    auto openFileDialog(const std::string& title, const std::string& filter) -> std::string;
+    auto setupFonts() -> void;
 };
 
 }  // namespace Veditor

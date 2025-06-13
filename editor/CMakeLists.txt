@@ -4,10 +4,14 @@ find_package(imgui CONFIG REQUIRED)
 
 project(editor)
 
-add_executable(${PROJECT_NAME}
+set(SOURCES
     app.cpp
     editor_scene.cpp
     editor_module.cpp
+)
+
+add_executable(${PROJECT_NAME}
+    ${SOURCES}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
